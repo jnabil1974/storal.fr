@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase';
+import { VerifyOtpParams } from '@supabase/supabase-js';
 
 function AuthCallbackInner() {
   const router = useRouter();
@@ -13,24 +14,35 @@ function AuthCallbackInner() {
 
   useEffect(() => {
     const code = searchParams.get('code');
+    const token = searchParams.get('token');
+    const type = (searchParams.get('type') as VerifyOtpParams['type']) || 'signup';
+    const email = searchParams.get('email') || undefined;
     if (!supabase) {
       setError('Supabase non initialisé');
       return;
     }
-    if (!code) {
-      router.replace('/auth');
-      return;
-    }
-
     const run = async () => {
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) {
-        console.error('Erreur exchangeCodeForSession', error);
-        setError('Impossible de valider le compte.');
-        return;
+      try {
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+        } else if (token) {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type,
+            email,
+          });
+          if (error) throw error;
+        } else {
+          router.replace('/auth');
+          return;
+        }
+        setMessage('Compte validé, redirection...');
+        router.replace('/my-orders');
+      } catch (err: any) {
+        console.error('Erreur validation Supabase', err);
+        setError(err?.message || 'Impossible de valider le compte.');
       }
-      setMessage('Compte validé, redirection...');
-      router.replace('/my-orders');
     };
 
     run();
