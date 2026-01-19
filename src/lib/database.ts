@@ -103,7 +103,10 @@ function withMockFallback<T>(fn: () => Promise<T>, fallback: () => T | Promise<T
 
 export async function getProducts(): Promise<Product[]> {
   const supabase = getSupabaseClient();
-  if (!supabase) return mockProducts;
+  if (!supabase) {
+    console.log('[getProducts] No supabase, returning mock');
+    return mockProducts;
+  }
 
   return withMockFallback(async () => {
     // Get all products
@@ -114,14 +117,19 @@ export async function getProducts(): Promise<Product[]> {
 
     if (error || !data) throw error;
     
+    console.log(`[getProducts] Got ${data.length} products from Supabase`);
+    
     // Deduplicate by type - keep only the latest of each type
     const seenTypes = new Set<ProductType>();
     const deduped = data.filter((row) => {
-      if (seenTypes.has(row.type as ProductType)) return false;
-      seenTypes.add(row.type as ProductType);
-      return true;
+      const isDuplicate = seenTypes.has(row.type as ProductType);
+      if (!isDuplicate) {
+        seenTypes.add(row.type as ProductType);
+      }
+      return !isDuplicate;
     });
     
+    console.log(`[getProducts] After dedup: ${deduped.length} products`);
     return deduped.map(mapRowToProduct);
   }, () => mockProducts);
 }
