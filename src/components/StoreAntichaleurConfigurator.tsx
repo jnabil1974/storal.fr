@@ -67,7 +67,8 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
       <h2 className="text-2xl font-bold mb-6">Configurateur Store Antichaleur</h2>
 
       <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Dimensions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Largeur (cm) : {config.width} cm
@@ -96,10 +97,10 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
             className="w-full"
           />
         </div>
-      </div>
+        </div>
 
-      {/* Type de tissu */}
-      <div>
+        {/* Type de tissu */}
+        <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Type de Tissu</label>
         <select
           value={config.fabricType}
@@ -110,10 +111,10 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
           <option value="semi-occultant">Semi-Occultant</option>
           <option value="occultant">Occultant Total</option>
         </select>
-      </div>
+        </div>
 
-      {/* Couleur */}
-      <div>
+        {/* Couleur */}
+        <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Couleur du Tissu</label>
         <select
           value={config.fabricColor}
@@ -126,10 +127,10 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
           <option value="anthracite">Anthracite</option>
           <option value="noir">Noir</option>
         </select>
-      </div>
+        </div>
 
-      {/* Orientation */}
-      <div>
+        {/* Orientation */}
+        <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Orientation</label>
         <div className="flex gap-4">
           <label className="flex items-center">
@@ -151,10 +152,10 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
             Extérieur (+100€)
           </label>
         </div>
-      </div>
+        </div>
 
-      {/* Type de fixation */}
-      <div>
+        {/* Type de fixation */}
+        <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Type de Fixation</label>
         <select
           value={config.fixationType}
@@ -165,10 +166,10 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
           <option value="sans-percage">Sans Perçage (+40€)</option>
           <option value="encastre">Encastré (+150€)</option>
         </select>
-      </div>
+        </div>
 
-      {/* Motorisation */}
-      <div>
+        {/* Motorisation */}
+        <div>
         <label className="flex items-center">
           <input
             type="checkbox"
@@ -192,10 +193,10 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
             </select>
           </div>
         )}
-      </div>
+        </div>
 
-      {/* Options */}
-      <div className="space-y-2">
+        {/* Options */}
+        <div className="space-y-2">
         <label className="flex items-center">
           <input
             type="checkbox"
@@ -214,10 +215,10 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
           />
           <span className="text-sm font-medium text-gray-700">Contrôle thermique (+40€)</span>
         </label>
-      </div>
+        </div>
 
-      {/* Résumé */}
-      <div className="bg-blue-50 p-4 rounded-lg">
+        {/* Résumé */}
+        <div className="bg-blue-50 p-4 rounded-lg">
         <h4 className="font-semibold text-gray-900 mb-2">Résumé de votre configuration</h4>
         <ul className="text-sm text-gray-700 space-y-1">
           <li>📏 Dimensions : {config.width} × {config.height} cm</li>
@@ -244,6 +245,7 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
                   <p className="mt-2 text-green-600 text-center font-medium">{successMessage}</p>
                 )}
               </div>
+        </div>
       </div>
     </div>
   );
