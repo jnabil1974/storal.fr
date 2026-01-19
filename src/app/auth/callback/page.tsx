@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase';
-import { VerifyOtpParams } from '@supabase/supabase-js';
+import type { EmailOtpType } from '@supabase/supabase-js';
 
 function AuthCallbackInner() {
   const router = useRouter();
@@ -15,7 +15,7 @@ function AuthCallbackInner() {
   useEffect(() => {
     const code = searchParams.get('code');
     const token = searchParams.get('token');
-    const type = (searchParams.get('type') as VerifyOtpParams['type']) || 'signup';
+    const type = (searchParams.get('type') as EmailOtpType) || 'signup';
     const email = searchParams.get('email') || undefined;
     if (!supabase) {
       setError('Supabase non initialisé');
