@@ -106,23 +106,23 @@ export async function getProducts(): Promise<Product[]> {
   if (!supabase) return mockProducts;
 
   return withMockFallback(async () => {
+    // Get all products
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .order('created_at', { ascending: false }); // Latest first for deduplication
+      .order('created_at', { ascending: false });
 
     if (error || !data) throw error;
     
-    // Deduplicate by type - keep the first (most recent) of each type
-    const products = data.map(mapRowToProduct);
+    // Deduplicate by type - keep only the latest of each type
     const seenTypes = new Set<ProductType>();
-    const deduped = products.filter(p => {
-      if (seenTypes.has(p.type)) return false;
-      seenTypes.add(p.type);
+    const deduped = data.filter((row) => {
+      if (seenTypes.has(row.type as ProductType)) return false;
+      seenTypes.add(row.type as ProductType);
       return true;
     });
     
-    return deduped;
+    return deduped.map(mapRowToProduct);
   }, () => mockProducts);
 }
 
