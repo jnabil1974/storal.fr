@@ -48,7 +48,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     if (!supabase) throw new Error('Supabase non initialisé');
-    const { error } = await supabase.auth.signUp({ email, password });
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+    const redirectTo = baseUrl ? `${baseUrl}/auth/callback` : undefined;
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { 
+        emailRedirectTo: redirectTo || 'https://storal.fr/auth/callback'
+      },
+    });
     if (error) throw error;
   };
 
