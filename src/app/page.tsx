@@ -5,6 +5,7 @@ export const revalidate = 0; // Dynamic rendering - fetch products on every requ
 
 export default async function HomePage() {
   const products = await getProducts();
+  console.log(`[HomePage] Received ${products.length} products:`, products.map(p => ({ id: p.id, name: p.name, type: p.type })));
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
