@@ -34,6 +34,23 @@ const products = [
     },
   },
   {
+    name: 'Store Antichaleur Premium',
+    description: 'Protection solaire haute performance avec contrôle thermique',
+    type: 'store_antichaleur',
+    base_price: 150.0,
+    image: '/images/store-antichaleur-1.jpg',
+    category: 'Occultation',
+    specifications: {
+      minWidth: 60,
+      maxWidth: 300,
+      minHeight: 80,
+      maxHeight: 300,
+      availableFabricTypes: ['screen', 'semi-occultant', 'occultant'],
+      availableColors: ['blanc', 'beige', 'gris', 'anthracite', 'noir'],
+      motorOptions: ['manuel', 'electrique', 'solaire'],
+    },
+  },
+  {
     name: 'Porte Blindée Standard A2P',
     description: 'Porte blindée entrée avec certification A2P 2 étoiles',
     type: 'porte_blindee',

@@ -1,14 +1,12 @@
-import { StoreBanneConfig, PorteBlindeeConfig, ProductConfig } from '@/types/products';
+import { StoreBanneConfig, PorteBlindeeConfig, StoreAntichaleurConfig, ProductConfig } from '@/types/products';
 
 // Calcul du prix pour Store Banne
 export function calculateStoreBannePrice(basePrice: number, config: StoreBanneConfig): number {
   let price = basePrice;
 
-  // Surcharge basée sur les dimensions
   const area = (config.width * config.depth) / 10000; // m²
-  price += area * 50; // 50€ par m²
+  price += area * 50;
 
-  // Motorisation
   if (config.motorized) {
     const motorPrices: Record<string, number> = {
       manuel: 0,
@@ -18,7 +16,6 @@ export function calculateStoreBannePrice(basePrice: number, config: StoreBanneCo
     price += motorPrices[config.motorType || 'electrique'] || 350;
   }
 
-  // Tissu
   const fabricPrices: Record<string, number> = {
     acrylique: 0,
     polyester: 150,
@@ -26,11 +23,9 @@ export function calculateStoreBannePrice(basePrice: number, config: StoreBanneCo
   };
   price += fabricPrices[config.fabric] || 0;
 
-  // Options capteurs
   if (config.windSensor) price += 120;
   if (config.rainSensor) price += 120;
 
-  // Type de bras
   const armPrices: Record<string, number> = {
     coffre: 200,
     'semi-coffre': 100,
@@ -45,11 +40,9 @@ export function calculateStoreBannePrice(basePrice: number, config: StoreBanneCo
 export function calculatePorteBlindeePrice(basePrice: number, config: PorteBlindeeConfig): number {
   let price = basePrice;
 
-  // Surcharge basée sur les dimensions
   const area = (config.width * config.height) / 10000; // m²
-  price += area * 40; // 40€ par m²
+  price += area * 40;
 
-  // Type de porte
   const doorTypePrices: Record<string, number> = {
     battante: 0,
     coulissante: 300,
@@ -57,7 +50,6 @@ export function calculatePorteBlindeePrice(basePrice: number, config: PorteBlind
   };
   price += doorTypePrices[config.doorType] || 0;
 
-  // Matériau
   const materialPrices: Record<string, number> = {
     acier: 0,
     aluminium: 200,
@@ -66,7 +58,6 @@ export function calculatePorteBlindeePrice(basePrice: number, config: PorteBlind
   };
   price += materialPrices[config.material] || 0;
 
-  // Niveau de sécurité
   const securityPrices: Record<string, number> = {
     A2P_1: 0,
     A2P_2: 250,
@@ -74,7 +65,6 @@ export function calculatePorteBlindeePrice(basePrice: number, config: PorteBlind
   };
   price += securityPrices[config.securityLevel] || 0;
 
-  // Type de serrure
   const lockPrices: Record<string, number> = {
     simple: 0,
     double: 150,
@@ -82,7 +72,6 @@ export function calculatePorteBlindeePrice(basePrice: number, config: PorteBlind
   };
   price += lockPrices[config.lockType] || 0;
 
-  // Vitrage
   if (config.glassType && config.glassType !== 'aucun') {
     const glassPrices: Record<string, number> = {
       simple: 100,
@@ -94,24 +83,58 @@ export function calculatePorteBlindeePrice(basePrice: number, config: PorteBlind
     price += (baseGlassPrice * glassPercentage) / 100;
   }
 
-  // Insonorisation
   if (config.soundProofing) price += 200;
-
-  // Isolation thermique
   if (config.thermalProofing) price += 180;
+
+  return Math.round(price);
+}
+
+// Calcul du prix pour Store Antichaleur
+export function calculateStoreAntichaleurPrice(basePrice: number, config: StoreAntichaleurConfig): number {
+  let price = basePrice;
+
+  const area = (config.width * config.height) / 10000; // m²
+  price += area * 80;
+
+  const fabricPrices: Record<string, number> = {
+    screen: 0,
+    'semi-occultant': 30,
+    occultant: 50,
+  };
+  price += fabricPrices[config.fabricType] || 0;
+
+  if (config.orientation === 'exterieur') {
+    price += 100;
+  }
+
+  if (config.motorized) {
+    price += 150;
+    if (config.motorType === 'solaire') {
+      price += 200;
+    }
+  }
+
+  const fixationPrices: Record<string, number> = {
+    standard: 0,
+    'sans-percage': 40,
+    encastre: 150,
+  };
+  price += fixationPrices[config.fixationType] || 0;
+
+  if (config.uvProtection) price += 30;
+  if (config.thermalControl) price += 40;
 
   return Math.round(price);
 }
 
 // Fonction générique pour calculer le prix
 export function calculateProductPrice(basePrice: number, config: ProductConfig): number {
-  if ('motorized' in config) {
-    // C'est une StoreBanneConfig
+  if ('motorized' in config && 'windSensor' in config) {
     return calculateStoreBannePrice(basePrice, config as StoreBanneConfig);
-  } else {
-    // C'est une PorteBlindeeConfig
-    return calculatePorteBlindeePrice(basePrice, config as PorteBlindeeConfig);
+  } else if ('motorized' in config && 'fabricType' in config) {
+    return calculateStoreAntichaleurPrice(basePrice, config as StoreAntichaleurConfig);
   }
+  return calculatePorteBlindeePrice(basePrice, config as PorteBlindeeConfig);
 }
 
 // Fonction pour obtenir un détail du prix (breakdown)
@@ -120,8 +143,7 @@ export function getPriceBreakdown(basePrice: number, config: ProductConfig) {
     'Prix de base': basePrice,
   };
 
-  if ('motorized' in config) {
-    // Store Banne
+  if ('motorized' in config && 'windSensor' in config) {
     const sbConfig = config as StoreBanneConfig;
     const area = (sbConfig.width * sbConfig.depth) / 10000;
     breakdown['Dimensions'] = area * 50;
@@ -155,52 +177,90 @@ export function getPriceBreakdown(basePrice: number, config: ProductConfig) {
     if (armPrices[sbConfig.armType]) {
       breakdown['Type de bras'] = armPrices[sbConfig.armType];
     }
-  } else {
-    // Porte Blindée
-    const pbConfig = config as PorteBlindeeConfig;
-    const area = (pbConfig.width * pbConfig.height) / 10000;
-    breakdown['Dimensions'] = area * 40;
-
-    const doorTypePrices: Record<string, number> = {
-      battante: 0,
-      coulissante: 300,
-      pliante: 500,
-    };
-    if (doorTypePrices[pbConfig.doorType]) {
-      breakdown['Type de porte'] = doorTypePrices[pbConfig.doorType];
-    }
-
-    const materialPrices: Record<string, number> = {
-      acier: 0,
-      aluminium: 200,
-      composite: 350,
-      bois: 400,
-    };
-    if (materialPrices[pbConfig.material]) {
-      breakdown['Matériau'] = materialPrices[pbConfig.material];
-    }
-
-    const securityPrices: Record<string, number> = {
-      A2P_1: 0,
-      A2P_2: 250,
-      A2P_3: 600,
-    };
-    if (securityPrices[pbConfig.securityLevel]) {
-      breakdown['Niveau sécurité'] = securityPrices[pbConfig.securityLevel];
-    }
-
-    const lockPrices: Record<string, number> = {
-      simple: 0,
-      double: 150,
-      triple: 350,
-    };
-    if (lockPrices[pbConfig.lockType]) {
-      breakdown['Type de serrure'] = lockPrices[pbConfig.lockType];
-    }
-
-    if (pbConfig.soundProofing) breakdown['Insonorisation'] = 200;
-    if (pbConfig.thermalProofing) breakdown['Isolation thermique'] = 180;
+    return breakdown;
   }
+
+  if ('motorized' in config && 'fabricType' in config) {
+    const saConfig = config as StoreAntichaleurConfig;
+    const area = (saConfig.width * saConfig.height) / 10000;
+    breakdown['Dimensions'] = area * 80;
+
+    const fabricPrices: Record<string, number> = {
+      screen: 0,
+      'semi-occultant': 30,
+      occultant: 50,
+    };
+    if (fabricPrices[saConfig.fabricType]) {
+      breakdown['Type de tissu'] = fabricPrices[saConfig.fabricType];
+    }
+
+    if (saConfig.orientation === 'exterieur') {
+      breakdown['Orientation extérieure'] = 100;
+    }
+
+    if (saConfig.motorized) {
+      let motorPrice = 150;
+      if (saConfig.motorType === 'solaire') motorPrice += 200;
+      breakdown['Motorisation'] = motorPrice;
+    }
+
+    const fixationPrices: Record<string, number> = {
+      standard: 0,
+      'sans-percage': 40,
+      encastre: 150,
+    };
+    if (fixationPrices[saConfig.fixationType]) {
+      breakdown['Type de fixation'] = fixationPrices[saConfig.fixationType];
+    }
+
+    if (saConfig.uvProtection) breakdown['Protection UV'] = 30;
+    if (saConfig.thermalControl) breakdown['Contrôle thermique'] = 40;
+    return breakdown;
+  }
+
+  const pbConfig = config as PorteBlindeeConfig;
+  const area = (pbConfig.width * pbConfig.height) / 10000;
+  breakdown['Dimensions'] = area * 40;
+
+  const doorTypePrices: Record<string, number> = {
+    battante: 0,
+    coulissante: 300,
+    pliante: 500,
+  };
+  if (doorTypePrices[pbConfig.doorType]) {
+    breakdown['Type de porte'] = doorTypePrices[pbConfig.doorType];
+  }
+
+  const materialPrices: Record<string, number> = {
+    acier: 0,
+    aluminium: 200,
+    composite: 350,
+    bois: 400,
+  };
+  if (materialPrices[pbConfig.material]) {
+    breakdown['Matériau'] = materialPrices[pbConfig.material];
+  }
+
+  const securityPrices: Record<string, number> = {
+    A2P_1: 0,
+    A2P_2: 250,
+    A2P_3: 600,
+  };
+  if (securityPrices[pbConfig.securityLevel]) {
+    breakdown['Niveau sécurité'] = securityPrices[pbConfig.securityLevel];
+  }
+
+  const lockPrices: Record<string, number> = {
+    simple: 0,
+    double: 150,
+    triple: 350,
+  };
+  if (lockPrices[pbConfig.lockType]) {
+    breakdown['Type de serrure'] = lockPrices[pbConfig.lockType];
+  }
+
+  if (pbConfig.soundProofing) breakdown['Insonorisation'] = 200;
+  if (pbConfig.thermalProofing) breakdown['Isolation thermique'] = 180;
 
   return breakdown;
 }

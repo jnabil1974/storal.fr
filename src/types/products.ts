@@ -2,6 +2,7 @@
 export enum ProductType {
   STORE_BANNE = 'store_banne',
   PORTE_BLINDEE = 'porte_blindee',
+  STORE_ANTICHALEUR = 'store_antichaleur',
   FENETRE_MENUISERIE = 'fenetre_menuiserie',
   ARMOIRE_PLACARD = 'armoire_placard',
 }
@@ -78,11 +79,39 @@ export interface PorteBlindeeProduct extends BaseProduct {
   };
 }
 
+// Configuration Store Antichaleur
+export interface StoreAntichaleurConfig {
+  width: number; // cm
+  height: number; // cm
+  fabricType: 'screen' | 'occultant' | 'semi-occultant';
+  fabricColor: string;
+  orientation: 'interieur' | 'exterieur';
+  motorized: boolean;
+  motorType?: 'manuel' | 'electrique' | 'solaire';
+  fixationType: 'standard' | 'sans-percage' | 'encastre';
+  uvProtection: boolean;
+  thermalControl: boolean;
+}
+
+// Produit Store Antichaleur
+export interface StoreAntichaleurProduct extends BaseProduct {
+  type: ProductType.STORE_ANTICHALEUR;
+  specifications: {
+    minWidth: number;
+    maxWidth: number;
+    minHeight: number;
+    maxHeight: number;
+    availableFabricTypes: string[];
+    availableColors: string[];
+    motorOptions: string[];
+  };
+}
+
 // Union type pour tous les produits
-export type Product = StoreBanneProduct | PorteBlindeeProduct;
+export type Product = StoreBanneProduct | PorteBlindeeProduct | StoreAntichaleurProduct;
 
 // Configuration de produit (union de toutes les configs)
-export type ProductConfig = StoreBanneConfig | PorteBlindeeConfig;
+export type ProductConfig = StoreBanneConfig | PorteBlindeeConfig | StoreAntichaleurConfig;
 
 // Interface pour le devis
 export interface QuoteItem {

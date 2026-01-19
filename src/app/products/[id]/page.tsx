@@ -2,6 +2,7 @@ import { getProductById } from '@/lib/database';
 import { ProductType } from '@/types/products';
 import StoreBanneConfigurator from '@/components/StoreBanneConfigurator';
 import PorteBlindeeConfigurator from '@/components/PorteBlindeeConfigurator';
+import StoreAntichaleurConfigurator from '@/components/StoreAntichaleurConfigurator';
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;
@@ -46,6 +47,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
           )}
           {product.type === ProductType.PORTE_BLINDEE && (
             <PorteBlindeeConfigurator
+              productId={product.id}
+              productName={product.name}
+              basePrice={product.basePrice}
+            />
+          )}
+          {product.type === ProductType.STORE_ANTICHALEUR && (
+            <StoreAntichaleurConfigurator
               productId={product.id}
               productName={product.name}
               basePrice={product.basePrice}
