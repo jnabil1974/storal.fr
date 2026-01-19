@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { getProducts } from '@/lib/database';
 
+export const revalidate = 0; // Dynamic rendering - fetch products on every request
+
 export default async function HomePage() {
   const products = await getProducts();
 
