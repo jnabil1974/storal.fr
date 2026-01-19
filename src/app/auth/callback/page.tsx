@@ -13,32 +13,50 @@ function AuthCallbackInner() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const code = searchParams.get('code');
-    const token = searchParams.get('token');
-    const type = (searchParams.get('type') as EmailOtpType) || 'signup';
-    const email = searchParams.get('email') || undefined;
     if (!supabase) {
       setError('Supabase non initialisé');
       return;
     }
+
     const run = async () => {
       try {
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-        } else if (token) {
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type,
-            email,
-          });
-          if (error) throw error;
+        // Supabase gère automatiquement le hash (#access_token) via getSession
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) throw sessionError;
+        
+        if (session) {
+          setMessage('Compte validé, redirection...');
+          setTimeout(() => {
+            router.replace('/my-orders');
+          }, 1000);
         } else {
-          router.replace('/auth');
-          return;
+          // Fallback: vérifier les query params pour code/token
+          const code = searchParams.get('code');
+          const token = searchParams.get('token');
+          const type = (searchParams.get('type') as EmailOtpType) || 'signup';
+          const email = searchParams.get('email') || undefined;
+
+          if (code) {
+            const { error } = await supabase.auth.exchangeCodeForSession(code);
+            if (error) throw error;
+          } else if (token) {
+            const { error } = await supabase.auth.verifyOtp({
+              token_hash: token,
+              type,
+              email,
+            });
+            if (error) throw error;
+          } else {
+            router.replace('/auth');
+            return;
+          }
+          
+          setMessage('Compte validé, redirection...');
+          setTimeout(() => {
+            router.replace('/my-orders');
+          }, 1000);
         }
-        setMessage('Compte validé, redirection...');
-        router.replace('/my-orders');
       } catch (err: any) {
         console.error('Erreur validation Supabase', err);
         setError(err?.message || 'Impossible de valider le compte.');
