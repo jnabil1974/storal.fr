@@ -9,7 +9,7 @@ export default async function HomePage() {
       {/* En-tête */}
       <header className="bg-blue-600 text-white py-8">
         <div className="max-w-6xl mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-2">Menuiserie sur Mesure</h1>
+          <h1 className="text-4xl font-bold mb-2">Storal - Stores et Fermetures sur Mesure</h1>
           <p className="text-blue-100 text-lg">Stores bannes, portes blindées et plus encore</p>
         </div>
       </header>
@@ -81,7 +81,7 @@ export default async function HomePage() {
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-8 border-t border-gray-800">
         <div className="max-w-6xl mx-auto px-4">
-          <p className="text-center">&copy; 2026 Menuiserie sur Mesure. Tous droits réservés.</p>
+          <p className="text-center">&copy; 2026 Storal.fr. Tous droits réservés.</p>
         </div>
       </footer>
     </div>

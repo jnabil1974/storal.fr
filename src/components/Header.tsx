@@ -14,7 +14,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/">
           <div className="text-2xl font-bold text-blue-600 cursor-pointer">
-            Menuiserie
+            Storal
           </div>
         </Link>
 

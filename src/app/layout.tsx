@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Menuiserie sur mesure",
-  description: "Créez vos menuiseries sur mesure",
+  title: "Storal.fr - Stores et Fermetures sur mesure",
+  description: "Créez vos stores, portes blindées et fermetures sur mesure",
 };
 
 export default function RootLayout({

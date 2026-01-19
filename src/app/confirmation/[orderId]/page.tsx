@@ -187,7 +187,7 @@ export default function ConfirmationPage() {
                   </p>
                   <div className="bg-white p-3 rounded border border-yellow-300 mb-3">
                     <p className="font-mono text-sm">
-                      <strong>Menuiserie Pro</strong><br />
+                      <strong>Storal</strong><br />
                       123 Rue de l'Artisanat<br />
                       75000 Paris, France
                     </p>
@@ -206,7 +206,7 @@ export default function ConfirmationPage() {
                     Veuillez effectuer le virement sur le compte suivant:
                   </p>
                   <div className="bg-white p-3 rounded border border-green-300 mb-3 font-mono text-sm">
-                    <p><strong>Titulaire:</strong> Menuiserie Pro SARL</p>
+                    <p><strong>Titulaire:</strong> Storal SARL</p>
                     <p><strong>IBAN:</strong> FR76 1234 5678 9012 3456 7890 123</p>
                     <p><strong>BIC:</strong> BNPAFRPPXXX</p>
                     <p><strong>Banque:</strong> BNP Paribas</p>
