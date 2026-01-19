@@ -47,7 +47,7 @@ function buildEmailHtml(input: SendOrderEmailInput): string {
     : new Date().toLocaleString('fr-FR');
   
   // Lien de vérification pour les guests (avec token)
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://storal.fr';
+  const appUrl = process.env.APP_URL || 'https://storal.fr';
   const verificationUrl = order.verification_token 
     ? `${appUrl}/my-orders?email=${encodeURIComponent(order.customer_email || payload.customerEmail)}&token=${order.verification_token}`
     : null;
