@@ -109,10 +109,20 @@ export async function getProducts(): Promise<Product[]> {
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false }); // Latest first for deduplication
 
     if (error || !data) throw error;
-    return data.map(mapRowToProduct);
+    
+    // Deduplicate by type - keep the first (most recent) of each type
+    const products = data.map(mapRowToProduct);
+    const seenTypes = new Set<ProductType>();
+    const deduped = products.filter(p => {
+      if (seenTypes.has(p.type)) return false;
+      seenTypes.add(p.type);
+      return true;
+    });
+    
+    return deduped;
   }, () => mockProducts);
 }
 
