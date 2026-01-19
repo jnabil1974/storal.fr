@@ -63,10 +63,10 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
   };
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-xl font-bold text-gray-900">Configurez votre Store Antichaleur</h3>
+    <div className="w-full max-w-4xl mx-auto p-6 bg-white rounded-lg shadow">
+      <h2 className="text-2xl font-bold mb-6">Configurateur Store Antichaleur</h2>
 
-      {/* Dimensions */}
+      <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -104,7 +104,7 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
         <select
           value={config.fabricType}
           onChange={(e) => updateConfig({ fabricType: e.target.value as any })}
-          className="w-full border border-gray-300 rounded-lg p-2"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md"
         >
           <option value="screen">Screen (Filtrant)</option>
           <option value="semi-occultant">Semi-Occultant</option>
@@ -118,7 +118,7 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
         <select
           value={config.fabricColor}
           onChange={(e) => updateConfig({ fabricColor: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg p-2"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md"
         >
           <option value="blanc">Blanc</option>
           <option value="beige">Beige</option>
@@ -159,7 +159,7 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
         <select
           value={config.fixationType}
           onChange={(e) => updateConfig({ fixationType: e.target.value as any })}
-          className="w-full border border-gray-300 rounded-lg p-2"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md"
         >
           <option value="standard">Fixation Standard</option>
           <option value="sans-percage">Sans Perçage (+40€)</option>
@@ -184,7 +184,7 @@ export default function StoreAntichaleurConfigurator({ productId, productName, b
             <select
               value={config.motorType || 'electrique'}
               onChange={(e) => updateConfig({ motorType: e.target.value as any })}
-              className="w-full border border-gray-300 rounded-lg p-2"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
             >
               <option value="manuel">Manuel</option>
               <option value="electrique">Électrique</option>
