@@ -6,7 +6,9 @@ function isAdminEmail(email?: string | null): boolean {
     console.log('🔒 Admin check: No email provided');
     return false;
   }
-  const allow = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  // Utilise ADMIN_EMAILS (server-side) au lieu de NEXT_PUBLIC_ADMIN_EMAILS
+  const adminEmailsEnv = process.env.ADMIN_EMAILS || process.env.NEXT_PUBLIC_ADMIN_EMAILS || '';
+  const allow = adminEmailsEnv.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
   console.log('🔒 Admin check: User email:', email, '| Allowed:', allow);
   const isAllowed = allow.includes(email.toLowerCase());
   console.log('🔒 Admin check result:', isAllowed ? '✅ ALLOWED' : '❌ FORBIDDEN');
