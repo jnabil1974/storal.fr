@@ -16,8 +16,12 @@ const PRODUCT_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
  */
 export function productIdToUUID(productId: string): string {
   try {
-    return uuidv5(productId, PRODUCT_NAMESPACE);
-  } catch {
+    const uuid = uuidv5(productId, PRODUCT_NAMESPACE);
+    console.log(`🔑 productIdToUUID: "${productId}" -> "${uuid}"`);
+    return uuid;
+  } catch (error) {
+    console.error('❌ productIdToUUID failed:', error);
+    console.error('⚠️ Returning original productId, this will likely fail at DB level');
     // Fallback: return productId as-is if uuidv5 fails
     return productId;
   }
