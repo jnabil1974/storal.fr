@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdminClient, getSupabaseClientWithAuth } from '@/lib/supabase';
 
 function isAdminEmail(email?: string | null): boolean {
-  if (!email) return false;
+  if (!email) {
+    console.log('🔒 Admin check: No email provided');
+    return false;
+  }
   const allow = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-  return allow.includes(email.toLowerCase());
+  console.log('🔒 Admin check: User email:', email, '| Allowed:', allow);
+  const isAllowed = allow.includes(email.toLowerCase());
+  console.log('🔒 Admin check result:', isAllowed ? '✅ ALLOWED' : '❌ FORBIDDEN');
+  return isAllowed;
 }
 
 async function requireAdmin(request: NextRequest) {
