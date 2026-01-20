@@ -1,32 +1,16 @@
 import Link from 'next/link';
 import { StoreBanneKissimyConfigurator } from '@/components/StoreBanneKissimyConfigurator';
-import { createClient } from '@supabase/supabase-js';
 
-async function getKissimyProduct() {
-  try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
-
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('name', 'Store Banne Coffre KISSIMY')
-      .single();
-
-    if (error) {
-      return { product: null, error: error.message };
-    }
-
-    return { product: data, error: null };
-  } catch (err) {
-    return { product: null, error: err instanceof Error ? err.message : 'Unknown error' };
-  }
-}
+// Produit KISSIMY par défaut (pas besoin de Supabase pour cette page standalone)
+const KISSIMY_PRODUCT = {
+  id: 'kissimy-store-banne',
+  name: 'Store Banne Coffre KISSIMY',
+  description: 'Configurez votre store banne coffre KISSIMY sur mesure avec motorisation incluse',
+};
 
 export default async function KissimyProductPage() {
-  const { product, error } = await getKissimyProduct();
+  const product = KISSIMY_PRODUCT;
+  const error = null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
@@ -41,22 +25,6 @@ export default async function KissimyProductPage() {
 
       {/* Contenu */}
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
-        {error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
-            <h2 className="text-lg font-semibold text-red-900 mb-2">Erreur</h2>
-            <p className="text-red-800">{error}</p>
-            {error.includes('non trouvé') && (
-              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
-                <p className="text-sm text-yellow-800">
-                  Le produit KISSIMY doit être créé dans Supabase. Exécutez:
-                </p>
-                <code className="block mt-2 text-xs bg-gray-900 text-green-400 p-2 rounded overflow-auto">
-                  node scripts/seed-kissimyProduct.mjs
-                </code>
-              </div>
-            )}
-          </div>
-        ) : null}
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           {/* Colonne gauche: Description */}
@@ -157,15 +125,13 @@ export default async function KissimyProductPage() {
           </div>
 
           {/* Colonne droite: Configurateur */}
-          {product && (
-            <div>
-              <StoreBanneKissimyConfigurator
-                productId={product.id}
-                productName={product.name}
-                coefficient={2.0}
-              />
-            </div>
-          )}
+          <div>
+            <StoreBanneKissimyConfigurator
+              productId={product.id}
+              productName={product.name}
+              coefficient={2.0}
+            />
+          </div>
         </div>
 
         {/* Section Galerie Images */}
