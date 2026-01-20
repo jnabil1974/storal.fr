@@ -93,6 +93,37 @@ export interface StoreAntichaleurConfig {
   thermalControl: boolean;
 }
 
+// Configuration Store Banne Coffre KISSIMY - formulaire simplifié
+export interface StoreBanneKissimyConfig {
+  // Dimensions (grille de tarification)
+  avancee: number; // mm: 1500, 2000, 2500, 3000
+  largeur: number; // mm: 1800-4830 (par plage)
+  
+  // Couleur cadre
+  couleurCadre: 'RAL_9010' | 'RAL_1015' | 'RAL_7016' | 'AUTRE_RAL'; // RAL_*: 0€, AUTRE_RAL: +86€
+  
+  // Toile (choix unique par référence Dickson)
+  toile: string; // ref toile ex: 'ORCH_290', 'ORCH_SCREEN', etc.
+  
+  // Accessoires (coches optionnelles)
+  poseSousPlafond?: boolean; // +39€
+  capteurVent?: boolean; // +90€
+  tahoma?: boolean; // +117€
+  cablage10m?: boolean; // +48€
+}
+
+// Options disponibles pour KISSIMY (utilisé dans le configurateur)
+export interface KissimyOption {
+  id: string;
+  name: string;
+  description: string;
+  priceHT: number;
+  priceIncrementTTC?: number; // Calculé depuis priceHT + coefficient
+  category: 'motorisation' | 'telecommande' | 'accessoires' | 'couleur';
+  mandatory: boolean; // SUNEA IO est inclus
+  values?: string[]; // Pour les options avec plusieurs valeurs (télécommande)
+}
+
 // Produit Store Antichaleur
 export interface StoreAntichaleurProduct extends BaseProduct {
   type: ProductType.STORE_ANTICHALEUR;
@@ -107,11 +138,30 @@ export interface StoreAntichaleurProduct extends BaseProduct {
   };
 }
 
+// Produit Store Banne Coffre KISSIMY
+export interface StoreBanneKissimyProduct extends BaseProduct {
+  type: ProductType.STORE_BANNE;
+  model: 'kissimy'; // Identifiant du modèle spécifique
+  specifications: {
+    avanceeOptions: number[]; // [1500, 2000, 2500, 3000] mm
+    largeurMin: number; // 1800 mm
+    largeurMax: number; // 4830 mm
+    pricingGrid: {
+      avancee: number;
+      largeurMin: number;
+      largeurMax: number;
+      priceHT: number; // Prix base HT
+    }[];
+    framColors: string[];
+    availableOptions: KissimyOption[];
+  };
+}
+
 // Union type pour tous les produits
-export type Product = StoreBanneProduct | PorteBlindeeProduct | StoreAntichaleurProduct;
+export type Product = StoreBanneProduct | PorteBlindeeProduct | StoreAntichaleurProduct | StoreBanneKissimyProduct;
 
 // Configuration de produit (union de toutes les configs)
-export type ProductConfig = StoreBanneConfig | PorteBlindeeConfig | StoreAntichaleurConfig;
+export type ProductConfig = StoreBanneConfig | PorteBlindeeConfig | StoreAntichaleurConfig | StoreBanneKissimyConfig;
 
 // Interface pour le devis
 export interface QuoteItem {

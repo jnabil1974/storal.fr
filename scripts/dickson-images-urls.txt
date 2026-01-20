@@ -1,0 +1,20 @@
+# URLs des images Dickson Orchestra
+# Pattern: https://www.dickson-constant.com/media/mf_webp/jpg/media/catalog/product/cache/188c1026d151b0383b18bc116b8a7066/o/r/orc_{REF}_{LAIZE}_{NOM}_rvb_96dpi_680x480px_{ID}.webp
+
+# Exemples extraits:
+U796: https://www.dickson-constant.com/media/mf_webp/jpg/media/catalog/product/cache/188c1026d151b0383b18bc116b8a7066/o/r/orc_u796_120_chine_indigo_rvb_96dpi_680x480px_24433.webp
+D542: https://www.dickson-constant.com/media/mf_webp/jpg/media/catalog/product/cache/188c1026d151b0383b18bc116b8a7066/o/r/orc_d542_120_archipel_saphir_rvb_96dpi_680x480px_75675.webp
+7100: https://www.dickson-constant.com/media/mf_webp/jpg/media/catalog/product/cache/188c1026d151b0383b18bc116b8a7066/o/r/orc_7100_120_cypres_rvb_96dpi_680x480px_54233.webp
+U768: https://www.dickson-constant.com/media/mf_webp/jpg/media/catalog/product/cache/188c1026d151b0383b18bc116b8a7066/o/r/orc_u768_120_ebene_pique_rvb_96dpi_680x480px_22974.webp
+
+# Note: Chaque toile a une page produit sur dickson-constant.com
+# Format URL page: https://www.dickson-constant.com/fr/orchestra-{nom-slug}-{ref}.html
+# L'image peut être extraite de la balise <img> dans le HTML de la page
+
+# Pour télécharger automatiquement:
+# Option 1: Utiliser un script Node.js avec fetch
+# Option 2: Utiliser wget ou curl avec liste d'URLs
+# Option 3: Scraper chaque page produit pour extraire l'URL exacte
+
+# Script de téléchargement suggéré (à créer):
+# scripts/download-dickson-images.js
