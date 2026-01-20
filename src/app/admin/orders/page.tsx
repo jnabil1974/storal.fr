@@ -25,6 +25,15 @@ export default function AdminOrdersPage() {
   const [paymentFilter, setPaymentFilter] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<AdminOrderItem | null>(null);
 
+  // Calcul des statistiques - protection contre les non-tableaux
+  const ordersArray = Array.isArray(orders) ? orders : [];
+  const stats = {
+    total: ordersArray.length,
+    totalRevenue: ordersArray.reduce((sum, o) => sum + Number(o.total_amount || 0), 0),
+    pending: ordersArray.filter(o => o.status === 'pending').length,
+    paid: ordersArray.filter(o => o.status === 'paid').length,
+  };
+
   const fetchOrders = async () => {
     setLoading(true);
     setError('');
@@ -44,7 +53,8 @@ export default function AdminOrdersPage() {
       });
       if (!res.ok) throw new Error('Erreur de chargement');
       const data = await res.json();
-      setOrders(data);
+      // S'assurer que data est un tableau
+      setOrders(Array.isArray(data) ? data : []);
     } catch (e: any) {
       setError(e.message || 'Erreur');
     } finally {
@@ -84,7 +94,26 @@ export default function AdminOrdersPage() {
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-6xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Admin • Commandes</h1>
-        <p className="text-sm text-gray-600 mb-4">Accès réservé aux emails listés dans NEXT_PUBLIC_ADMIN_EMAILS</p>
+        
+        {/* Stats Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-4">
+            <p className="text-sm text-gray-600 mb-1">Total Commandes</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <p className="text-sm text-gray-600 mb-1">Chiffre d'affaires</p>
+            <p className="text-2xl font-bold text-green-600">{stats.totalRevenue.toFixed(2)}€</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <p className="text-sm text-gray-600 mb-1">En attente</p>
+            <p className="text-2xl font-bold text-orange-600">{stats.pending}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4">
+            <p className="text-sm text-gray-600 mb-1">Payées</p>
+            <p className="text-2xl font-bold text-blue-600">{stats.paid}</p>
+          </div>
+        </div>
 
         <div className="bg-white rounded-lg shadow p-4 mb-6 flex flex-wrap gap-3 items-center">
           <div>
