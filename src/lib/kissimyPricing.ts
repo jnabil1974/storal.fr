@@ -176,9 +176,10 @@ export function getKissimyAvailableOptions() {
     toiles: DICKSON_TOILES.map((t) => ({
       ref: t.ref,
       name: t.name,
-      description: t.description,
       imageUrl: t.imageUrl,
       priceHT: t.priceHT ?? 0,
+      colorFamily: t.colorFamily,
+      collection: t.collection,
     })),
   };
 }
