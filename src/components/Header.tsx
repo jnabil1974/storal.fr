@@ -14,7 +14,9 @@ export default function Header() {
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
     if (user?.email) {
-      const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase());
+      const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin@storal.fr')
+        .split(',')
+        .map((e) => e.trim().toLowerCase());
       setIsAdmin(adminEmails.includes(user.email.toLowerCase()));
     } else {
       setIsAdmin(false);
@@ -24,15 +26,17 @@ export default function Header() {
   // Vérifier si l'utilisateur a des commandes
   useEffect(() => {
     const checkOrders = async () => {
-      if (!user) {
+      if (!user?.email) {
         setHasOrders(false);
         return;
       }
       try {
-        const res = await fetch('/api/orders');
+        const res = await fetch(`/api/orders?email=${encodeURIComponent(user.email)}`);
         if (res.ok) {
           const data = await res.json();
           setHasOrders(Array.isArray(data) && data.length > 0);
+        } else {
+          setHasOrders(false);
         }
       } catch {
         setHasOrders(false);
