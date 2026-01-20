@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { v5 as uuidv5 } from 'uuid';
+import { createHash } from 'crypto';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -7,22 +7,33 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 let cachedClient: SupabaseClient | null = null;
 let cachedAdminClient: SupabaseClient | null = null;
 
-// Namespace UUID for generating stable UUIDs from product IDs
-const PRODUCT_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
-
 /**
- * Convert a product ID string to a stable UUID
+ * Convert a product ID string to a stable UUID v5 using crypto
  * This ensures kissimy-store-banne always gets the same UUID
  */
 export function productIdToUUID(productId: string): string {
   try {
-    const uuid = uuidv5(productId, PRODUCT_NAMESPACE);
+    // Generate UUID v5 using SHA1 hash
+    const NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+    const hash = createHash('sha1').update(NAMESPACE + productId).digest();
+    
+    // Format as UUID v5
+    hash[6] = (hash[6] & 0x0f) | 0x50; // version
+    hash[8] = (hash[8] & 0x3f) | 0x80; // variant
+    
+    const uuid = [
+      hash.slice(0, 4).toString('hex'),
+      hash.slice(4, 6).toString('hex'),
+      hash.slice(6, 8).toString('hex'),
+      hash.slice(8, 10).toString('hex'),
+      hash.slice(10, 16).toString('hex'),
+    ].join('-');
+    
     console.log(`🔑 productIdToUUID: "${productId}" -> "${uuid}"`);
     return uuid;
   } catch (error) {
     console.error('❌ productIdToUUID failed:', error);
     console.error('⚠️ Returning original productId, this will likely fail at DB level');
-    // Fallback: return productId as-is if uuidv5 fails
     return productId;
   }
 }
