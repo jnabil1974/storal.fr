@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { StoreBanneKissimyConfigurator } from '@/components/StoreBanneKissimyConfigurator';
 
+// Force dynamic rendering to avoid stale static cache
+export const dynamic = 'force-dynamic';
+
 // Produit KISSIMY par défaut (pas besoin de Supabase pour cette page standalone)
 const KISSIMY_PRODUCT = {
   id: 'kissimy-store-banne',
