@@ -3,10 +3,43 @@
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from 'react';
 
 export default function Header() {
   const { cart } = useCart();
   const { user, signOut } = useAuth();
+  const [hasOrders, setHasOrders] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Vérifier si l'utilisateur est admin
+  useEffect(() => {
+    if (user?.email) {
+      const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase());
+      setIsAdmin(adminEmails.includes(user.email.toLowerCase()));
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user]);
+
+  // Vérifier si l'utilisateur a des commandes
+  useEffect(() => {
+    const checkOrders = async () => {
+      if (!user) {
+        setHasOrders(false);
+        return;
+      }
+      try {
+        const res = await fetch('/api/orders');
+        if (res.ok) {
+          const data = await res.json();
+          setHasOrders(Array.isArray(data) && data.length > 0);
+        }
+      } catch {
+        setHasOrders(false);
+      }
+    };
+    checkOrders();
+  }, [user]);
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -23,12 +56,16 @@ export default function Header() {
           <Link href="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
             Accueil
           </Link>
-          <Link href="/my-orders" className="text-gray-700 hover:text-blue-600 transition font-medium">
-            Mes commandes
-          </Link>
-          <Link href="/admin/orders" className="text-gray-700 hover:text-blue-600 transition font-medium">
-            Admin
-          </Link>
+          {user && hasOrders && (
+            <Link href="/my-orders" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              Mes commandes
+            </Link>
+          )}
+          {isAdmin && (
+            <Link href="/admin/orders" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              Admin
+            </Link>
+          )}
           {user ? (
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-600">{user.email}</span>
