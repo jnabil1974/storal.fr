@@ -87,16 +87,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify(requestData),
       });
       
+      console.log('📝 Response status:', res.status, res.statusText);
+      
       if (!res.ok) {
         const errorText = await res.text();
-        console.error('❌ Failed to add item:', errorText);
-        throw new Error('Failed to add item');
+        console.error('❌ Failed to add item. Status:', res.status, 'Response:', errorText);
+        throw new Error(`Failed to add item: ${res.status} - ${errorText}`);
       }
       
       const item = await res.json();
       console.log('✅ Item added:', item);
       await loadCart(sessionId);
       return item;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error('🔴 Cart error:', errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setIsLoading(false);
     }

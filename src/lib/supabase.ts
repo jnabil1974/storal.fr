@@ -1,10 +1,27 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { v5 as uuidv5 } from 'uuid';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 let cachedClient: SupabaseClient | null = null;
 let cachedAdminClient: SupabaseClient | null = null;
+
+// Namespace UUID for generating stable UUIDs from product IDs
+const PRODUCT_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+
+/**
+ * Convert a product ID string to a stable UUID
+ * This ensures kissimy-store-banne always gets the same UUID
+ */
+export function productIdToUUID(productId: string): string {
+  try {
+    return uuidv5(productId, PRODUCT_NAMESPACE);
+  } catch {
+    // Fallback: return productId as-is if uuidv5 fails
+    return productId;
+  }
+}
 
 export function getSupabaseClient(): SupabaseClient | null {
   if (cachedClient) return cachedClient;

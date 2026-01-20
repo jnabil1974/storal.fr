@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseClient, productIdToUUID } from '@/lib/supabase';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -68,7 +68,8 @@ export async function POST(request: Request) {
     console.log('💰 Prices:', { basePrice, pricePerUnit, quantity });
 
     if (!sessionId || !productId) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+      console.error('❌ Missing required fields:', { sessionId, productId });
+      return new Response(JSON.stringify({ error: 'Missing required fields: sessionId or productId' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -76,6 +77,7 @@ export async function POST(request: Request) {
 
     const supabase = getSupabaseClient();
     if (!supabase) {
+      console.error('❌ Supabase client not configured');
       return new Response(JSON.stringify({ error: 'Supabase not configured' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
@@ -84,7 +86,7 @@ export async function POST(request: Request) {
 
     const insertData = {
       session_id: sessionId,
-      product_id: productId,
+      product_id: productIdToUUID(productId), // Convert product ID to stable UUID
       product_type: productType,
       product_name: productName,
       base_price: Number(basePrice),
@@ -103,8 +105,17 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      console.error('❌ Supabase error:', error);
-      throw error;
+      console.error('❌ Supabase error:', error.code, error.message);
+      return new Response(
+        JSON.stringify({ 
+          error: `Database error: ${error.message}`,
+          code: error.code 
+        }), 
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     console.log('✅ Insert successful:', data);
@@ -114,8 +125,9 @@ export async function POST(request: Request) {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error adding to cart:', error);
-    return new Response(JSON.stringify({ error: 'Server error' }), {
+    console.error('🔴 Error adding to cart:', error);
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    return new Response(JSON.stringify({ error: `Server error: ${errorMsg}` }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

@@ -73,7 +73,7 @@ export function StoreBanneKissimyConfigurator({
     []
   );
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     // Valider la configuration
     const validation = validateKissimyConfig(config);
     if (!validation.valid) {
@@ -88,16 +88,18 @@ export function StoreBanneKissimyConfigurator({
 
     const finalConfig = config as StoreBanneKissimyConfig;
 
-    // Ajouter au panier via contexte
-    addItem({
-      productId,
-      productName,
-      productType: ProductType.STORE_BANNE,
-      basePrice: priceInfo.basePriceHT ?? 0,
-      configuration: finalConfig as any,
-      quantity,
-      pricePerUnit: priceInfo.totalPriceTTC,
-    }).then(() => {
+    try {
+      // Ajouter au panier via contexte
+      await addItem({
+        productId,
+        productName,
+        productType: ProductType.STORE_BANNE,
+        basePrice: priceInfo.basePriceHT ?? 0,
+        configuration: finalConfig as any,
+        quantity,
+        pricePerUnit: priceInfo.totalPriceTTC,
+      });
+
       // Afficher un message de succès
       setSuccessMessage(
         `✓ ${productName} ajouté au panier (${quantity} article${quantity > 1 ? 's' : ''})`
@@ -124,9 +126,11 @@ export function StoreBanneKissimyConfigurator({
       if (onAddToCart) {
         onAddToCart(finalConfig, priceInfo.totalPriceTTC);
       }
-    }).catch((error) => {
-      setErrors(['Erreur lors de l\'ajout au panier: ' + error.message]);
-    });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      console.error('❌ Erreur lors de l\'ajout au panier:', error);
+      setErrors(['Erreur lors de l\'ajout au panier: ' + errorMessage]);
+    }
   };
 
   const options = getKissimyAvailableOptions();
