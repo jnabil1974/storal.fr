@@ -3,6 +3,7 @@ import { ProductType } from '@/types/products';
 import StoreBanneConfigurator from '@/components/StoreBanneConfigurator';
 import PorteBlindeeConfigurator from '@/components/PorteBlindeeConfigurator';
 import StoreAntichaleurConfigurator from '@/components/StoreAntichaleurConfigurator';
+import { redirect } from 'next/navigation';
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;
@@ -10,6 +11,12 @@ interface ProductPageProps {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
+  
+  // Redirect to dedicated KISSIMY page
+  if (id === 'kissimy') {
+    redirect('/products/kissimy');
+  }
+  
   const product = await getProductById(id);
 
   if (!product) {
