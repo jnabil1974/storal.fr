@@ -36,14 +36,18 @@ export default function Header() {
           const data = await res.json();
           setHasOrders(Array.isArray(data) && data.length > 0);
         } else {
+          console.warn('checkOrders response not ok', res.status);
           setHasOrders(false);
         }
-      } catch {
+      } catch (err) {
+        console.error('checkOrders error', err);
         setHasOrders(false);
       }
     };
     checkOrders();
   }, [user]);
+
+  const showMyOrders = !!user || hasOrders;
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -60,7 +64,7 @@ export default function Header() {
           <Link href="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
             Accueil
           </Link>
-          {user && hasOrders && (
+          {showMyOrders && (
             <Link href="/my-orders" className="text-gray-700 hover:text-blue-600 transition font-medium">
               Mes commandes
             </Link>
