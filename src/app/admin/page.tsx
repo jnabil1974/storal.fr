@@ -1,9 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AdminDashboard() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [stats, setStats] = useState({
     totalOrders: 0,
     pendingOrders: 0,
@@ -12,9 +18,40 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
 
+  // Vérifier si l'utilisateur est admin
   useEffect(() => {
-    loadStats();
-  }, []);
+    const checkAdmin = async () => {
+      if (!user) {
+        console.log('❌ Admin: pas d\'utilisateur connecté');
+        setCheckingAuth(false);
+        router.push('/auth');
+        return;
+      }
+
+      const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin@storal.fr').split(',').map(e => e.trim());
+      const isAuthorized = adminEmails.includes(user.email || '');
+      
+      console.log('🔐 Admin check:', { email: user.email, isAuthorized });
+      
+      if (!isAuthorized) {
+        console.log('❌ Admin: utilisateur non autorisé');
+        setCheckingAuth(false);
+        router.push('/');
+        return;
+      }
+
+      setIsAdmin(true);
+      setCheckingAuth(false);
+    };
+
+    checkAdmin();
+  }, [user, router]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadStats();
+    }
+  }, [isAdmin]);
 
   const loadStats = async () => {
     try {
@@ -38,6 +75,23 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   };
+
+  // Afficher un loader pendant la vérification d'authentification
+  if (checkingAuth) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Vérification des autorisations...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Ne rien afficher si pas admin (la redirection est en cours)
+  if (!isAdmin) {
+    return null;
+  }
 
   if (loading) {
     return (

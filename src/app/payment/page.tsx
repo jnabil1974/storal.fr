@@ -14,7 +14,7 @@ import { Order } from '@/types/order';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
 
-function PaymentForm({ orderId, total }: { orderId: string; total: number }) {
+function PaymentForm({ orderId, total, initialClientSecret }: { orderId: string; total: number; initialClientSecret?: string | null }) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -22,6 +22,7 @@ function PaymentForm({ orderId, total }: { orderId: string; total: number }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(initialClientSecret || null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,20 +37,27 @@ function PaymentForm({ orderId, total }: { orderId: string; total: number }) {
 
     try {
       // 1. Créer le payment intent
-      const paymentRes = await fetch('/api/payments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId,
-          amount: total,
-        }),
-      });
+      let paymentIntentId: string | undefined;
+      let secret = clientSecret;
+      if (!secret) {
+        const paymentRes = await fetch('/api/payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId,
+            amount: total,
+          }),
+        });
 
-      if (!paymentRes.ok) {
-        throw new Error('Erreur lors de la création du paiement');
+        if (!paymentRes.ok) {
+          throw new Error('Erreur lors de la création du paiement');
+        }
+
+        const payload = await paymentRes.json();
+        secret = payload.clientSecret;
+        setClientSecret(payload.clientSecret);
+        paymentIntentId = payload.paymentIntentId;
       }
-
-      const { clientSecret, paymentIntentId } = await paymentRes.json();
 
       // 2. Confirmer le paiement avec la carte
       const cardElement = elements.getElement(CardElement);
@@ -57,7 +65,11 @@ function PaymentForm({ orderId, total }: { orderId: string; total: number }) {
         throw new Error('Élément carte non trouvé');
       }
 
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      if (!secret) {
+        throw new Error('Client secret introuvable');
+      }
+
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(secret, {
         payment_method: {
           card: cardElement,
         },
@@ -74,7 +86,7 @@ function PaymentForm({ orderId, total }: { orderId: string; total: number }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             orderId,
-            paymentIntentId,
+            paymentIntentId: paymentIntentId || paymentIntent?.id,
             status: 'paid',
           }),
         });
@@ -138,6 +150,7 @@ function PaymentPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = searchParams.get('orderId');
+  const clientSecret = searchParams.get('clientSecret');
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -230,7 +243,7 @@ function PaymentPageContent() {
           </p>
 
           <Elements stripe={stripePromise}>
-            <PaymentForm orderId={orderId!} total={Number(order.totalAmount)} />
+            <PaymentForm orderId={orderId!} total={Number(order.totalAmount)} initialClientSecret={clientSecret} />
           </Elements>
         </div>
       </div>

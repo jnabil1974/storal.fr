@@ -6,6 +6,7 @@ import { useCart } from '@/contexts/CartContext';
 import { CheckoutFormData } from '@/types/order';
 import { useAuth } from '@/contexts/AuthContext';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { getSupabaseClient } from '@/lib/supabase';
 
 // Fonctions de validation
 const validateEmail = (email: string): boolean => {
@@ -42,11 +43,12 @@ function CheckoutPageContent() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [password, setPassword] = useState('');
   
   const [formData, setFormData] = useState<CheckoutFormData>({
-    name: '',
-    email: '',
-    phone: '',
+    name: user?.user_metadata?.name || '',
+    email: user?.email || '',
+    phone: user?.user_metadata?.phone || '',
     address: '',
     city: '',
     postalCode: '',
@@ -84,6 +86,14 @@ function CheckoutPageContent() {
     }));
   };
 
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    setFieldErrors((prev) => ({
+      ...prev,
+      password: '',
+    }));
+  };
+
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
@@ -104,6 +114,13 @@ function CheckoutPageContent() {
     // Validation du téléphone (optionnel mais si fourni, doit être valide)
     if (formData.phone && !validatePhone(formData.phone)) {
       errors.phone = 'Format de téléphone invalide (ex: 01 23 45 67 89 ou +33 1 23 45 67 89)';
+    }
+
+    // Validation du mot de passe (obligatoire si non connecté)
+    if (!user) {
+      if (!password || password.length < 6) {
+        errors.password = 'Mot de passe de 6 caractères minimum (pour créer votre compte)';
+      }
     }
 
     // Validation de l'adresse
@@ -144,16 +161,9 @@ function CheckoutPageContent() {
     setIsProcessing(true);
 
     try {
-      // Exécuter reCAPTCHA
-      if (!executeRecaptcha) {
-        throw new Error('reCAPTCHA non disponible');
-      }
-
-      const recaptchaToken = await executeRecaptcha('checkout');
-
       // Créer la commande
       const sessionId = localStorage.getItem('cart_session_id');
-      const response = await fetch('/api/orders', {
+      const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -170,7 +180,8 @@ function CheckoutPageContent() {
           totalItems: cart.totalItems,
           totalAmount: cart.totalPrice,
           paymentMethod: paymentMethod,
-          recaptchaToken, // Ajouter le token reCAPTCHA
+          createAccount: !user,
+          password: !user ? password : undefined,
         }),
       });
 
@@ -178,15 +189,35 @@ function CheckoutPageContent() {
         throw new Error('Erreur lors de la création de la commande');
       }
 
-      const order = await response.json();
+      const result = await response.json();
+
+      // Si un compte a été créé, connecter l'utilisateur automatiquement
+      if (result.accountCreated && !user && password) {
+        try {
+          const supabase = getSupabaseClient();
+          if (supabase) {
+            await supabase.auth.signInWithPassword({
+              email: formData.email,
+              password: password,
+            });
+            console.log('✅ Utilisateur connecté automatiquement après création de compte');
+          }
+        } catch (signInErr) {
+          console.error('❌ Erreur connexion auto après création compte:', signInErr);
+          // Ne pas bloquer le flux, continuer vers la page suivante
+        }
+      }
 
       // Rediriger selon le mode de paiement
       if (paymentMethod === 'stripe') {
-        router.push(`/payment?orderId=${order.id}`);
+        const params = new URLSearchParams();
+        params.set('orderId', result.orderId || result.id);
+        if (result.clientSecret) params.set('clientSecret', result.clientSecret);
+        router.push(`/payment?${params.toString()}`);
       } else {
         // Paiement manuel (chèque/virement)
         try { await clearCart(); } catch {}
-        router.push(`/confirmation/${order.id}`);
+        router.push(`/confirmation/${result.orderId || result.id}`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
@@ -245,11 +276,12 @@ function CheckoutPageContent() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="jean@example.com"
+                  disabled={!!user}
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
                     fieldErrors.email
                       ? 'border-red-500 focus:ring-red-500'
                       : 'border-gray-300 focus:ring-blue-500'
-                  }`}
+                  } ${user ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 />
                 {fieldErrors.email && (
                   <p className="text-red-600 text-sm mt-1">✗ {fieldErrors.email}</p>
@@ -364,6 +396,36 @@ function CheckoutPageContent() {
                   <option>Autres</option>
                 </select>
               </div>
+
+              {!user && (
+                <div className="pt-4 border-t border-gray-200 space-y-3">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                    <p className="text-sm text-blue-900 font-medium">📦 Création de compte obligatoire</p>
+                    <p className="text-xs text-blue-700 mt-1">Un compte sera créé pour vous permettre de suivre votre commande et accéder à vos factures.</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Mot de passe * (6 caractères min)
+                    </label>
+                    <input
+                      type="password"
+                      name="password"
+                      value={password}
+                      onChange={(e) => handlePasswordChange(e.target.value)}
+                      placeholder="Choisissez un mot de passe"
+                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                        fieldErrors.password
+                          ? 'border-red-500 focus:ring-red-500'
+                          : 'border-gray-300 focus:ring-blue-500'
+                      }`}
+                    />
+                    {fieldErrors.password && (
+                      <p className="text-red-600 text-sm mt-1">✗ {fieldErrors.password}</p>
+                    )}
+                    <p className="text-gray-500 text-xs mt-1">Vous recevrez vos identifiants par email pour vous connecter ultérieurement.</p>
+                  </div>
+                </div>
+              )}
 
               {/* Mode de paiement */}
               <div className="pt-4 border-t border-gray-200">

@@ -172,6 +172,17 @@ export default function ConfirmationPage() {
             </div>
           </div>
 
+          {/* Account guidance */}
+          <div className="mb-6 pb-6 border-b border-gray-200 bg-blue-50 border-blue-200 rounded-lg p-4">
+            <h3 className="text-lg font-bold text-blue-900 mb-2">Suivi de commande</h3>
+            <p className="text-blue-800 text-sm mb-1">
+              Vous avez créé un compte ? Connectez-vous depuis « Mes commandes » pour suivre la livraison et récupérer vos factures.
+            </p>
+            <p className="text-blue-800 text-sm">
+              Pas de compte ? Conservez l'email de confirmation : il contient le récapitulatif et la référence à fournir en cas de besoin.
+            </p>
+          </div>
+
           {/* Payment instructions */}
           {order.paymentMethod !== 'stripe' && (
             <div className="mb-6 pb-6 border-b border-gray-200">

@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminOrderItem {
   id: string;
@@ -18,12 +20,45 @@ interface AdminOrderItem {
 }
 
 export default function AdminOrdersPage() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [orders, setOrders] = useState<AdminOrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<AdminOrderItem | null>(null);
+
+  // Vérifier si l'utilisateur est admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user) {
+        console.log('❌ Admin: pas d\'utilisateur connecté');
+        setCheckingAuth(false);
+        router.push('/auth');
+        return;
+      }
+
+      const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin@storal.fr').split(',').map(e => e.trim());
+      const isAuthorized = adminEmails.includes(user.email || '');
+      
+      console.log('🔐 Admin check:', { email: user.email, isAuthorized });
+      
+      if (!isAuthorized) {
+        console.log('❌ Admin: utilisateur non autorisé');
+        setCheckingAuth(false);
+        router.push('/');
+        return;
+      }
+
+      setIsAdmin(true);
+      setCheckingAuth(false);
+    };
+
+    checkAdmin();
+  }, [user, router]);
 
   // Calcul des statistiques - protection contre les non-tableaux
   const ordersArray = Array.isArray(orders) ? orders : [];
@@ -63,9 +98,25 @@ export default function AdminOrdersPage() {
   };
 
   useEffect(() => {
-    fetchOrders();
+    if (isAdmin) {
+      fetchOrders();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, paymentFilter]);
+  }, [statusFilter, paymentFilter, isAdmin]);
+
+  // Afficher un loader pendant la vérification d'authentification
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-gray-600 text-lg">Vérification des autorisations...</div>
+      </div>
+    );
+  }
+
+  // Ne rien afficher si pas admin (la redirection est en cours)
+  if (!isAdmin) {
+    return null;
+  }
 
   const updateStatus = async (id: string, status: string) => {
     try {
