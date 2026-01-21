@@ -377,10 +377,10 @@ export default function ConfirmationPage() {
                   <p className="text-gray-700 whitespace-pre-line">{comment}</p>
                 </div>
               );
-            } catch {
+            } catch (e) {
               return null;
             }
-          })()}
+          })() || null}
 
           {/* Order items */}
           <div className="mb-6 pb-6 border-b border-gray-200">
