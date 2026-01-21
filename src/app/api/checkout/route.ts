@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       deliveryCountry = 'France',
       billingDifferent = false,
       billing,
+      comment,
       paymentMethod = 'stripe',
       sessionId,
       createAccount = false,
@@ -94,9 +95,10 @@ export async function POST(request: NextRequest) {
           status: 'pending',
           payment_method: paymentMethod,
           user_id: userIdToUse,
-          notes: billingInfo
-            ? JSON.stringify({ billing: billingInfo })
-            : null,
+          notes: JSON.stringify({
+            billing: billingInfo,
+            comment: (comment && String(comment).trim()) || undefined,
+          }),
         },
       ])
       .select()

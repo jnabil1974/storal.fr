@@ -62,6 +62,7 @@ function CheckoutPageContent() {
     postalCode: '',
     country: 'France',
   });
+  const [comment, setComment] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'cheque' | 'virement'>('stripe');
 
   if (cart.items.length === 0) {
@@ -236,6 +237,7 @@ function CheckoutPageContent() {
                 postalCode: formData.postalCode,
                 country: formData.country,
               },
+          comment: comment?.trim() || undefined,
         }),
       });
 
@@ -449,6 +451,22 @@ function CheckoutPageContent() {
                   <option>Luxembourg</option>
                   <option>Autres</option>
                 </select>
+              </div>
+
+              {/* Informations complémentaires */}
+              <div className="border-t border-gray-200 pt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Informations complémentaires (optionnel)
+                </label>
+                <textarea
+                  name="comment"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Ajoutez une note pour la livraison, des instructions ou des informations supplémentaires."
+                  rows={4}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 border-gray-300 focus:ring-blue-500"
+                />
+                <p className="text-gray-500 text-xs mt-1">Exemples: Digicode, étage, créneau souhaité, remarque de facturation, etc.</p>
               </div>
 
               {/* Adresse de facturation différente */}
