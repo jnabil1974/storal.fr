@@ -4,7 +4,7 @@ import jsPDF from 'jspdf';
 export function downloadInvoice(order: Order) {
   if (!order) return;
 
-  const isProForma = order.status === 'pending';
+  const isProForma = order.status !== 'shipped' && order.status !== 'delivered';
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let yPos = 20;

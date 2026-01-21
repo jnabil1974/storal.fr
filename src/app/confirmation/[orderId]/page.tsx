@@ -599,7 +599,7 @@ export default function ConfirmationPage() {
             </svg>
             Confirmation
           </button>
-          {(order.status === 'paid' || order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered') && (
+          {order.status !== 'cancelled' && (
             <button 
               onClick={() => downloadInvoice(order)}
               className="flex-1 min-w-[180px] bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition flex items-center justify-center gap-2"
@@ -607,7 +607,7 @@ export default function ConfirmationPage() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Facture
+              {(order.status === 'shipped' || order.status === 'delivered') ? 'Facture' : 'Facture pro forma'}
             </button>
           )}
         </div>
