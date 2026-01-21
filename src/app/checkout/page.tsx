@@ -46,9 +46,9 @@ function CheckoutPageContent() {
   const [password, setPassword] = useState('');
   
   const [formData, setFormData] = useState<CheckoutFormData>({
-    name: user?.user_metadata?.name || '',
+    name: (user as any)?.user_metadata?.name || '',
     email: user?.email || '',
-    phone: user?.user_metadata?.phone || '',
+    phone: (user as any)?.user_metadata?.phone || '',
     address: '',
     city: '',
     postalCode: '',
