@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Order } from '@/types/order';
 import Link from 'next/link';
+import jsPDF from 'jspdf';
 
 export default function ConfirmationPage() {
   const params = useParams();
@@ -52,6 +53,153 @@ export default function ConfirmationPage() {
       fetchOrder();
     }
   }, [orderId]);
+
+  const downloadPDF = () => {
+    if (!order) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+
+    // Header
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONFIRMATION DE COMMANDE', pageWidth / 2, yPos, { align: 'center' });
+    
+    yPos += 15;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Storal - Store et Menuiserie', pageWidth / 2, yPos, { align: 'center' });
+    
+    yPos += 15;
+    doc.setDrawColor(0, 102, 204);
+    doc.setLineWidth(0.5);
+    doc.line(20, yPos, pageWidth - 20, yPos);
+    
+    // Order info
+    yPos += 10;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Commande:', 20, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(order.id.slice(0, 16), 60, yPos);
+    
+    yPos += 7;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Date:', 20, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(new Date(order.createdAt).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }), 60, yPos);
+    
+    yPos += 7;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Statut:', 20, yPos);
+    doc.setFont('helvetica', 'normal');
+    const statusText = order.status === 'paid' ? 'Payée' :
+                      order.status === 'pending' ? 'En attente' :
+                      order.status === 'processing' ? 'En préparation' :
+                      order.status === 'shipped' ? 'Expédiée' :
+                      order.status === 'delivered' ? 'Livrée' :
+                      order.status === 'cancelled' ? 'Annulée' : order.status;
+    doc.text(statusText, 60, yPos);
+    
+    // Customer info
+    yPos += 12;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INFORMATIONS CLIENT', 20, yPos);
+    
+    yPos += 7;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Nom: ${order.customerName}`, 20, yPos);
+    
+    yPos += 7;
+    doc.text(`Email: ${order.customerEmail}`, 20, yPos);
+    
+    if (order.customerPhone) {
+      yPos += 7;
+      doc.text(`Téléphone: ${order.customerPhone}`, 20, yPos);
+    }
+    
+    // Delivery address
+    yPos += 12;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ADRESSE DE LIVRAISON', 20, yPos);
+    
+    yPos += 7;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(order.deliveryAddress, 20, yPos);
+    
+    yPos += 7;
+    doc.text(`${order.deliveryPostalCode} ${order.deliveryCity}`, 20, yPos);
+    
+    yPos += 7;
+    doc.text(order.deliveryCountry, 20, yPos);
+    
+    // Items
+    yPos += 12;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ARTICLES COMMANDÉS', 20, yPos);
+    
+    yPos += 7;
+    doc.setFontSize(10);
+    
+    order.items?.forEach((item: any, idx: number) => {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${idx + 1}. ${item.productName || 'Produit'}`, 20, yPos);
+      yPos += 6;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text(`   Quantité: ${item.quantity}`, 20, yPos);
+      yPos += 6;
+      
+      const unitPrice = (Number(item.totalPrice) / Number(item.quantity)).toFixed(2);
+      doc.text(`   Prix unitaire: ${unitPrice}€`, 20, yPos);
+      yPos += 6;
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text(`   Total: ${Number(item.totalPrice).toFixed(2)}€`, 20, yPos);
+      yPos += 8;
+    });
+    
+    // Total
+    yPos += 5;
+    doc.setDrawColor(0, 102, 204);
+    doc.setLineWidth(0.5);
+    doc.line(20, yPos, pageWidth - 20, yPos);
+    
+    yPos += 10;
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`TOTAL: ${Number(order.totalAmount).toFixed(2)}€`, pageWidth - 20, yPos, { align: 'right' });
+    
+    // Footer
+    yPos += 15;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(100, 100, 100);
+    doc.text('Merci pour votre confiance!', pageWidth / 2, yPos, { align: 'center' });
+    
+    yPos += 5;
+    doc.text('Pour toute question, contactez-nous à contact@storal.fr', pageWidth / 2, yPos, { align: 'center' });
+    
+    // Save PDF
+    doc.save(`commande_${order.id.slice(0, 8)}.pdf`);
+  };
 
   if (isLoading) {
     return (
@@ -293,6 +441,18 @@ export default function ConfirmationPage() {
         </div>
 
         {/* Call to action */}
+        <div className="flex gap-4 mb-4">
+          <button 
+            onClick={downloadPDF}
+            className="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition flex items-center justify-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Télécharger PDF
+          </button>
+        </div>
+
         <div className="flex gap-4">
           <Link href="/" className="flex-1">
             <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
