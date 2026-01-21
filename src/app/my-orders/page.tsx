@@ -55,6 +55,7 @@ export default function MyOrdersPage() {
         if (!res.ok) throw new Error('Erreur de chargement');
         const data = await res.json();
         const list: OrderListItem[] = Array.isArray(data) ? data : [data];
+        console.log('🔍 Orders API response:', { url, data, list });
         list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setOrders(list);
       } catch (e) {
