@@ -224,20 +224,24 @@ export default function AdminDashboard() {
             {stats.recentOrders.map((order) => (
               <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                 <div>
-                  <p className="font-semibold text-gray-900">#{order.orderNumber}</p>
-                  <p className="text-sm text-gray-600">{order.customerName}</p>
+                  <p className="font-semibold text-gray-900">#{order.id.slice(0, 8).toUpperCase()}</p>
+                  <p className="text-sm text-gray-600">{order.customer_email || order.customer_name || 'Client'}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900">{order.totalAmountTTC}€</p>
+                  <p className="font-semibold text-gray-900">{Number(order.total_amount || 0).toFixed(2)}€</p>
                   <span className={`text-xs px-2 py-1 rounded ${
                     order.status === 'pending' ? 'bg-orange-100 text-orange-700' :
-                    order.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
-                    order.status === 'completed' ? 'bg-green-100 text-green-700' :
+                    order.status === 'paid' ? 'bg-green-100 text-green-700' :
+                    order.status === 'processing' ? 'bg-blue-100 text-blue-700' :
+                    order.status === 'shipped' ? 'bg-purple-100 text-purple-700' :
+                    order.status === 'delivered' ? 'bg-green-100 text-green-700' :
                     'bg-gray-100 text-gray-700'
                   }`}>
                     {order.status === 'pending' ? 'En attente' :
-                     order.status === 'confirmed' ? 'Confirmée' :
-                     order.status === 'completed' ? 'Terminée' :
+                     order.status === 'paid' ? 'Payée' :
+                     order.status === 'processing' ? 'Préparation' :
+                     order.status === 'shipped' ? 'Expédiée' :
+                     order.status === 'delivered' ? 'Livrée' :
                      order.status}
                   </span>
                 </div>
