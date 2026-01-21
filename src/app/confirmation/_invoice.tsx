@@ -122,6 +122,29 @@ export function downloadInvoice(order: Order) {
   doc.setTextColor(0, 102, 204);
   doc.text(`${order.totalAmount.toFixed(2)}€`, pageWidth - 25, yPos, { align: 'right' });
 
+  // Client notes (comment)
+  try {
+    const parsed = order.notes ? JSON.parse(order.notes) : null;
+    const comment = parsed?.comment?.trim?.();
+    if (comment) {
+      yPos += 12;
+      if (yPos > 270) { doc.addPage(); yPos = 20; }
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text('Notes client', 20, yPos);
+      yPos += 7;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const lines = doc.splitTextToSize(comment, pageWidth - 40);
+      lines.forEach((line: string) => {
+        if (yPos > 280) { doc.addPage(); yPos = 20; }
+        doc.text(line, 20, yPos);
+        yPos += 5;
+      });
+    }
+  } catch {}
+
   // Notes
   if (isProForma) {
     yPos += 15;

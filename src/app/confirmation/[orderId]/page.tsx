@@ -144,6 +144,28 @@ export default function ConfirmationPage() {
     
     yPos += 7;
     doc.text(order.deliveryCountry, 20, yPos);
+
+    // Complementary info (comment)
+    try {
+      const parsed = order.notes ? JSON.parse(order.notes) : null;
+      const comment = parsed?.comment?.trim?.();
+      if (comment) {
+        yPos += 12;
+        if (yPos > 270) { doc.addPage(); yPos = 20; }
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('INFORMATIONS COMPLÉMENTAIRES', 20, yPos);
+        yPos += 7;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        const lines = doc.splitTextToSize(comment, pageWidth - 40);
+        lines.forEach((line: string) => {
+          if (yPos > 280) { doc.addPage(); yPos = 20; }
+          doc.text(line, 20, yPos);
+          yPos += 5;
+        });
+      }
+    } catch {}
     
     // Items
     yPos += 12;
@@ -568,6 +590,28 @@ export default function ConfirmationPage() {
               doc.text(`${order.deliveryPostalCode} ${order.deliveryCity}`, 20, yPos);
               yPos += 7;
               doc.text(order.deliveryCountry, 20, yPos);
+
+              // Complementary info (comment)
+              try {
+                const parsed = order.notes ? JSON.parse(order.notes) : null;
+                const comment = parsed?.comment?.trim?.();
+                if (comment) {
+                  yPos += 12;
+                  if (yPos > 270) { doc.addPage(); yPos = 20; }
+                  doc.setFontSize(12);
+                  doc.setFont('helvetica', 'bold');
+                  doc.text('INFORMATIONS COMPLÉMENTAIRES', 20, yPos);
+                  yPos += 7;
+                  doc.setFontSize(10);
+                  doc.setFont('helvetica', 'normal');
+                  const lines = doc.splitTextToSize(comment, pageWidth - 40);
+                  lines.forEach((line: string) => {
+                    if (yPos > 280) { doc.addPage(); yPos = 20; }
+                    doc.text(line, 20, yPos);
+                    yPos += 5;
+                  });
+                }
+              } catch {}
               yPos += 12;
               doc.setFontSize(12);
               doc.setFont('helvetica', 'bold');
