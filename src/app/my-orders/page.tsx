@@ -142,7 +142,15 @@ export default function MyOrdersPage() {
                 <div>
                   <p className="font-semibold text-gray-900">Commande {o.id.slice(0,8)}</p>
                   <p className="text-sm text-gray-600">{new Date(o.created_at).toLocaleString('fr-FR')}</p>
-                  <p className="text-sm text-gray-700">Statut: <span className="font-medium">{o.status}</span> • Paiement: {o.payment_method || '—'}</p>
+                  <p className="text-sm text-gray-700">Statut: <span className="font-medium">
+                    {o.status === 'paid' ? 'Payée' :
+                     o.status === 'pending' ? 'En attente' :
+                     o.status === 'processing' ? 'En préparation' :
+                     o.status === 'shipped' ? 'Expédiée' :
+                     o.status === 'delivered' ? 'Livrée' :
+                     o.status === 'cancelled' ? 'Annulée' :
+                     o.status}
+                  </span> • Paiement: {o.payment_method || '—'}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-blue-600 font-bold text-lg">{Number(o.total_amount).toFixed(2)}€</p>

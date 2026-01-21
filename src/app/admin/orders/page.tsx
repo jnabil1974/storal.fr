@@ -179,12 +179,12 @@ export default function AdminOrdersPage() {
             <label className="text-sm text-gray-700 mr-2">Statut</label>
             <select value={statusFilter} onChange={(e)=>setStatusFilter(e.target.value)} className="border rounded px-2 py-1">
               <option value="">Tous</option>
-              <option value="pending">pending</option>
-              <option value="processing">processing</option>
-              <option value="paid">paid</option>
-              <option value="shipped">shipped</option>
-              <option value="delivered">delivered</option>
-              <option value="cancelled">cancelled</option>
+              <option value="pending">En attente</option>
+              <option value="processing">En préparation</option>
+              <option value="paid">Payée</option>
+              <option value="shipped">Expédiée</option>
+              <option value="delivered">Livrée</option>
+              <option value="cancelled">Annulée</option>
             </select>
           </div>
           <div>
@@ -220,12 +220,12 @@ export default function AdminOrdersPage() {
                     Détails
                   </button>
                   <select value={o.status} onChange={(e)=>updateStatus(o.id, e.target.value)} className="border rounded px-2 py-1">
-                    <option value="pending">pending</option>
-                    <option value="processing">processing</option>
-                    <option value="paid">paid</option>
-                    <option value="shipped">shipped</option>
-                    <option value="delivered">delivered</option>
-                    <option value="cancelled">cancelled</option>
+                    <option value="pending">En attente</option>
+                    <option value="processing">En préparation</option>
+                    <option value="paid">Payée</option>
+                    <option value="shipped">Expédiée</option>
+                    <option value="delivered">Livrée</option>
+                    <option value="cancelled">Annulée</option>
                   </select>
                 </div>
               </div>
@@ -251,7 +251,15 @@ export default function AdminOrdersPage() {
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Statut</p>
-                      <p className="font-medium">{selectedOrder.status}</p>
+                      <p className="font-medium">
+                        {selectedOrder.status === 'paid' ? 'Payée' :
+                         selectedOrder.status === 'pending' ? 'En attente' :
+                         selectedOrder.status === 'processing' ? 'En préparation' :
+                         selectedOrder.status === 'shipped' ? 'Expédiée' :
+                         selectedOrder.status === 'delivered' ? 'Livrée' :
+                         selectedOrder.status === 'cancelled' ? 'Annulée' :
+                         selectedOrder.status}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600">Email</p>
