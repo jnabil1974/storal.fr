@@ -343,6 +343,23 @@ export default function ConfirmationPage() {
             <p className="text-gray-700">{order.deliveryCountry}</p>
           </div>
 
+          {/* Complementary info (comment) */}
+          {order.notes && (() => {
+            try {
+              const parsed = JSON.parse(order.notes || '{}');
+              const comment = parsed?.comment?.trim?.();
+              if (!comment) return null;
+              return (
+                <div className="mb-6 pb-6 border-b border-gray-200">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Informations complémentaires</h3>
+                  <p className="text-gray-700 whitespace-pre-line">{comment}</p>
+                </div>
+              );
+            } catch {
+              return null;
+            }
+          })()}
+
           {/* Order items */}
           <div className="mb-6 pb-6 border-b border-gray-200">
             <h3 className="text-lg font-bold text-gray-900 mb-3">

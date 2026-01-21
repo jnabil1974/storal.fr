@@ -311,12 +311,41 @@ export default function AdminOrdersPage() {
                     </div>
                   )}
 
-                  {selectedOrder.notes && (
-                    <div>
-                      <p className="text-sm text-gray-600">Notes</p>
-                      <p className="font-medium whitespace-pre-line">{selectedOrder.notes}</p>
-                    </div>
-                  )}
+                  {/* Parsed notes: billing + comment */}
+                  {selectedOrder.notes && (() => {
+                    try {
+                      const parsed = JSON.parse(selectedOrder.notes || '{}');
+                      const billing = parsed?.billing;
+                      const comment = parsed?.comment?.trim?.();
+                      return (
+                        <div className="space-y-4">
+                          {billing && (
+                            <div>
+                              <h4 className="font-semibold">Adresse de facturation</h4>
+                              <div className="text-sm text-gray-700">
+                                {billing.name && <p><span className="text-gray-600">Nom:</span> {billing.name}</p>}
+                                {billing.address && <p><span className="text-gray-600">Adresse:</span> {billing.address}</p>}
+                                {(billing.postalCode || billing.city) && (
+                                  <p>
+                                    <span className="text-gray-600">Ville:</span> {(billing.postalCode || '') + (billing.city ? ' ' + billing.city : '')}
+                                  </p>
+                                )}
+                                {billing.country && <p><span className="text-gray-600">Pays:</span> {billing.country}</p>}
+                              </div>
+                            </div>
+                          )}
+                          {comment && (
+                            <div>
+                              <h4 className="font-semibold">Informations complémentaires</h4>
+                              <p className="font-medium whitespace-pre-line">{comment}</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    } catch {
+                      return null;
+                    }
+                  })()}
 
                   <div className="pt-4 border-t">
                     <p className="text-xl font-bold text-right">Total: {Number(selectedOrder.total_amount).toFixed(2)}€</p>
