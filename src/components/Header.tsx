@@ -13,6 +13,7 @@ export default function Header() {
 
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
+    console.log('Header user:', user?.email);
     if (user?.email) {
       const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin@storal.fr')
         .split(',')
@@ -34,6 +35,7 @@ export default function Header() {
         const res = await fetch(`/api/orders?email=${encodeURIComponent(user.email)}`);
         if (res.ok) {
           const data = await res.json();
+          console.log('Header orders length:', Array.isArray(data) ? data.length : 'not array');
           setHasOrders(Array.isArray(data) && data.length > 0);
         } else {
           console.warn('checkOrders response not ok', res.status);
