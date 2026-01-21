@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -29,20 +30,31 @@ export default function AdminDashboard() {
         return;
       }
 
-      const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin@storal.fr').split(',').map(e => e.trim());
-      const isAuthorized = adminEmails.includes(user.email || '');
-      
-      console.log('🔐 Admin check:', { email: user.email, isAuthorized });
-      
-      if (!isAuthorized) {
-        console.log('❌ Admin: utilisateur non autorisé');
+      try {
+        const supabase = getSupabaseClient();
+        if (!supabase) throw new Error('Supabase non initialisé');
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) {
+          setCheckingAuth(false);
+          router.push('/auth');
+          return;
+        }
+        const res = await fetch('/api/admin/check', { headers: { Authorization: `Bearer ${token}` } });
+        const ok = res.ok;
+        console.log('🔐 Admin server check:', ok);
+        if (!ok) {
+          setCheckingAuth(false);
+          router.push('/');
+          return;
+        }
+        setIsAdmin(true);
+        setCheckingAuth(false);
+      } catch (e) {
+        console.error('Admin check error', e);
         setCheckingAuth(false);
         router.push('/');
-        return;
       }
-
-      setIsAdmin(true);
-      setCheckingAuth(false);
     };
 
     checkAdmin();
