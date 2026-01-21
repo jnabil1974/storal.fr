@@ -225,9 +225,6 @@ export default function ConfirmationPage() {
             <p className="text-blue-800 text-sm mb-1">
               Vous avez créé un compte ? Connectez-vous depuis « Mes commandes » pour suivre la livraison et récupérer vos factures.
             </p>
-            <p className="text-blue-800 text-sm">
-              Pas de compte ? Conservez l'email de confirmation : il contient le récapitulatif et la référence à fournir en cas de besoin.
-            </p>
           </div>
 
           {/* Payment instructions */}
@@ -291,7 +288,6 @@ export default function ConfirmationPage() {
               )}
               <li>Préparation de votre commande</li>
               <li>Livraison programmée (vous recevrez un SMS)</li>
-              <li>Installation par nos experts</li>
             </ol>
           </div>
         </div>
