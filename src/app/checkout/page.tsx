@@ -54,6 +54,14 @@ function CheckoutPageContent() {
     postalCode: '',
     country: 'France',
   });
+  const [billingDifferent, setBillingDifferent] = useState(false);
+  const [billingData, setBillingData] = useState({
+    name: '',
+    address: '',
+    city: '',
+    postalCode: '',
+    country: 'France',
+  });
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'cheque' | 'virement'>('stripe');
 
   if (cart.items.length === 0) {
@@ -83,6 +91,18 @@ function CheckoutPageContent() {
     setFieldErrors((prev) => ({
       ...prev,
       [name]: '',
+    }));
+  };
+
+  const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setBillingData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setFieldErrors((prev) => ({
+      ...prev,
+      [`billing_${name}`]: '',
     }));
   };
 
@@ -144,6 +164,24 @@ function CheckoutPageContent() {
       errors.postalCode = 'Le code postal doit contenir 5 chiffres (ex: 75001)';
     }
 
+    // Validation adresse de facturation si différente
+    if (billingDifferent) {
+      if (!billingData.name.trim()) {
+        errors.billing_name = 'Nom de facturation obligatoire';
+      }
+      if (!billingData.address.trim()) {
+        errors.billing_address = 'Adresse de facturation obligatoire';
+      }
+      if (!billingData.city.trim()) {
+        errors.billing_city = 'Ville de facturation obligatoire';
+      }
+      if (!billingData.postalCode.trim()) {
+        errors.billing_postalCode = 'Code postal de facturation obligatoire';
+      } else if (!validatePostalCode(billingData.postalCode)) {
+        errors.billing_postalCode = 'Code postal de facturation invalide';
+      }
+    }
+
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -182,6 +220,22 @@ function CheckoutPageContent() {
           paymentMethod: paymentMethod,
           createAccount: !user,
           password: !user ? password : undefined,
+          billingDifferent,
+          billing: billingDifferent
+            ? {
+                name: billingData.name,
+                address: billingData.address,
+                city: billingData.city,
+                postalCode: billingData.postalCode,
+                country: billingData.country,
+              }
+            : {
+                name: formData.name,
+                address: formData.address,
+                city: formData.city,
+                postalCode: formData.postalCode,
+                country: formData.country,
+              },
         }),
       });
 
@@ -395,6 +449,119 @@ function CheckoutPageContent() {
                   <option>Luxembourg</option>
                   <option>Autres</option>
                 </select>
+              </div>
+
+              {/* Adresse de facturation différente */}
+              <div className="border-t border-gray-200 pt-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-800">
+                  <input
+                    type="checkbox"
+                    checked={billingDifferent}
+                    onChange={(e) => setBillingDifferent(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  Utiliser une adresse de facturation différente
+                </label>
+
+                {billingDifferent && (
+                  <div className="mt-4 space-y-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="font-semibold text-gray-800">Adresse de facturation</p>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nom complet *</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={billingData.name}
+                        onChange={handleBillingChange}
+                        placeholder="Jean Dupont"
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                          fieldErrors.billing_name
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-gray-300 focus:ring-blue-500'
+                        }`}
+                      />
+                      {fieldErrors.billing_name && (
+                        <p className="text-red-600 text-sm mt-1">✗ {fieldErrors.billing_name}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Adresse *</label>
+                      <input
+                        type="text"
+                        name="address"
+                        value={billingData.address}
+                        onChange={handleBillingChange}
+                        placeholder="123 Rue de la Paix"
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                          fieldErrors.billing_address
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-gray-300 focus:ring-blue-500'
+                        }`}
+                      />
+                      {fieldErrors.billing_address && (
+                        <p className="text-red-600 text-sm mt-1">✗ {fieldErrors.billing_address}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Ville *</label>
+                        <input
+                          type="text"
+                          name="city"
+                          value={billingData.city}
+                          onChange={handleBillingChange}
+                          placeholder="Paris"
+                          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                            fieldErrors.billing_city
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                        />
+                        {fieldErrors.billing_city && (
+                          <p className="text-red-600 text-sm mt-1">✗ {fieldErrors.billing_city}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Code postal *</label>
+                        <input
+                          type="text"
+                          name="postalCode"
+                          value={billingData.postalCode}
+                          onChange={handleBillingChange}
+                          placeholder="75000"
+                          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                            fieldErrors.billing_postalCode
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-gray-300 focus:ring-blue-500'
+                          }`}
+                        />
+                        {fieldErrors.billing_postalCode && (
+                          <p className="text-red-600 text-sm mt-1">✗ {fieldErrors.billing_postalCode}</p>
+                        )}
+                        <p className="text-gray-500 text-xs mt-1">5 chiffres (ex: 75001)</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Pays</label>
+                      <select
+                        name="country"
+                        value={billingData.country}
+                        onChange={handleBillingChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option>France</option>
+                        <option>Belgique</option>
+                        <option>Suisse</option>
+                        <option>Luxembourg</option>
+                        <option>Autres</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {!user && (

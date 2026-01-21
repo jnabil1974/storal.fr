@@ -23,6 +23,8 @@ export async function POST(request: NextRequest) {
       deliveryCity,
       deliveryPostalCode,
       deliveryCountry = 'France',
+      billingDifferent = false,
+      billing,
       paymentMethod = 'stripe',
       sessionId,
       createAccount = false,
@@ -33,6 +35,15 @@ export async function POST(request: NextRequest) {
     if (!customerEmail || !customerName || !deliveryAddress || items.length === 0) {
       return NextResponse.json({ error: 'Données obligatoires manquantes' }, { status: 400 });
     }
+
+    // Préparer l'adresse de facturation (par défaut même que livraison)
+    const billingInfo = billingDifferent && billing ? billing : {
+      name: customerName,
+      address: deliveryAddress,
+      city: deliveryCity,
+      postalCode: deliveryPostalCode,
+      country: deliveryCountry,
+    };
 
     // Recalcul du total côté serveur (sécurité)
     const total_amount = items.reduce((sum: number, item: CheckoutItem) => {
@@ -83,6 +94,9 @@ export async function POST(request: NextRequest) {
           status: 'pending',
           payment_method: paymentMethod,
           user_id: userIdToUse,
+          notes: billingInfo
+            ? JSON.stringify({ billing: billingInfo })
+            : null,
         },
       ])
       .select()
