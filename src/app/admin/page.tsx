@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSupabaseClient } from '@/lib/supabase';
-import { getSupabaseClient } from '@/lib/supabase';
 
 export default function AdminDashboard() {
   const router = useRouter();

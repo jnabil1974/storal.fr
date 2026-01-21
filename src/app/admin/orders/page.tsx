@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { getSupabaseClient } from '@/lib/supabase';
 
 interface AdminOrderItem {
   id: string;
