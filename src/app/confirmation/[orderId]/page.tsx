@@ -155,18 +155,59 @@ export default function ConfirmationPage() {
             <h3 className="text-lg font-bold text-gray-900 mb-3">
               Articles commandés
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {order.items && order.items.map((item: any, idx: number) => (
-                <div key={idx} className="flex justify-between text-gray-700 p-2 bg-gray-50 rounded">
-                  <div>
-                    <p className="font-medium">{item.productName}</p>
-                    <p className="text-sm text-gray-600">
-                      Quantité: {item.quantity}
-                    </p>
+                <div key={idx} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  {/* Product name and type */}
+                  <div className="mb-3">
+                    <h4 className="text-lg font-bold text-gray-900">{item.productName}</h4>
+                    {item.productType && (
+                      <p className="text-sm text-gray-600">Type: {item.productType}</p>
+                    )}
                   </div>
-                  <p className="font-semibold">
-                    {Number(item.totalPrice).toFixed(2)}€
-                  </p>
+
+                  {/* Configuration options */}
+                  {item.configuration && Object.keys(item.configuration).length > 0 && (
+                    <div className="bg-blue-50 border border-blue-200 p-3 rounded mb-3 text-sm">
+                      <p className="font-semibold text-gray-800 mb-2">Options choisies:</p>
+                      <ul className="space-y-1">
+                        {Object.entries(item.configuration).map(([key, value]) => {
+                          const label = key
+                            .replace(/([A-Z])/g, ' $1')
+                            .replace(/_/g, ' ')
+                            .charAt(0)
+                            .toUpperCase() + key.slice(1);
+                          
+                          return (
+                            <li key={key} className="flex justify-between text-gray-700">
+                              <span className="font-medium">{label}:</span>
+                              <span className="text-gray-900 font-semibold">
+                                {String(value).charAt(0).toUpperCase() + String(value).slice(1)}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Quantity and price */}
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-gray-600">
+                        Quantité: <strong>{item.quantity}</strong>
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Prix unitaire: <strong>{(Number(item.totalPrice) / Number(item.quantity)).toFixed(2)}€</strong>
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-blue-600">
+                        {Number(item.totalPrice).toFixed(2)}€
+                      </p>
+                      <p className="text-xs text-gray-500">Total article</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
