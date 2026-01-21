@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
       billingDifferent = false,
       billing,
       comment,
+      recaptchaToken,
       paymentMethod = 'stripe',
       sessionId,
       createAccount = false,
@@ -35,6 +36,29 @@ export async function POST(request: NextRequest) {
 
     if (!customerEmail || !customerName || !deliveryAddress || items.length === 0) {
       return NextResponse.json({ error: 'Données obligatoires manquantes' }, { status: 400 });
+    }
+
+    // Vérification reCAPTCHA v3 côté serveur (si configuré)
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
+    if (recaptchaSecret) {
+      if (!recaptchaToken) {
+        return NextResponse.json({ error: 'Vérification reCAPTCHA requise' }, { status: 400 });
+      }
+      try {
+        const verifyRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ secret: recaptchaSecret, response: recaptchaToken }),
+        });
+        const verifyJson = await verifyRes.json();
+        const ok = verifyJson?.success === true;
+        const score = Number(verifyJson?.score ?? 0);
+        if (!ok || score < 0.5) {
+          return NextResponse.json({ error: 'Échec vérification reCAPTCHA' }, { status: 400 });
+        }
+      } catch (e) {
+        return NextResponse.json({ error: 'Erreur vérification reCAPTCHA' }, { status: 500 });
+      }
     }
 
     // Préparer l'adresse de facturation (par défaut même que livraison)

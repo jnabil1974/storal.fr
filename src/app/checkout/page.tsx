@@ -202,6 +202,19 @@ function CheckoutPageContent() {
     try {
       // Créer la commande
       const sessionId = localStorage.getItem('cart_session_id');
+
+      // Obtenir le token reCAPTCHA v3
+      let recaptchaToken: string | undefined = undefined;
+      try {
+        if (executeRecaptcha) {
+          recaptchaToken = await executeRecaptcha('checkout_submit');
+        } else {
+          console.warn('reCAPTCHA non initialisé');
+        }
+      } catch (recErr) {
+        console.warn('Erreur reCAPTCHA:', recErr);
+      }
+
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -238,6 +251,7 @@ function CheckoutPageContent() {
                 country: formData.country,
               },
           comment: comment?.trim() || undefined,
+          recaptchaToken,
         }),
       });
 
