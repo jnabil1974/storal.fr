@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { getSupabaseClient } from '@/lib/supabase';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -55,8 +56,17 @@ export default function AdminDashboard() {
 
   const loadStats = async () => {
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase non initialisé');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error('Non authentifié');
+
       // Charger les statistiques des commandes
-      const ordersResponse = await fetch('/api/admin/orders');
+      const ordersResponse = await fetch('/api/admin/orders', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!ordersResponse.ok) throw new Error('Erreur chargement commandes');
       const ordersData = await ordersResponse.json();
       const orders = Array.isArray(ordersData) ? ordersData : [];
       
