@@ -108,8 +108,14 @@ export default function ConfirmationPage() {
             </div>
             <div>
               <p className="text-gray-600 text-sm font-medium mb-1">Statut</p>
-              <p className={`font-semibold ${order.status === 'paid' ? 'text-green-600' : 'text-orange-600'}`}>
-                {order.status === 'paid' ? 'Payée' : 'En attente de paiement'}
+              <p className={`font-semibold ${order.status === 'paid' ? 'text-green-600' : order.status === 'pending' ? 'text-orange-600' : 'text-blue-600'}`}>
+                {order.status === 'paid' ? 'Payée' :
+                 order.status === 'pending' ? 'En attente de paiement' :
+                 order.status === 'processing' ? 'Préparation' :
+                 order.status === 'shipped' ? 'Expédiée' :
+                 order.status === 'delivered' ? 'Livrée' :
+                 order.status === 'cancelled' ? 'Annulée' :
+                 order.status}
               </p>
             </div>
             <div>
