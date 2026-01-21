@@ -59,12 +59,30 @@ export default function CartPage() {
                     <p className="text-sm text-gray-600 mb-4">Type: {item.productType}</p>
 
                     {/* Configuration display */}
-                    <div className="bg-gray-50 p-3 rounded mb-4 text-sm">
-                      <p className="font-semibold text-gray-700 mb-2">Configuration:</p>
-                      <pre className="text-gray-600 overflow-auto max-h-32 text-xs">
-                        {JSON.stringify(item.configuration, null, 2)}
-                      </pre>
-                    </div>
+                    {item.configuration && Object.keys(item.configuration).length > 0 && (
+                      <div className="bg-blue-50 border border-blue-200 p-4 rounded mb-4 text-sm">
+                        <p className="font-semibold text-gray-800 mb-3">Options choisies:</p>
+                        <ul className="space-y-2">
+                          {Object.entries(item.configuration).map(([key, value]) => {
+                            // Format key to readable label
+                            const label = key
+                              .replace(/([A-Z])/g, ' $1')
+                              .replace(/_/g, ' ')
+                              .charAt(0)
+                              .toUpperCase() + key.slice(1);
+                            
+                            return (
+                              <li key={key} className="flex justify-between text-gray-700">
+                                <span className="font-medium">{label}:</span>
+                                <span className="text-gray-900 font-semibold">
+                                  {String(value).charAt(0).toUpperCase() + String(value).slice(1)}
+                                </span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
 
                     {/* Prix unitaire */}
                     <p className="text-lg font-bold text-blue-600">
