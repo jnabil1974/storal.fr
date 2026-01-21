@@ -163,6 +163,44 @@ export default function ConfirmationPage() {
       doc.text(`${idx + 1}. ${item.productName || 'Produit'}`, 20, yPos);
       yPos += 6;
       
+      // Product type if available
+      if (item.productType) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.text(`   Type: ${item.productType}`, 20, yPos);
+        yPos += 5;
+        doc.setFontSize(10);
+      }
+      
+      // Configuration details
+      if (item.configuration && Object.keys(item.configuration).length > 0) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.text('   Configuration:', 20, yPos);
+        yPos += 5;
+        
+        doc.setFont('helvetica', 'normal');
+        Object.entries(item.configuration).forEach(([key, value]) => {
+          if (yPos > 270) {
+            doc.addPage();
+            yPos = 20;
+          }
+          
+          const label = key
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/_/g, ' ')
+            .charAt(0)
+            .toUpperCase() + key.slice(1);
+          
+          const valueStr = String(value).charAt(0).toUpperCase() + String(value).slice(1);
+          doc.text(`      - ${label}: ${valueStr}`, 20, yPos);
+          yPos += 5;
+        });
+        
+        doc.setFontSize(10);
+        yPos += 1;
+      }
+      
       doc.setFont('helvetica', 'normal');
       doc.text(`   Quantité: ${item.quantity}`, 20, yPos);
       yPos += 6;
@@ -172,8 +210,8 @@ export default function ConfirmationPage() {
       yPos += 6;
       
       doc.setFont('helvetica', 'bold');
-      doc.text(`   Total: ${Number(item.totalPrice).toFixed(2)}€`, 20, yPos);
-      yPos += 8;
+      doc.text(`   Total article: ${Number(item.totalPrice).toFixed(2)}€`, 20, yPos);
+      yPos += 10;
     });
     
     // Total
