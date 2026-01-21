@@ -97,7 +97,7 @@ export default function Header() {
             </Link>
           )}
           {isAdmin && (
-            <Link href="/admin/orders" className="text-gray-700 hover:text-blue-600 transition font-medium">
+            <Link href="/admin" className="text-gray-700 hover:text-blue-600 transition font-medium">
               Admin
             </Link>
           )}
