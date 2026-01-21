@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
+import { getSupabaseClient } from '@/lib/supabase';
 
 export default function Header() {
   const { cart } = useCart();
@@ -22,6 +23,26 @@ export default function Header() {
       const allowed = adminEmails.includes(user.email.toLowerCase());
       setIsAdmin(allowed);
       setAuthDebug({ userEmail: user.email, allowList: adminEmails });
+
+      // Double check via server (token-based) to avoid ENV mismatches
+      (async () => {
+        try {
+          const supabase = getSupabaseClient();
+          if (!supabase) return;
+          const { data: { session } } = await supabase.auth.getSession();
+          const token = session?.access_token;
+          if (!token) return;
+          const res = await fetch('/api/admin/check', { headers: { Authorization: `Bearer ${token}` } });
+          if (res.ok) {
+            setIsAdmin(true);
+            console.log('Admin check (server): OK');
+          } else {
+            console.log('Admin check (server) failed with', res.status);
+          }
+        } catch (e) {
+          console.warn('Admin check (server) error', e);
+        }
+      })();
     } else {
       setIsAdmin(false);
       setAuthDebug({ userEmail: null, allowList: [] });
