@@ -57,11 +57,13 @@ export default function AdminDashboard() {
     try {
       // Charger les statistiques des commandes
       const ordersResponse = await fetch('/api/admin/orders');
-      const orders = await ordersResponse.json();
+      const ordersData = await ordersResponse.json();
+      const orders = Array.isArray(ordersData) ? ordersData : [];
       
       // Charger les toiles
       const toilesResponse = await fetch('/api/admin/toiles');
-      const toiles = await toilesResponse.json();
+      const toilesData = await toilesResponse.json();
+      const toiles = Array.isArray(toilesData) ? toilesData : [];
 
       setStats({
         totalOrders: orders.length || 0,
