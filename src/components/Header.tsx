@@ -10,6 +10,7 @@ export default function Header() {
   const { user, signOut } = useAuth();
   const [hasOrders, setHasOrders] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authDebug, setAuthDebug] = useState<{userEmail?: string|null; allowList: string[]}>({ allowList: [] });
 
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
@@ -18,9 +19,12 @@ export default function Header() {
       const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin@storal.fr')
         .split(',')
         .map((e) => e.trim().toLowerCase());
-      setIsAdmin(adminEmails.includes(user.email.toLowerCase()));
+      const allowed = adminEmails.includes(user.email.toLowerCase());
+      setIsAdmin(allowed);
+      setAuthDebug({ userEmail: user.email, allowList: adminEmails });
     } else {
       setIsAdmin(false);
+      setAuthDebug({ userEmail: null, allowList: [] });
     }
   }, [user]);
 
