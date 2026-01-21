@@ -145,7 +145,7 @@ export default function MyOrdersPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-blue-600 font-bold text-lg">{Number(o.total_amount).toFixed(2)}€</p>
-                  {o.status !== 'paid' && o.payment_method === 'stripe' ? (
+                  {o.status === 'pending' && o.payment_method === 'stripe' ? (
                     <Link href={`/payment?orderId=${o.id}`}>
                       <button className="mt-2 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700">Payer</button>
                     </Link>
