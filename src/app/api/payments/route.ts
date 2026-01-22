@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/supabase';
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
+console.log(`[Stripe/payments] Loaded key type: ${STRIPE_SECRET.startsWith('sk_test') ? 'TEST' : STRIPE_SECRET.startsWith('sk_live') ? 'LIVE' : 'UNKNOWN'}`);
+const stripe = require('stripe')(STRIPE_SECRET);
 
 export async function POST(request: NextRequest) {
   try {
