@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
 
 function ContactFormContent() {
   const { executeRecaptcha } = useGoogleReCaptcha();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,6 +20,20 @@ function ContactFormContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // Préremplir depuis les paramètres URL
+  useEffect(() => {
+    const email = searchParams.get('email');
+    const orderId = searchParams.get('orderId');
+    
+    if (email || orderId) {
+      setFormData(prev => ({
+        ...prev,
+        email: email || prev.email,
+        title: orderId ? `Commande ${orderId}` : prev.title,
+      }));
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));

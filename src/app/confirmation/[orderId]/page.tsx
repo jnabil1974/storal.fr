@@ -679,7 +679,10 @@ export default function ConfirmationPage() {
               Retour à l'accueil
             </button>
           </Link>
-          <Link href="/contact" className="flex-1">
+          <Link 
+            href={`/contact?email=${encodeURIComponent(order.customerEmail)}&orderId=${encodeURIComponent(order.id)}`} 
+            className="flex-1"
+          >
             <button className="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
               Contacter le support
             </button>
