@@ -62,17 +62,25 @@ export default function ConfirmationPage() {
     const pageWidth = doc.internal.pageSize.getWidth();
     let yPos = 20;
 
-    // Header
-    doc.setFontSize(20);
+    // Company header (left side)
+    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('CONFIRMATION DE COMMANDE', pageWidth / 2, yPos, { align: 'center' });
+    doc.text('STORAL', 20, yPos);
     
-    yPos += 15;
-    doc.setFontSize(12);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('Storal - Store et Menuiserie', pageWidth / 2, yPos, { align: 'center' });
+    doc.text('Store et Menuiserie', 20, yPos + 7);
+    doc.text('58 rue de Monceau CS 48756', 20, yPos + 12);
+    doc.text('75380 Paris Cedex 08', 20, yPos + 17);
+    doc.text('Tel: +33 1 23 45 67 89', 20, yPos + 22);
+    doc.text('Email: contact@storal.fr', 20, yPos + 27);
+
+    // Title (centered)
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONFIRMATION DE COMMANDE', pageWidth / 2, yPos + 5, { align: 'center' });
     
-    yPos += 15;
+    yPos += 35;
     doc.setDrawColor(0, 102, 204);
     doc.setLineWidth(0.5);
     doc.line(20, yPos, pageWidth - 20, yPos);
