@@ -47,7 +47,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
         </div>
         <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
-          <StoreBanneKissimyConfigurator />
+          <StoreBanneKissimyConfigurator
+            productId={product.id}
+            productName={product.name}
+            coefficient={2.0}
+          />
         </div>
       </div>
     );
