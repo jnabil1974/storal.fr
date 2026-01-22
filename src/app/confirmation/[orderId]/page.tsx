@@ -469,8 +469,8 @@ export default function ConfirmationPage() {
                   <div className="bg-white p-3 rounded border border-yellow-300 mb-3">
                     <p className="font-mono text-sm">
                       <strong>Storal</strong><br />
-                      123 Rue de l'Artisanat<br />
-                      75000 Paris, France
+                      58 rue de Monceau CS 48756<br />
+                      75380 Paris Cedex 08
                     </p>
                   </div>
                   <p className="text-sm text-gray-600">

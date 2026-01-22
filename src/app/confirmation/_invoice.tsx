@@ -17,8 +17,8 @@ export function downloadInvoice(order: Order) {
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.text('Store et Menuiserie', 20, yPos + 7);
-  doc.text('123 Rue de l\'Artisanat', 20, yPos + 12);
-  doc.text('75000 Paris, France', 20, yPos + 17);
+  doc.text('58 rue de Monceau CS 48756', 20, yPos + 12);
+  doc.text('75380 Paris Cedex 08', 20, yPos + 17);
   doc.text('Tel: +33 1 23 45 67 89', 20, yPos + 22);
   doc.text('Email: contact@storal.fr', 20, yPos + 27);
 

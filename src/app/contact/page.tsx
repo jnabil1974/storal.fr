@@ -214,7 +214,14 @@ function ContactFormContent() {
 
           <div className="mt-12 pt-8 border-t border-gray-200">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Autres moyens de nous contacter</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-1">Adresse</p>
+                <p className="text-gray-600 text-sm">
+                  58 rue de Monceau CS 48756<br />
+                  75380 Paris Cedex 08
+                </p>
+              </div>
               <div>
                 <p className="text-sm font-medium text-gray-700 mb-1">Email</p>
                 <a href="mailto:contact@storal.fr" className="text-blue-600 hover:underline">
