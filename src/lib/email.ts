@@ -92,7 +92,7 @@ export async function sendOrderConfirmationEmail(input: SendOrderEmailInput): Pr
   const html = buildEmailHtml(input);
   const to = input.order.customer_email || input.payload.customerEmail;
 
-  console.log(`📧 Tentative d'envoi email à: ${to}`);
+  console.log(`📧 Tentative d'envoi email à: ${to} via Resend`);
 
   const body = {
     from: EMAIL_FROM,
@@ -112,13 +112,13 @@ export async function sendOrderConfirmationEmail(input: SendOrderEmailInput): Pr
       body: JSON.stringify(body),
     });
 
+    const text = await res.text();
     if (!res.ok) {
-      const text = await res.text();
       console.error('❌ Envoi email échoué:', res.status, text);
       return false;
     }
 
-    console.log('📧 Email de confirmation envoyé à', to);
+    console.log('📧 Email de confirmation envoyé', { to, status: res.status, body: text });
     return true;
   } catch (err) {
     console.error('❌ Erreur envoi email:', err);
