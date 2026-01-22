@@ -78,7 +78,8 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+      {/* Top bar: Logo, Phone, User, Cart */}
+      <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center border-b border-gray-200">
         {/* Logo */}
         <Link href="/">
           <div className="text-2xl font-bold text-blue-600 cursor-pointer">
@@ -86,8 +87,8 @@ export default function Header() {
           </div>
         </Link>
 
-        {/* Navigation and Contact */}
-        <div className="flex items-center gap-8">
+        {/* Right side: Phone, User, Cart */}
+        <div className="flex items-center gap-6">
           {/* Phone Number */}
           <a href="tel:+33185093446" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition">
             <svg 
@@ -106,29 +107,29 @@ export default function Header() {
             </svg>
             <span className="text-lg font-semibold">01 85 09 34 46</span>
           </a>
-          
-          <nav className="flex items-center gap-8">{/* Navigation */}
-          <Link href="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
-            Accueil
-          </Link>
-          {showMyOrders && (
-            <Link href="/my-orders" className="text-gray-700 hover:text-blue-600 transition font-medium">
-              Mes commandes
-            </Link>
-          )}
-          {isAdmin && (
-            <Link href="/admin" className="text-gray-700 hover:text-blue-600 transition font-medium">
-              Admin
-            </Link>
-          )}
+
+          {/* User Section */}
           {user ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">{user.email}</span>
-              <button onClick={() => signOut()} className="text-gray-700 hover:text-blue-600 transition font-medium">Se déconnecter</button>
+              <div className="flex items-center gap-2 text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="text-sm">{user.email}</span>
+              </div>
+              <button 
+                onClick={() => signOut()} 
+                className="text-sm text-gray-600 hover:text-blue-600 transition"
+              >
+                Déconnexion
+              </button>
             </div>
           ) : (
-            <Link href="/auth" className="text-gray-700 hover:text-blue-600 transition font-medium">
-              Se connecter
+            <Link href="/auth" className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span className="text-sm font-medium">Connexion</span>
             </Link>
           )}
           
@@ -156,9 +157,27 @@ export default function Header() {
               </span>
             )}
           </Link>
-        </nav>
         </div>
       </div>
+
+      {/* Bottom bar: Navigation */}
+      <nav className="max-w-6xl mx-auto px-4 py-3">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
+            Accueil
+          </Link>
+          {showMyOrders && (
+            <Link href="/my-orders" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              Mes commandes
+            </Link>
+          )}
+          {isAdmin && (
+            <Link href="/admin" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              Admin
+            </Link>
+          )}
+        </div>
+      </nav>
     </header>
   );
 }
