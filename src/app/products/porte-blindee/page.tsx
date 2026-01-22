@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { getProducts } from '@/lib/database';
 import { ProductType } from '@/types/products';
 
-export default async function PorteBlinde ePage() {
+export default async function PorteBlindeePage() {
   const allProducts = await getProducts();
   const products = allProducts.filter(p => p.type === ProductType.PORTE_BLINDEE);
 
