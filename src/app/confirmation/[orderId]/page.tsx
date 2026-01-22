@@ -75,18 +75,24 @@ export default function ConfirmationPage() {
     doc.text('Tel: +33 1 23 45 67 89', 20, yPos + 22);
     doc.text('Email: contact@storal.fr', 20, yPos + 27);
 
-    // Title badge
+    // Confirmation badge
     yPos += 35;
     doc.setFillColor(0, 102, 204);
-    doc.rect(pageWidth - 90, yPos - 5, 70, 10, 'F');
+    doc.rect(pageWidth - 80, yPos - 5, 60, 10, 'F');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.setTextColor(255, 255, 255);
-    doc.text('CONFIRMATION', pageWidth - 55, yPos, { align: 'center' });
+    doc.text('CONFIRMATION', pageWidth - 50, yPos, { align: 'center' });
     doc.setTextColor(0, 0, 0);
 
-    // Order info
+    // Order details separator
     yPos += 15;
+    doc.setDrawColor(0, 102, 204);
+    doc.setLineWidth(0.5);
+    doc.line(20, yPos, pageWidth - 20, yPos);
+
+    // Order info
+    yPos += 10;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text('Commande:', 20, yPos);
