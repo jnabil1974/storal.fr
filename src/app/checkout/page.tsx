@@ -368,7 +368,7 @@ function CheckoutPageContent() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="+33 1 23 45 67 89"
+                  placeholder="01 85 09 34 46"
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
                     fieldErrors.phone
                       ? 'border-red-500 focus:ring-red-500'

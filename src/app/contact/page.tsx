@@ -139,7 +139,7 @@ function ContactFormContent() {
                   value={formData.phone}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="+33 1 23 45 67 89"
+                  placeholder="01 85 09 34 46"
                 />
               </div>
 
@@ -224,14 +224,14 @@ function ContactFormContent() {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-700 mb-1">Email</p>
-                <a href="mailto:contact@storal.fr" className="text-blue-600 hover:underline">
-                  contact@storal.fr
+                <a href="mailto:commandes@storal.fr" className="text-blue-600 hover:underline">
+                  commandes@storal.fr
                 </a>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-700 mb-1">Téléphone</p>
-                <a href="tel:+33123456789" className="text-blue-600 hover:underline">
-                  +33 1 23 45 67 89
+                <a href="tel:+33185093446" className="text-blue-600 hover:underline">
+                  01 85 09 34 46
                 </a>
               </div>
               <div>

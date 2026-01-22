@@ -270,7 +270,7 @@ export default function ConfirmationPage() {
     doc.text('Merci pour votre confiance!', pageWidth / 2, yPos, { align: 'center' });
     
     yPos += 5;
-    doc.text('Pour toute question, contactez-nous à contact@storal.fr', pageWidth / 2, yPos, { align: 'center' });
+    doc.text('Pour toute question, contactez-nous à commandes@storal.fr', pageWidth / 2, yPos, { align: 'center' });
     
     // Save PDF
     doc.save(`commande_${order.id.slice(0, 8)}.pdf`);
@@ -550,8 +550,8 @@ export default function ConfirmationPage() {
               doc.text('Store et Menuiserie', 20, yPos + 7);
               doc.text('58 rue de Monceau CS 48756', 20, yPos + 12);
               doc.text('75380 Paris Cedex 08', 20, yPos + 17);
-              doc.text('Tel: +33 1 23 45 67 89', 20, yPos + 22);
-              doc.text('Email: contact@storal.fr', 20, yPos + 27);
+              doc.text('Tel: 01 85 09 34 46', 20, yPos + 22);
+              doc.text('Email: commandes@storal.fr', 20, yPos + 27);
 
               // Confirmation badge
               yPos += 35;
@@ -682,7 +682,7 @@ export default function ConfirmationPage() {
               doc.setTextColor(100, 100, 100);
               doc.text('Merci pour votre confiance!', pageWidth / 2, yPos, { align: 'center' });
               yPos += 5;
-              doc.text('Pour toute question, contactez-nous à contact@storal.fr', pageWidth / 2, yPos, { align: 'center' });
+              doc.text('Pour toute question, contactez-nous à commandes@storal.fr', pageWidth / 2, yPos, { align: 'center' });
               doc.save(`commande_${order.id.slice(0, 8)}.pdf`);
             }}
             className="flex-1 min-w-[180px] bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition flex items-center justify-center gap-2"
