@@ -119,18 +119,7 @@ export async function getProducts(): Promise<Product[]> {
     
     console.log(`[getProducts] Got ${data.length} products from Supabase`);
     
-    // Deduplicate by type - keep only the latest of each type
-    const seenTypes = new Set<ProductType>();
-    const deduped = data.filter((row) => {
-      const isDuplicate = seenTypes.has(row.type as ProductType);
-      if (!isDuplicate) {
-        seenTypes.add(row.type as ProductType);
-      }
-      return !isDuplicate;
-    });
-    
-    console.log(`[getProducts] After dedup: ${deduped.length} products`);
-    return deduped.map(mapRowToProduct);
+    return data.map(mapRowToProduct);
   }, () => mockProducts);
 }
 
