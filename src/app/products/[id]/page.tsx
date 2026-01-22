@@ -16,7 +16,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   
   // Redirect old kissimy route to UUID
   if (id === 'kissimy') {
-    redirect('/products/95bce58b-73ac-4769-b627-6ce79e0d8a6e');
+    redirect('/products/b0593506-2bda-4606-ba7c-d4bc1c26a1e2');
   }
   
   const product = await getProductById(id);
@@ -33,7 +33,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   // Check if this is the KISSIMY product
-  const isKissimy = product.name.includes('KISSIMY') || id === '95bce58b-73ac-4769-b627-6ce79e0d8a6e';
+  const isKissimy = product.name.includes('KISSIMY') || id === 'b0593506-2bda-4606-ba7c-d4bc1c26a1e2';
 
   // If it's KISSIMY, use the special configurator
   if (isKissimy) {

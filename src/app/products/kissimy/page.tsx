@@ -1,5 +1,3 @@
-import Link from 'next/link';
-import { StoreBanneKissimyConfigurator } from '@/components/StoreBanneKissimyConfigurator';
 import { redirect } from 'next/navigation';
 
 // Force dynamic rendering to avoid stale static cache
@@ -7,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function KissimyProductPage() {
   // Redirect to the actual product page with the Supabase UUID
-  redirect('/products/95bce58b-73ac-4769-b627-6ce79e0d8a6e');
+  redirect('/products/b0593506-2bda-4606-ba7c-d4bc1c26a1e2');
 }
 
   return (
