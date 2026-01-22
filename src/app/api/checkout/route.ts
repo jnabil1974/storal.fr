@@ -37,6 +37,14 @@ export async function POST(request: NextRequest) {
       userId,
     } = body;
 
+    console.log('[Checkout] Incoming request', {
+      hasItems: Array.isArray(items) && items.length > 0,
+      customerEmail: !!customerEmail,
+      customerName: !!customerName,
+      sessionId: !!sessionId,
+      paymentMethod,
+    });
+
     if (!customerEmail || !customerName || !deliveryAddress || items.length === 0) {
       return NextResponse.json({ error: 'Données obligatoires manquantes' }, { status: 400 });
     }
@@ -56,10 +64,12 @@ export async function POST(request: NextRequest) {
         const verifyJson = await verifyRes.json();
         const ok = verifyJson?.success === true;
         const score = Number(verifyJson?.score ?? 0);
+        console.log('[Checkout] reCAPTCHA verify', { ok, score });
         if (!ok || score < 0.5) {
           return NextResponse.json({ error: 'Échec vérification reCAPTCHA' }, { status: 400 });
         }
       } catch (e) {
+        console.error('[Checkout] reCAPTCHA error', e);
         return NextResponse.json({ error: 'Erreur vérification reCAPTCHA' }, { status: 500 });
       }
     }
@@ -80,6 +90,7 @@ export async function POST(request: NextRequest) {
       return sum + unit * qty;
     }, 0);
     const total_items = items.reduce((sum: number, item: CheckoutItem) => sum + Number(item.quantity || 0), 0);
+    console.log('[Checkout] Totals', { total_amount, total_items });
 
     const supabaseAdmin = getSupabaseAdminClient();
     const supabase = getSupabaseClient();
@@ -132,11 +143,20 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (orderError || !order) {
+      console.error('[Checkout] Supabase insert error', orderError);
       return NextResponse.json({ error: 'Erreur lors de la création de la commande' }, { status: 500 });
     }
 
     // Stripe Payment Intent si paiement carte
     if (paymentMethod === 'stripe') {
+      try {
+        console.log('[Checkout] Creating Stripe PaymentIntent', {
+          amount: Math.round(total_amount * 100),
+          currency: 'eur',
+        });
+        const key = process.env.STRIPE_SECRET_KEY || '';
+        console.log('[Checkout] Stripe key type', key.startsWith('sk_test') ? 'TEST' : key.startsWith('sk_live') ? 'LIVE' : 'UNKNOWN');
+      } catch {}
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(total_amount * 100),
         currency: 'eur',
