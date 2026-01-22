@@ -81,6 +81,19 @@ export default async function HomePage() {
         </section>
       </main>
 
+      {/* Contact Section */}
+      <section className="max-w-6xl mx-auto px-4 py-12 mb-12">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-8 text-white text-center">
+          <h2 className="text-3xl font-bold mb-4">Une Question ? Contactez-Nous</h2>
+          <p className="text-blue-100 mb-6 text-lg">Notre équipe vous répondra dans les plus brefs délais pour répondre à vos questions ou vous aider dans votre projet.</p>
+          <Link href="/contact">
+            <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition">
+              Formulaire de Contact
+            </button>
+          </Link>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-8 border-t border-gray-800">
         <div className="max-w-6xl mx-auto px-4">
