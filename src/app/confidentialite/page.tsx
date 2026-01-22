@@ -73,6 +73,29 @@ export default function ConfidentialitePage() {
           </section>
 
           <section className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Conservation des données</h2>
+            <p className="text-gray-700 mb-4">
+              Pour des raisons de sécurité, les informations sensibles collectées lors de votre commande 
+              sont traitées avec attention particulière :
+            </p>
+            <ul className="space-y-3 text-gray-700 ml-4">
+              <li>
+                <strong>Adresse postale et numéro de téléphone</strong> : ces données ne seront 
+                <strong> pas conservées après la livraison</strong> de votre commande et seront supprimées 
+                définitivement.
+              </li>
+              <li>
+                <strong>Email et historique des commandes</strong> : conservés pour le service après-vente 
+                et conformément aux obligations légales (durée : 3 ans).
+              </li>
+              <li>
+                <strong>Données bancaires</strong> : ne sont jamais stockées sur nos serveurs 
+                (gérées par Stripe).
+              </li>
+            </ul>
+          </section>
+
+          <section className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Vos droits</h2>
             <p className="text-gray-700 mb-4">
               Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression 
