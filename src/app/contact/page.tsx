@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
@@ -242,7 +242,9 @@ function ContactFormContent() {
 export default function ContactPage() {
   return (
     <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY} scriptProps={{ async: true, defer: true }}>
-      <ContactFormContent />
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Chargement...</div>}>
+        <ContactFormContent />
+      </Suspense>
     </GoogleReCaptchaProvider>
   );
 }
