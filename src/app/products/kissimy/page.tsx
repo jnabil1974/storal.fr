@@ -1,19 +1,14 @@
 import Link from 'next/link';
 import { StoreBanneKissimyConfigurator } from '@/components/StoreBanneKissimyConfigurator';
+import { redirect } from 'next/navigation';
 
 // Force dynamic rendering to avoid stale static cache
 export const dynamic = 'force-dynamic';
 
-// Produit KISSIMY par défaut (pas besoin de Supabase pour cette page standalone)
-const KISSIMY_PRODUCT = {
-  id: 'kissimy-store-banne',
-  name: 'Store Banne Coffre KISSIMY',
-  description: 'Configurez votre store banne coffre KISSIMY sur mesure avec motorisation incluse',
-};
-
 export default async function KissimyProductPage() {
-  const product = KISSIMY_PRODUCT;
-  const error = null;
+  // Redirect to the actual product page with the Supabase UUID
+  redirect('/products/95bce58b-73ac-4769-b627-6ce79e0d8a6e');
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">

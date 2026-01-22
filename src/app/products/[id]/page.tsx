@@ -3,7 +3,9 @@ import { ProductType } from '@/types/products';
 import StoreBanneConfigurator from '@/components/StoreBanneConfigurator';
 import PorteBlindeeConfigurator from '@/components/PorteBlindeeConfigurator';
 import StoreAntichaleurConfigurator from '@/components/StoreAntichaleurConfigurator';
+import { StoreBanneKissimyConfigurator } from '@/components/StoreBanneKissimyConfigurator';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;
@@ -12,9 +14,9 @@ interface ProductPageProps {
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
   
-  // Redirect to dedicated KISSIMY page
+  // Redirect old kissimy route to UUID
   if (id === 'kissimy') {
-    redirect('/products/kissimy');
+    redirect('/products/95bce58b-73ac-4769-b627-6ce79e0d8a6e');
   }
   
   const product = await getProductById(id);
@@ -25,6 +27,27 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Produit non trouvé</h1>
           <a href="/" className="text-blue-600 hover:underline">Retour à l'accueil</a>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if this is the KISSIMY product
+  const isKissimy = product.name.includes('KISSIMY') || id === '95bce58b-73ac-4769-b627-6ce79e0d8a6e';
+
+  // If it's KISSIMY, use the special configurator
+  if (isKissimy) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-4">
+            <Link href="/products/store-banne" className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium">
+              ← Retour aux Stores Bannes
+            </Link>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
+          <StoreBanneKissimyConfigurator />
         </div>
       </div>
     );
