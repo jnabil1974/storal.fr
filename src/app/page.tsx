@@ -93,13 +93,6 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-8 border-t border-gray-800">
-        <div className="max-w-6xl mx-auto px-4">
-          <p className="text-center">&copy; 2026 Storal.fr. Tous droits réservés.</p>
-        </div>
-      </footer>
     </div>
   );
 }
