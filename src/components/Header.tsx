@@ -78,7 +78,7 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
-      {/* Top bar: Logo, Phone, User, Cart */}
+      {/* Top bar: Logo and Phone */}
       <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center border-b border-gray-200">
         {/* Logo */}
         <Link href="/">
@@ -87,95 +87,98 @@ export default function Header() {
           </div>
         </Link>
 
-        {/* Right side: Phone, User, Cart */}
-        <div className="flex items-center gap-6">
-          {/* Phone Number */}
-          <a href="tel:+33185093446" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition">
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-6 w-6" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" 
-              />
-            </svg>
-            <span className="text-lg font-semibold">01 85 09 34 46</span>
-          </a>
+        {/* Phone Number */}
+        <a href="tel:+33185093446" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition">
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className="h-6 w-6" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" 
+            />
+          </svg>
+          <span className="text-lg font-semibold">01 85 09 34 46</span>
+        </a>
+      </div>
 
-          {/* User Section */}
-          {user ? (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-gray-700">
+      {/* Bottom bar: Navigation, User, Cart */}
+      <nav className="max-w-6xl mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          {/* Navigation links */}
+          <div className="flex items-center gap-8">
+            <Link href="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              Accueil
+            </Link>
+            {showMyOrders && (
+              <Link href="/my-orders" className="text-gray-700 hover:text-blue-600 transition font-medium">
+                Mes commandes
+              </Link>
+            )}
+            {isAdmin && (
+              <Link href="/admin" className="text-gray-700 hover:text-blue-600 transition font-medium">
+                Admin
+              </Link>
+            )}
+          </div>
+
+          {/* Right side: User and Cart */}
+          <div className="flex items-center gap-6">
+            {/* User Section */}
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span className="text-sm">{user.email}</span>
+                </div>
+                <button 
+                  onClick={() => signOut()} 
+                  className="text-sm text-gray-600 hover:text-blue-600 transition"
+                >
+                  Déconnexion
+                </button>
+              </div>
+            ) : (
+              <Link href="/auth" className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <span className="text-sm">{user.email}</span>
-              </div>
-              <button 
-                onClick={() => signOut()} 
-                className="text-sm text-gray-600 hover:text-blue-600 transition"
-              >
-                Déconnexion
-              </button>
-            </div>
-          ) : (
-            <Link href="/auth" className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              <span className="text-sm font-medium">Connexion</span>
-            </Link>
-          )}
-          
-          {/* Cart Button */}
-          <Link href="/cart" className="relative">
-            <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition font-medium">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 8m10 0l2 8m0 0H9m8 0a2 2 0 100-4 2 2 0 000 4zm0 0a2 2 0 100-4 2 2 0 000 4z"
-                />
-              </svg>
-              Panier
-            </button>
-            {cart.totalItems > 0 && (
-              <span className="absolute top-0 right-0 transform translate-x-2 -translate-y-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                {cart.totalItems}
-              </span>
+                <span className="text-sm font-medium">Connexion</span>
+              </Link>
             )}
-          </Link>
-        </div>
-      </div>
-
-      {/* Bottom bar: Navigation */}
-      <nav className="max-w-6xl mx-auto px-4 py-3">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
-            Accueil
-          </Link>
-          {showMyOrders && (
-            <Link href="/my-orders" className="text-gray-700 hover:text-blue-600 transition font-medium">
-              Mes commandes
+            
+            {/* Cart Button */}
+            <Link href="/cart" className="relative">
+              <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition font-medium">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 8m10 0l2 8m0 0H9m8 0a2 2 0 100-4 2 2 0 000 4zm0 0a2 2 0 100-4 2 2 0 000 4z"
+                  />
+                </svg>
+                Panier
+              </button>
+              {cart.totalItems > 0 && (
+                <span className="absolute top-0 right-0 transform translate-x-2 -translate-y-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                  {cart.totalItems}
+                </span>
+              )}
             </Link>
-          )}
-          {isAdmin && (
-            <Link href="/admin" className="text-gray-700 hover:text-blue-600 transition font-medium">
-              Admin
-            </Link>
-          )}
+          </div>
         </div>
       </nav>
     </header>
