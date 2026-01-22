@@ -78,9 +78,9 @@ export default function ConfirmationPage() {
     // Title (centered)
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('CONFIRMATION DE COMMANDE', pageWidth / 2, yPos + 5, { align: 'center' });
+    doc.text('CONFIRMATION DE COMMANDE', pageWidth / 2, yPos + 12, { align: 'center' });
     
-    yPos += 35;
+    yPos += 45;
     doc.setDrawColor(0, 102, 204);
     doc.setLineWidth(0.5);
     doc.line(20, yPos, pageWidth - 20, yPos);
