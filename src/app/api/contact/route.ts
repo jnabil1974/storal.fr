@@ -8,7 +8,7 @@ const EMAIL_BCC = process.env.EMAIL_BCC;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, subject, message, recaptchaToken } = body;
+    const { name, email, phone, subject, title, message, recaptchaToken } = body;
 
     // Rate limiting par IP
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
           <p><strong>Email:</strong> ${email}</p>
           ${phone ? `<p><strong>Téléphone:</strong> ${phone}</p>` : ''}
           ${subject ? `<p><strong>Sujet:</strong> ${subject}</p>` : ''}
+          ${title ? `<p><strong>Titre:</strong> ${title}</p>` : ''}
         </div>
         <div style="background:#fff;padding:15px;border-left:4px solid #0066cc;margin:20px 0;">
           <p><strong>Message:</strong></p>
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
       to: EMAIL_FROM,
       bcc: EMAIL_BCC,
       reply_to: email,
-      subject: `Contact: ${subject || 'Demande de renseignements'} - ${name}`,
+      subject: `Contact: ${title || subject || 'Demande de renseignements'} - ${name}`,
       html,
     };
 

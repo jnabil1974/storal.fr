@@ -12,6 +12,7 @@ function ContactFormContent() {
     email: '',
     phone: '',
     subject: '',
+    title: '',
     message: '',
   });
   const [loading, setLoading] = useState(false);
@@ -49,7 +50,7 @@ function ContactFormContent() {
       }
 
       setSuccess(true);
-      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      setFormData({ name: '', email: '', phone: '', subject: '', title: '', message: '' });
     } catch (err: any) {
       setError(err.message || 'Erreur lors de l\'envoi du message');
     } finally {
@@ -143,6 +144,21 @@ function ContactFormContent() {
                   <option value="Autre">Autre</option>
                 </select>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Titre du message *
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Ex: Demande de devis pour store banne"
+              />
             </div>
 
             <div>
