@@ -3,10 +3,14 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
-export default function AuthPage() {
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
+
+function AuthPageContent() {
   const { signIn, signUp } = useAuth();
   const router = useRouter();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [mode, setMode] = useState<'login'|'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,8 +22,24 @@ export default function AuthPage() {
     e.preventDefault();
     setError('');
     setMessage('');
+
+    if (!executeRecaptcha) {
+      setError('reCAPTCHA non initialisé');
+      return;
+    }
+
     setLoading(true);
     try {
+      const recaptchaToken = await executeRecaptcha('auth_submit');
+      const verifyRes = await fetch('/api/recaptcha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recaptchaToken }),
+      });
+      if (!verifyRes.ok) {
+        throw new Error('Vérification reCAPTCHA échouée');
+      }
+
       if (mode === 'login') {
         await signIn(email, password);
         router.push('/');
@@ -29,7 +49,7 @@ export default function AuthPage() {
         setMode('login');
       }
     } catch (err: any) {
-      setError(err.message || 'Erreur');
+      setError(err?.message || 'Erreur');
     } finally {
       setLoading(false);
     }
@@ -86,5 +106,13 @@ export default function AuthPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY} scriptProps={{ async: true, defer: true }}>
+      <AuthPageContent />
+    </GoogleReCaptchaProvider>
   );
 }
