@@ -147,8 +147,11 @@ function ContactFormContent() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Message *
+                Votre message *
               </label>
+              <p className="text-sm text-gray-500 mb-2">
+                Décrivez votre projet ou votre demande de manière détaillée
+              </p>
               <textarea
                 name="message"
                 value={formData.message}
