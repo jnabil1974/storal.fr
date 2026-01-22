@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
+// Debug minimal: log whether test or live key is loaded (no full key)
+console.log(`[Stripe] Loaded key type: ${STRIPE_SECRET.startsWith('sk_test') ? 'TEST' : STRIPE_SECRET.startsWith('sk_live') ? 'LIVE' : 'UNKNOWN'}`);
+const stripe = require('stripe')(STRIPE_SECRET);
 
 type CheckoutItem = {
   product_id?: string;
