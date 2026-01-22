@@ -1,0 +1,213 @@
+'use client';
+
+import { useState } from 'react';
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
+
+function ContactFormContent() {
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess(false);
+
+    if (!executeRecaptcha) {
+      setError('reCAPTCHA non initialisé');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const recaptchaToken = await executeRecaptcha('contact_submit');
+
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, recaptchaToken }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Erreur lors de l\'envoi');
+      }
+
+      setSuccess(true);
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de l\'envoi du message');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 py-12">
+      <div className="max-w-3xl mx-auto px-4">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Contactez-nous</h1>
+          <p className="text-gray-600 mb-8">
+            Une question ? Un projet ? Notre équipe vous répond sous 24h.
+          </p>
+
+          {success && (
+            <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-lg">
+              ✓ Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais.
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-lg">
+              ✗ {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nom complet *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Jean Dupont"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="jean@example.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Téléphone
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="+33 1 23 45 67 89"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sujet
+                </label>
+                <select
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Sélectionner un sujet</option>
+                  <option value="Devis">Demande de devis</option>
+                  <option value="Information produit">Information produit</option>
+                  <option value="SAV">Service après-vente</option>
+                  <option value="Autre">Autre</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Message *
+              </label>
+              <textarea
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                required
+                rows={6}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Décrivez votre demande..."
+              />
+            </div>
+
+            <div className="flex items-start gap-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Envoi en cours...' : 'Envoyer le message'}
+              </button>
+
+              <div className="flex-1">
+                <p className="text-xs text-gray-500">
+                  En soumettant ce formulaire, vous acceptez que vos données soient utilisées pour vous répondre.
+                </p>
+              </div>
+            </div>
+          </form>
+
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Autres moyens de nous contacter</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-1">Email</p>
+                <a href="mailto:contact@storal.fr" className="text-blue-600 hover:underline">
+                  contact@storal.fr
+                </a>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-1">Téléphone</p>
+                <a href="tel:+33123456789" className="text-blue-600 hover:underline">
+                  +33 1 23 45 67 89
+                </a>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-1">Horaires</p>
+                <p className="text-gray-600 text-sm">Lun-Ven: 9h-18h</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY} scriptProps={{ async: true, defer: true }}>
+      <ContactFormContent />
+    </GoogleReCaptchaProvider>
+  );
+}
