@@ -1,11 +1,44 @@
 import Link from 'next/link';
-import { getProducts } from '@/lib/database';
 
-export const revalidate = 0; // Dynamic rendering - fetch products on every request
-
-export default async function HomePage() {
-  const products = await getProducts();
-  console.log(`[HomePage] Received ${products.length} products:`, products.map(p => ({ id: p.id, name: p.name, type: p.type })));
+export default function HomePage() {
+  const categories = [
+    {
+      id: 'store-banne',
+      name: 'Stores Bannes',
+      description: 'Protection solaire élégante pour terrasses et balcons. Personnalisables en dimensions et coloris.',
+      icon: (
+        <svg className="w-16 h-16 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
+        </svg>
+      ),
+      href: '/products/store-banne',
+      gradient: 'from-orange-100 to-yellow-100'
+    },
+    {
+      id: 'store-antichaleur',
+      name: 'Stores Anti-Chaleur',
+      description: 'Solutions thermiques pour fenêtres et vérandas. Réduction efficace de la température intérieure.',
+      icon: (
+        <svg className="w-16 h-16 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      ),
+      href: '/products/store-antichaleur',
+      gradient: 'from-red-100 to-orange-100'
+    },
+    {
+      id: 'porte-blindee',
+      name: 'Portes Blindées',
+      description: 'Sécurité maximale pour votre domicile. Certification A2P, isolation phonique et thermique.',
+      icon: (
+        <svg className="w-16 h-16 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      ),
+      href: '/products/porte-blindee',
+      gradient: 'from-gray-100 to-slate-100'
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
@@ -20,39 +53,24 @@ export default async function HomePage() {
       {/* Contenu principal */}
       <main className="max-w-6xl mx-auto px-4 py-12">
         <section className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Nos Produits</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">Nos Gammes de Produits</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
-              <Link key={product.id} href={`/products/${product.id}`}>
-                <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col overflow-hidden">
-                  {/* Image placeholder */}
-                  <div className="w-full h-48 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                    <svg
-                      className="w-24 h-24 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" />
-                    </svg>
+            {categories.map((category) => (
+              <Link key={category.id} href={category.href}>
+                <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-all cursor-pointer h-full flex flex-col overflow-hidden group">
+                  {/* Header avec icône */}
+                  <div className={`w-full h-48 bg-gradient-to-br ${category.gradient} flex items-center justify-center group-hover:scale-105 transition-transform`}>
+                    {category.icon}
                   </div>
 
                   {/* Contenu */}
                   <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{product.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4 flex-grow">{product.description}</p>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">{category.name}</h3>
+                    <p className="text-gray-600 mb-4 flex-grow">{category.description}</p>
                     
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-                      <span className="text-lg font-bold text-blue-600">À partir de {product.basePrice}€</span>
-                      <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">
-                        {product.category}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Bouton */}
-                  <div className="px-6 pb-6">
-                    <button className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
-                      Configurer
+                    {/* Bouton */}
+                    <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition mt-4 group-hover:bg-blue-700">
+                      Découvrir →
                     </button>
                   </div>
                 </div>
