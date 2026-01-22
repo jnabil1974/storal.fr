@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdminClient, getSupabaseClient } from '@/lib/supabase';
+import { sendOrderConfirmationEmail } from '@/lib/email';
 
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 // Debug minimal: log whether test or live key is loaded (no full key)
@@ -146,6 +147,31 @@ export async function POST(request: NextRequest) {
       console.error('[Checkout] Supabase insert error', orderError);
       return NextResponse.json({ error: 'Erreur lors de la création de la commande' }, { status: 500 });
     }
+
+    // Envoi de l'email de confirmation (non bloquant sur la réponse, mais logué)
+    (async () => {
+      try {
+        const emailPayload = {
+          userId: userIdToUse || undefined,
+          sessionId: sessionId || order.session_id,
+          customerName,
+          customerEmail,
+          customerPhone,
+          deliveryAddress,
+          deliveryCity,
+          deliveryPostalCode,
+          deliveryCountry,
+          items,
+          totalItems: total_items,
+          totalAmount: total_amount,
+          paymentMethod,
+        };
+        const ok = await sendOrderConfirmationEmail({ order, payload: emailPayload as any });
+        console.log('[Checkout] Email confirmation sent?', ok);
+      } catch (e) {
+        console.error('[Checkout] Email send failed', e);
+      }
+    })();
 
     // Stripe Payment Intent si paiement carte
     if (paymentMethod === 'stripe') {
