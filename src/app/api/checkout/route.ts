@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Créer commande en attente
-    const { data: order, error: orderError } = await supabase
+    const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert([
         {
