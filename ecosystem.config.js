@@ -7,7 +7,8 @@ module.exports = {
       args: 'start -p 3001',
       instances: 1,
       exec_mode: 'fork',
-      env_file: '.env',
+      // Use production env file to avoid accidental overrides
+      env_file: '.env.production',
       env: {
         NODE_ENV: 'production',
       }
