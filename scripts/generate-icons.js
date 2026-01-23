@@ -11,6 +11,7 @@ async function run() {
   const outFavicon16 = path.join(root, 'public', 'favicon-16.png');
   const outFavicon32 = path.join(root, 'public', 'favicon-32.png');
   const outIco = path.join(root, 'public', 'favicon.ico');
+  const outFavicon48 = path.join(root, 'public', 'favicon-48.png');
 
   if (!fs.existsSync(srcSvg)) {
     console.error('SVG source not found:', srcSvg);
@@ -36,14 +37,15 @@ async function run() {
   // Public PNGs for ICO generation
   await sharp(svgData).resize(16, 16).png().toFile(outFavicon16);
   await sharp(svgData).resize(32, 32).png().toFile(outFavicon32);
-  console.log('Wrote', outFavicon16, 'and', outFavicon32);
+  await sharp(svgData).resize(48, 48).png().toFile(outFavicon48);
+  console.log('Wrote', outFavicon16, ',', outFavicon32, 'and', outFavicon48);
 
   // Load ESM-only png-to-ico and generate ICO for Safari fallback
   if (!pngToIco) {
     const mod = await import('png-to-ico');
     pngToIco = mod.default || mod;
   }
-  const icoBuffer = await pngToIco([outFavicon16, outFavicon32]);
+  const icoBuffer = await pngToIco([outFavicon16, outFavicon32, outFavicon48]);
   fs.writeFileSync(outIco, icoBuffer);
   console.log('Wrote', outIco);
 }

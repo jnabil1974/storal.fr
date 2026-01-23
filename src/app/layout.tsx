@@ -22,9 +22,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.svg?v=2", type: "image/svg+xml", sizes: "any" },
-      { url: "/favicon.ico?v=1", type: "image/x-icon" },
+      { url: "/favicon.ico?v=2", type: "image/x-icon" },
       { url: "/icon.png?v=1", type: "image/png", sizes: "32x32" },
     ],
+    shortcut: ["/favicon.ico?v=2"],
     apple: [{ url: "/apple-icon.png?v=1", sizes: "180x180" }],
     other: [
       { rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#1A2B4C" },
