@@ -5,6 +5,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { getSupabaseClient } from '@/lib/supabase';
+import Logo from './Logo';
 
 export default function Header() {
   const { cart } = useCart();
@@ -82,8 +83,8 @@ export default function Header() {
       <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center border-b border-gray-200">
         {/* Logo */}
         <Link href="/">
-          <div className="text-2xl font-bold text-blue-600 cursor-pointer">
-            Storal
+          <div className="cursor-pointer hover:opacity-80 transition">
+            <Logo />
           </div>
         </Link>
 

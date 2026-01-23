@@ -19,6 +19,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Storal.fr - Stores et Fermetures sur mesure",
   description: "Créez vos stores, portes blindées et fermetures sur mesure",
+  icons: {
+    icon: [
+      { url: "/favicon.svg?v=2", type: "image/svg+xml", sizes: "any" },
+      { url: "/icon.png?v=1", type: "image/png", sizes: "32x32" },
+    ],
+    apple: [{ url: "/apple-icon.png?v=1", sizes: "180x180" }],
+    other: [
+      { rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#1A2B4C" },
+    ],
+  },
 };
 
 export default function RootLayout({
