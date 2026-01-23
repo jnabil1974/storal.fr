@@ -23,7 +23,7 @@ git push
 # Déploiement serveur
 echo ""
 echo "🚀 Déploiement sur le serveur..."
-ssh ubuntu@51.210.244.26 "cd /var/www/storal.fr && git pull && npm run build && pm2 restart storal-next"
+ssh ubuntu@51.210.244.26 "cd /var/www/storal.fr && git pull && npm ci && npm run build -- --webpack && pm2 restart storal-next"
 
 echo ""
 echo "✅ Déploiement terminé!"

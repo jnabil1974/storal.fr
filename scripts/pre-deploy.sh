@@ -31,8 +31,8 @@ echo "✅ Aucun import dupliqué"
 
 # 2. Build local
 echo ""
-echo "2️⃣ Build local..."
-npm run build
+echo "2️⃣ Build local (Webpack)..."
+npm run build -- --webpack
 
 if [ $? -eq 0 ]; then
   echo ""
