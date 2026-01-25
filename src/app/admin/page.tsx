@@ -181,6 +181,21 @@ export default function AdminDashboard() {
             Gérer les toiles →
           </Link>
         </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Abonnés Newsletter</p>
+              <p className="text-3xl font-bold text-purple-600 mt-2">—</p>
+            </div>
+            <div className="bg-purple-100 rounded-full p-4">
+              <span className="text-3xl">📧</span>
+            </div>
+          </div>
+          <Link href="/admin/newsletter" className="text-sm text-purple-600 hover:text-purple-700 mt-4 inline-block">
+            Gérer newsletter →
+          </Link>
+        </div>
       </div>
 
       {/* Actions rapides */}
@@ -206,6 +221,17 @@ export default function AdminDashboard() {
             <div>
               <p className="font-semibold text-gray-900">Voir les commandes</p>
               <p className="text-sm text-gray-600">Gérer les demandes clients</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/newsletter"
+            className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
+          >
+            <span className="text-3xl">📧</span>
+            <div>
+              <p className="font-semibold text-gray-900">Abonnés Newsletter</p>
+              <p className="text-sm text-gray-600">Gérer les inscriptions</p>
             </div>
           </Link>
         </div>
