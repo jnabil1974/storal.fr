@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase
       .from('newsletter')
-      .select('email, status')
+      .select('email, status, subscribed_at')
       .eq('email', email.toLowerCase())
       .single();
 
