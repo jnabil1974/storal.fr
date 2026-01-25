@@ -299,11 +299,14 @@ export default function AdminOrdersPage() {
                             ? (() => { try { return JSON.parse(item.configuration); } catch { return item.configuration; } })()
                             : item.configuration;
                           
+                          // Nom du produit: préférer product_name, sinon fallback sur productName ou ID
+                          const productName = item.product_name || item.productName || `Produit ${item.product_id || ''}`.trim() || 'Produit sans nom';
+                          
                           return (
                             <div key={idx} className="border rounded p-4 bg-gray-50">
                               <div className="flex justify-between items-start mb-2">
                                 <div>
-                                  <p className="font-bold text-lg">{item.product_name || 'Produit'}</p>
+                                  <p className="font-bold text-lg">{productName}</p>
                                   <p className="text-sm text-gray-600">ID: {item.product_id || '—'}</p>
                                 </div>
                                 <div className="text-right">
@@ -328,8 +331,20 @@ export default function AdminOrdersPage() {
                                     {config.type && <p>🏷️ <span className="text-gray-600">Type:</span> <span className="font-medium">{config.type}</span></p>}
                                     {config.grille && <p>🔲 <span className="text-gray-600">Grille:</span> <span className="font-medium">{config.grille}</span></p>}
                                     {config.vitrage && <p>🪟 <span className="text-gray-600">Vitrage:</span> <span className="font-medium">{config.vitrage}</span></p>}
+                                    {config.width && <p>📏 <span className="text-gray-600">Largeur:</span> <span className="font-medium">{config.width} cm</span></p>}
+                                    {config.height && <p>📐 <span className="text-gray-600">Hauteur:</span> <span className="font-medium">{config.height} cm</span></p>}
+                                    {config.doorType && <p>🚪 <span className="text-gray-600">Type porte:</span> <span className="font-medium">{config.doorType}</span></p>}
+                                    {config.lockType && <p>🔒 <span className="text-gray-600">Serrure:</span> <span className="font-medium">{config.lockType}</span></p>}
+                                    {config.material && <p>🔧 <span className="text-gray-600">Matériau:</span> <span className="font-medium">{config.material}</span></p>}
+                                    {config.glassType && <p>🪟 <span className="text-gray-600">Vitrage:</span> <span className="font-medium">{config.glassType}</span></p>}
+                                    {config.thickness && <p>📏 <span className="text-gray-600">Épaisseur:</span> <span className="font-medium">{config.thickness} mm</span></p>}
+                                    {config.securityLevel && <p>🔐 <span className="text-gray-600">Sécurité:</span> <span className="font-medium">{config.securityLevel}</span></p>}
+                                    {config.soundProofing !== undefined && <p>🔇 <span className="text-gray-600">Isolation phonique:</span> <span className="font-medium">{config.soundProofing ? 'Oui' : 'Non'}</span></p>}
+                                    {config.thermalProofing !== undefined && <p>🌡️ <span className="text-gray-600">Isolation thermique:</span> <span className="font-medium">{config.thermalProofing ? 'Oui' : 'Non'}</span></p>}
+                                    {config.glassPercentage !== undefined && <p>💯 <span className="text-gray-600">% vitrage:</span> <span className="font-medium">{config.glassPercentage}%</span></p>}
+                                    {config.color && <p>🎨 <span className="text-gray-600">Couleur:</span> <span className="font-medium" style={{backgroundColor: config.color, padding: '2px 8px', borderRadius: '4px', border: '1px solid #ccc'}}>{config.color}</span></p>}
                                     {/* Afficher les options restantes */}
-                                    {Object.keys(config).filter(k => !['largeur', 'hauteur', 'profondeur', 'avancee', 'couleur', 'tissu', 'toile', 'motorisation', 'led', 'type', 'grille', 'vitrage'].includes(k)).map(key => (
+                                    {Object.keys(config).filter(k => !['largeur', 'hauteur', 'profondeur', 'avancee', 'couleur', 'tissu', 'toile', 'motorisation', 'led', 'type', 'grille', 'vitrage', 'width', 'height', 'doorType', 'lockType', 'material', 'glassType', 'thickness', 'securityLevel', 'soundProofing', 'thermalProofing', 'glassPercentage', 'color'].includes(k)).map(key => (
                                       <p key={key}>
                                         📌 <span className="text-gray-600">{key}:</span> <span className="font-medium">{String(config[key])}</span>
                                       </p>
