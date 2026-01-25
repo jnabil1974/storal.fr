@@ -2,11 +2,25 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import Script from 'next/script';
 
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+  const getRecaptchaToken = async () => {
+    if (!siteKey) return null;
+    if (typeof window === 'undefined' || !(window as any).grecaptcha) return null;
+    try {
+      return await (window as any).grecaptcha.execute(siteKey, { action: 'newsletter' });
+    } catch (error) {
+      console.error('recaptcha execute error:', error);
+      return null;
+    }
+  };
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,10 +28,12 @@ export default function Footer() {
     setMessage('');
 
     try {
+      const recaptchaToken = await getRecaptchaToken();
+
       const response = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, recaptchaToken }),
       });
 
       const result = await response.json();
@@ -38,6 +54,12 @@ export default function Footer() {
 
   return (
     <footer className="bg-gray-900 text-gray-300">
+      {siteKey && (
+        <Script
+          src={`https://www.google.com/recaptcha/api.js?render=${siteKey}`}
+          strategy="afterInteractive"
+        />
+      )}
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Column 1: Company Information */}
