@@ -31,9 +31,13 @@ CREATE POLICY "Newsletter select" ON newsletter
   TO authenticated
   USING (true);
 
--- Autoriser update/delete aux utilisateurs authentifiés (pour actions admin)
-CREATE POLICY "Newsletter modify" ON newsletter
-  FOR UPDATE, DELETE
+CREATE POLICY "Newsletter update" ON newsletter
+  FOR UPDATE
   TO authenticated
   USING (true)
   WITH CHECK (true);
+
+CREATE POLICY "Newsletter delete" ON newsletter
+  FOR DELETE
+  TO authenticated
+  USING (true);
