@@ -42,9 +42,15 @@ export async function POST(request: NextRequest) {
   try {
     const { email, recaptchaToken } = await request.json();
 
-    // Vérification reCAPTCHA si configuré
+    // Vérification reCAPTCHA si configuré avec des clés réelles
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-    const recaptchaEnabled = Boolean(siteKey && process.env.RECAPTCHA_SECRET_KEY);
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    const usingTestKeys = 
+      siteKey === '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI' ||
+      secretKey === '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe';
+    
+    // Vérifier reCAPTCHA seulement si ce ne sont pas des clés de test
+    const recaptchaEnabled = Boolean(siteKey && secretKey && !usingTestKeys);
     if (recaptchaEnabled) {
       const ok = await verifyRecaptcha(recaptchaToken);
       if (!ok) {
