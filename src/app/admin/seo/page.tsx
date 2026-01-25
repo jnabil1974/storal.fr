@@ -26,6 +26,7 @@ export default function AdminSEOPage() {
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isAuthed, setIsAuthed] = useState(false);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -35,10 +36,12 @@ export default function AdminSEOPage() {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        setLoading(false);
         router.push('/auth');
         return;
       }
 
+      setIsAuthed(true);
       fetchPages();
     };
 
@@ -113,9 +116,13 @@ export default function AdminSEOPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-8 flex items-center justify-center">
-        <div className="text-gray-600">Chargement...</div>
+        <div className="text-gray-600">Vérification de l''authentification...</div>
       </div>
     );
+  }
+
+  if (!isAuthed) {
+    return null;
   }
 
   return (
