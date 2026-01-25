@@ -10,6 +10,11 @@ async function verifyRecaptcha(token?: string): Promise<boolean> {
     return true;
   }
 
+  // Clés de test Google acceptées quel que soit l'environnement (utile si prod encore en clé de test)
+  if (process.env.RECAPTCHA_SECRET_KEY === '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe') {
+    return true;
+  }
+
   if (!token) return false;
   const secret = process.env.RECAPTCHA_SECRET_KEY;
   if (!secret) return false;
