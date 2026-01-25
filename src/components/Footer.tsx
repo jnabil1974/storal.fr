@@ -15,7 +15,22 @@ export default function Footer() {
     if (!siteKey) return null;
     if (typeof window === 'undefined' || !(window as any).grecaptcha) return null;
     try {
-      return await (window as any).grecaptcha.execute(siteKey, { action: 'newsletter' });
+      // Ensure grecaptcha is fully loaded
+      const grecaptcha = (window as any).grecaptcha;
+      if (grecaptcha.ready) {
+        return await new Promise<string | null>((resolve) => {
+          grecaptcha.ready(async () => {
+            try {
+              const t = await grecaptcha.execute(siteKey, { action: 'newsletter' });
+              resolve(t);
+            } catch (e) {
+              console.error('recaptcha execute error:', e);
+              resolve(null);
+            }
+          });
+        });
+      }
+      return await grecaptcha.execute(siteKey, { action: 'newsletter' });
     } catch (error) {
       console.error('recaptcha execute error:', error);
       return null;

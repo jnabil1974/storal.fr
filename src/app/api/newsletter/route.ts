@@ -11,7 +11,10 @@ async function verifyRecaptcha(token?: string): Promise<boolean> {
   }
 
   // Clés de test Google acceptées quel que soit l'environnement (utile si prod encore en clé de test)
-  if (process.env.RECAPTCHA_SECRET_KEY === '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe') {
+  if (
+    process.env.RECAPTCHA_SECRET_KEY === '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe' ||
+    process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY === '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
+  ) {
     return true;
   }
 
