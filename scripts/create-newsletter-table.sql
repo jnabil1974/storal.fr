@@ -10,6 +10,16 @@ CREATE TABLE IF NOT EXISTS newsletter (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_newsletter_email ON newsletter(email);
 CREATE INDEX IF NOT EXISTS idx_newsletter_status ON newsletter(status);
 
+-- Colonnes pour double opt-in et désinscription
+ALTER TABLE newsletter ADD COLUMN IF NOT EXISTS verified_at TIMESTAMP NULL;
+ALTER TABLE newsletter ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255) NULL;
+ALTER TABLE newsletter ADD COLUMN IF NOT EXISTS unsubscribe_token VARCHAR(255) NULL;
+ALTER TABLE newsletter ADD COLUMN IF NOT EXISTS unsubscribed_at TIMESTAMP NULL;
+
+CREATE INDEX IF NOT EXISTS idx_newsletter_verified_at ON newsletter(verified_at);
+CREATE INDEX IF NOT EXISTS idx_newsletter_verification_token ON newsletter(verification_token);
+CREATE INDEX IF NOT EXISTS idx_newsletter_unsubscribe_token ON newsletter(unsubscribe_token);
+
 -- Activer la RLS
 ALTER TABLE newsletter ENABLE ROW LEVEL SECURITY;
 

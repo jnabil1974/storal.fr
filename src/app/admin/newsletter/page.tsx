@@ -11,6 +11,7 @@ type NewsletterSubscriber = {
   email: string;
   subscribed_at: string;
   status: 'active' | 'unsubscribed';
+  verified_at?: string | null;
 };
 
 export default function AdminNewsletter() {
@@ -158,6 +159,7 @@ export default function AdminNewsletter() {
 
   const activeCount = subscribers.filter(s => s.status === 'active').length;
   const unsubscribedCount = subscribers.filter(s => s.status === 'unsubscribed').length;
+  const pendingCount = subscribers.filter(s => s.status === 'pending').length;
 
   if (checkingAuth) {
     return (
@@ -188,7 +190,7 @@ export default function AdminNewsletter() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-600">Total abonnés</div>
             <div className="text-3xl font-bold text-gray-900">{subscribers.length}</div>
@@ -200,6 +202,10 @@ export default function AdminNewsletter() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-600">Désabonnés</div>
             <div className="text-3xl font-bold text-red-600">{unsubscribedCount}</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-sm text-gray-600">En attente</div>
+            <div className="text-3xl font-bold text-orange-600">{pendingCount}</div>
           </div>
         </div>
 
@@ -248,6 +254,7 @@ export default function AdminNewsletter() {
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Date d'inscription</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Statut</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Vérifié</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
                 </tr>
               </thead>
@@ -272,6 +279,13 @@ export default function AdminNewsletter() {
                       }`}>
                         {subscriber.status === 'active' ? '✓ Actif' : '✗ Désabonné'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {subscriber.verified_at ? (
+                        <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">Oui</span>
+                      ) : (
+                        <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">Non</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm space-x-2">
                       {subscriber.status === 'active' && (

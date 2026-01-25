@@ -69,10 +69,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert email into newsletter table
+    // Generate tokens
+    const verificationToken = (globalThis.crypto?.randomUUID && globalThis.crypto.randomUUID()) || Math.random().toString(36).slice(2);
+    const unsubscribeToken = (globalThis.crypto?.randomUUID && globalThis.crypto.randomUUID()) || Math.random().toString(36).slice(2);
+
+    // Insert as pending until verified
     const { data, error } = await supabase
       .from('newsletter')
-      .insert([{ email: email.toLowerCase(), status: 'active' }])
+      .insert([{ 
+        email: email.toLowerCase(), 
+        status: 'pending',
+        verification_token: verificationToken,
+        unsubscribe_token: unsubscribeToken,
+      }])
       .select();
 
     if (error) {
@@ -91,9 +100,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Send confirmation email via Resend
+    const RESEND_API_KEY = process.env.RESEND_API_KEY;
+    const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@storal.fr';
+    const origin = request.headers.get('origin') || process.env.APP_URL || 'https://storal.fr';
+    const confirmUrl = `${origin}/api/newsletter/confirm?token=${verificationToken}`;
+    const unsubscribeUrl = `${origin}/api/newsletter/unsubscribe?token=${unsubscribeToken}`;
+
+    if (RESEND_API_KEY) {
+      const body = {
+        from: EMAIL_FROM,
+        to: email.toLowerCase(),
+        subject: 'Confirmez votre inscription à la newsletter Storal',
+        html: `
+          <div style="font-family:Arial,sans-serif;color:#111;line-height:1.5;">
+            <h2>Bienvenue chez Storal</h2>
+            <p>Merci pour votre inscription à notre newsletter.</p>
+            <p>Pour confirmer votre abonnement, cliquez ici :</p>
+            <p><a href="${confirmUrl}" style="color:#2563eb;">Confirmer mon inscription</a></p>
+            <hr style="margin:16px 0;border:none;border-top:1px solid #e5e7eb;"/>
+            <p style="font-size:12px;color:#666;">Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer ce message ou vous désinscrire :</p>
+            <p style="font-size:12px;"><a href="${unsubscribeUrl}" style="color:#6b7280;">Se désinscrire</a></p>
+          </div>
+        `,
+      };
+      try {
+        const res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          console.warn('Resend email error:', res.status, await res.text());
+        }
+      } catch (err) {
+        console.warn('Resend email exception:', err);
+      }
+    }
+
     return NextResponse.json(
       { 
-        message: 'Merci pour votre inscription !',
+        message: 'Merci ! Veuillez confirmer via l\'email envoyé.',
         data: data
       },
       { status: 201 }
