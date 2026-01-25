@@ -13,13 +13,27 @@ export default function Footer() {
     setLoading(true);
     setMessage('');
 
-    // TODO: Implement newsletter subscription
-    // For now, just simulate success
-    setTimeout(() => {
-      setMessage('Merci pour votre inscription !');
-      setEmail('');
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok || response.status === 200) {
+        setMessage(result.message || 'Merci pour votre inscription !');
+        setEmail('');
+      } else {
+        setMessage(result.error || 'Erreur lors de l\'inscription');
+      }
+    } catch (error) {
+      console.error('Newsletter error:', error);
+      setMessage('Erreur de connexion');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -98,7 +112,9 @@ export default function Footer() {
                 {loading ? 'Inscription...' : "S'inscrire"}
               </button>
               {message && (
-                <p className="text-sm text-green-400">{message}</p>
+                <p className={`text-sm ${message.includes('Erreur') ? 'text-red-400' : 'text-green-400'}`}>
+                  {message}
+                </p>
               )}
             </form>
           </div>
