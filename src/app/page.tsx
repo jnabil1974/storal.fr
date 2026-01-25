@@ -1,4 +1,25 @@
 import Link from 'next/link';
+import { Metadata } from 'next';
+import { getSEOMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSEOMetadata('/');
+  return {
+    title: seo?.title || 'Storal.fr - Stores et Fermetures sur mesure',
+    description: seo?.description || 'Créez vos stores, portes blindées et fermetures sur mesure',
+    keywords: seo?.keywords,
+    openGraph: {
+      title: seo?.og_title || seo?.title,
+      description: seo?.og_description || seo?.description,
+      url: seo?.canonical_url || 'https://storal.fr/',
+      images: seo?.og_image ? [{ url: seo.og_image }] : [],
+    },
+    robots: seo?.robots || 'index, follow',
+    alternates: {
+      canonical: seo?.canonical_url || 'https://storal.fr/',
+    },
+  };
+}
 
 export default function HomePage() {
   const categories = [

@@ -1,6 +1,27 @@
 import Link from 'next/link';
+import { Metadata } from 'next';
 import { getProducts } from '@/lib/database';
 import { ProductType } from '@/types/products';
+import { getSEOMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSEOMetadata('products/store-banne');
+  return {
+    title: seo?.title || 'Stores Bannes | Storal.fr',
+    description: seo?.description || 'Stores bannes élégants pour terrasses et balcons. Personnalisables en dimensions et motorisation.',
+    keywords: seo?.keywords,
+    openGraph: {
+      title: seo?.og_title || seo?.title,
+      description: seo?.og_description || seo?.description,
+      url: seo?.canonical_url || 'https://storal.fr/products/store-banne',
+      images: seo?.og_image ? [{ url: seo.og_image }] : [],
+    },
+    robots: seo?.robots || 'index, follow',
+    alternates: {
+      canonical: seo?.canonical_url || 'https://storal.fr/products/store-banne',
+    },
+  };
+}
 
 export default async function StoreBannePage() {
   const allProducts = await getProducts();

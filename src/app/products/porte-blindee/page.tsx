@@ -1,6 +1,27 @@
 import Link from 'next/link';
+import { Metadata } from 'next';
 import { getProducts } from '@/lib/database';
 import { ProductType } from '@/types/products';
+import { getSEOMetadata } from '@/lib/seo';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSEOMetadata('products/porte-blindee');
+  return {
+    title: seo?.title || 'Portes Blindées | Storal.fr',
+    description: seo?.description || 'Portes blindées sécurisées, certifiées A2P avec isolation phonique et thermique',
+    keywords: seo?.keywords,
+    openGraph: {
+      title: seo?.og_title || seo?.title,
+      description: seo?.og_description || seo?.description,
+      url: seo?.canonical_url || 'https://storal.fr/products/porte-blindee',
+      images: seo?.og_image ? [{ url: seo.og_image }] : [],
+    },
+    robots: seo?.robots || 'index, follow',
+    alternates: {
+      canonical: seo?.canonical_url || 'https://storal.fr/products/porte-blindee',
+    },
+  };
+}
 
 export default async function PorteBlindeePage() {
   const allProducts = await getProducts();

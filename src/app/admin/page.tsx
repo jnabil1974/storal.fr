@@ -234,6 +234,17 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-600">Gérer les inscriptions</p>
             </div>
           </Link>
+
+          <Link
+            href="/admin/seo"
+            className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
+          >
+            <span className="text-3xl">🔍</span>
+            <div>
+              <p className="font-semibold text-gray-900">Gestion SEO</p>
+              <p className="text-sm text-gray-600">Métadonnées et référencement</p>
+            </div>
+          </Link>
         </div>
       </div>
 
