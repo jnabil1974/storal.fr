@@ -9,3 +9,31 @@ CREATE TABLE IF NOT EXISTS newsletter (
 -- Index for email lookups
 CREATE UNIQUE INDEX IF NOT EXISTS idx_newsletter_email ON newsletter(email);
 CREATE INDEX IF NOT EXISTS idx_newsletter_status ON newsletter(status);
+
+-- Activer la RLS
+ALTER TABLE newsletter ENABLE ROW LEVEL SECURITY;
+
+-- Nettoyage des anciennes policies
+DROP POLICY IF EXISTS "Public can insert newsletter" ON newsletter;
+DROP POLICY IF EXISTS "Admins can manage newsletter" ON newsletter;
+DROP POLICY IF EXISTS "Anyone can subscribe to newsletter" ON newsletter;
+DROP POLICY IF EXISTS "Admins can read newsletter" ON newsletter;
+
+-- Autoriser l'insert pour les rôles anon/auth (utilisé par l'API newsletter)
+CREATE POLICY "Newsletter insert" ON newsletter
+  FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
+
+-- Autoriser la lecture aux utilisateurs authentifiés (dashboard admin passe par Supabase auth)
+CREATE POLICY "Newsletter select" ON newsletter
+  FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- Autoriser update/delete aux utilisateurs authentifiés (pour actions admin)
+CREATE POLICY "Newsletter modify" ON newsletter
+  FOR UPDATE, DELETE
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
