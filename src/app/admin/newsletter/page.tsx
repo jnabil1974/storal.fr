@@ -10,7 +10,7 @@ type NewsletterSubscriber = {
   id: string;
   email: string;
   subscribed_at: string;
-  status: 'active' | 'unsubscribed';
+  status: 'active' | 'unsubscribed' | 'pending';
   verified_at?: string | null;
 };
 
