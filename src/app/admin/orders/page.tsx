@@ -293,20 +293,53 @@ export default function AdminOrdersPage() {
                   {selectedOrder.items && selectedOrder.items.length > 0 && (
                     <div>
                       <h3 className="font-semibold text-lg mb-2">Articles</h3>
-                      <div className="space-y-2">
-                        {selectedOrder.items.map((item: any, idx: number) => (
-                          <div key={idx} className="border rounded p-3 bg-gray-50">
-                            <p className="font-medium">{item.product_name || 'Produit'}</p>
-                            <p className="text-sm text-gray-600">Quantité: {item.quantity}</p>
-                            <p className="text-sm text-gray-600">Prix unitaire: {Number(item.price_per_unit || 0).toFixed(2)}€</p>
-                            {item.configuration && (
-                              <details className="mt-2">
-                                <summary className="text-sm text-blue-600 cursor-pointer">Configuration</summary>
-                                <pre className="text-xs bg-white p-2 mt-1 rounded overflow-x-auto">{JSON.stringify(item.configuration, null, 2)}</pre>
-                              </details>
-                            )}
-                          </div>
-                        ))}
+                      <div className="space-y-3">
+                        {selectedOrder.items.map((item: any, idx: number) => {
+                          const config = typeof item.configuration === 'string' 
+                            ? (() => { try { return JSON.parse(item.configuration); } catch { return item.configuration; } })()
+                            : item.configuration;
+                          
+                          return (
+                            <div key={idx} className="border rounded p-4 bg-gray-50">
+                              <div className="flex justify-between items-start mb-2">
+                                <div>
+                                  <p className="font-bold text-lg">{item.product_name || 'Produit'}</p>
+                                  <p className="text-sm text-gray-600">ID: {item.product_id || '—'}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm text-gray-600">Qté: {item.quantity}</p>
+                                  <p className="font-semibold">{Number(item.price_per_unit || 0).toFixed(2)}€ u.</p>
+                                </div>
+                              </div>
+
+                              {config && typeof config === 'object' && (
+                                <div className="mt-3 pt-3 border-t border-gray-300 space-y-2">
+                                  <p className="text-sm font-semibold text-gray-700">Options:</p>
+                                  <div className="text-sm space-y-1 pl-2">
+                                    {config.largeur && <p>📏 <span className="text-gray-600">Largeur:</span> <span className="font-medium">{config.largeur} mm</span></p>}
+                                    {config.hauteur && <p>📐 <span className="text-gray-600">Hauteur:</span> <span className="font-medium">{config.hauteur} mm</span></p>}
+                                    {config.profondeur && <p>📐 <span className="text-gray-600">Profondeur:</span> <span className="font-medium">{config.profondeur} mm</span></p>}
+                                    {config.avancee && <p>➡️ <span className="text-gray-600">Avancée:</span> <span className="font-medium">{config.avancee} mm</span></p>}
+                                    {config.couleur && <p>🎨 <span className="text-gray-600">Couleur:</span> <span className="font-medium">{config.couleur}</span></p>}
+                                    {config.tissu && <p>🧵 <span className="text-gray-600">Tissu:</span> <span className="font-medium">{config.tissu}</span></p>}
+                                    {config.toile && <p>🧵 <span className="text-gray-600">Toile:</span> <span className="font-medium">{config.toile}</span></p>}
+                                    {config.motorisation && <p>⚡ <span className="text-gray-600">Motorisation:</span> <span className="font-medium">{config.motorisation}</span></p>}
+                                    {config.led && <p>💡 <span className="text-gray-600">LED:</span> <span className="font-medium">{config.led}</span></p>}
+                                    {config.type && <p>🏷️ <span className="text-gray-600">Type:</span> <span className="font-medium">{config.type}</span></p>}
+                                    {config.grille && <p>🔲 <span className="text-gray-600">Grille:</span> <span className="font-medium">{config.grille}</span></p>}
+                                    {config.vitrage && <p>🪟 <span className="text-gray-600">Vitrage:</span> <span className="font-medium">{config.vitrage}</span></p>}
+                                    {/* Afficher les options restantes */}
+                                    {Object.keys(config).filter(k => !['largeur', 'hauteur', 'profondeur', 'avancee', 'couleur', 'tissu', 'toile', 'motorisation', 'led', 'type', 'grille', 'vitrage'].includes(k)).map(key => (
+                                      <p key={key}>
+                                        📌 <span className="text-gray-600">{key}:</span> <span className="font-medium">{String(config[key])}</span>
+                                      </p>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
