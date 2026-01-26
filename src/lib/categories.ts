@@ -61,6 +61,48 @@ export async function getProductCategoryBySlug(slug: string): Promise<ProductCat
   };
 }
 
+export async function getSubcategoriesByCategorySlug(categorySlug: string): Promise<ProductSubcategory[]> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return [];
+
+  // Find category id by slug
+  const { data: cat, error: catError } = await supabase
+    .from('product_categories')
+    .select('id')
+    .eq('slug', categorySlug)
+    .maybeSingle();
+
+  if (catError || !cat) {
+    console.error('Error fetching category for subcategories:', catError);
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('product_subcategories')
+    .select('*')
+    .eq('category_id', cat.id)
+    .order('order_index', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching subcategories:', error);
+    return [];
+  }
+
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    displayName: row.display_name,
+    description: row.description,
+    imageUrl: row.image_url,
+    imageAlt: row.image_alt,
+    orderIndex: row.order_index,
+    categoryId: row.category_id,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  }));
+}
+
 export async function getSubcategoriesByCategory(categoryId: string): Promise<ProductSubcategory[]> {
   const supabase = getSupabaseClient();
   if (!supabase) return [];
