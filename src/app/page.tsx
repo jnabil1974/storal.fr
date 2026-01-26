@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { getSEOMetadata } from '@/lib/seo';
+import HeroCarousel from '@/components/HeroCarousel';
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSEOMetadata('/');
@@ -63,13 +64,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* En-tête */}
-      <header className="bg-blue-600 text-white py-8">
-        <div className="max-w-6xl mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-2">Storal - Stores et Fermetures sur Mesure</h1>
-          <p className="text-blue-100 text-lg">Stores bannes, portes blindées et plus encore</p>
-        </div>
-      </header>
+      {/* Hero Carousel */}
+      <HeroCarousel />
 
       {/* Contenu principal */}
       <main className="max-w-6xl mx-auto px-4 py-12">
