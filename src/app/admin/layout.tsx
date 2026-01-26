@@ -24,6 +24,12 @@ export default function AdminLayout({
       description: 'Gestion des commandes'
     },
     {
+      title: 'Catégories',
+      href: '/admin/categories',
+      icon: '🏷️',
+      description: 'Produits & images'
+    },
+    {
       title: 'Toiles',
       href: '/admin/toiles',
       icon: '🎨',
