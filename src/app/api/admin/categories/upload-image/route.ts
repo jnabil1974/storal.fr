@@ -18,8 +18,14 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    // Sanitize filename - remove spaces and special characters
+    const sanitizedFileName = file.name
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^a-zA-Z0-9._-]/g, '') // Remove special characters
+      .toLowerCase();
+
     // Upload to storage
-    const fileName = `${type}/${itemId}/${Date.now()}-${file.name}`;
+    const fileName = `${type}/${itemId}/${Date.now()}-${sanitizedFileName}`;
     const { data, error: uploadError } = await supabase.storage
       .from('seo-images')
       .upload(fileName, file, { upsert: true });

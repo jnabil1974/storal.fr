@@ -26,7 +26,12 @@ export async function POST(request: NextRequest) {
 
     // Upload image to Supabase storage
     const timestamp = Date.now();
-    const fileName = `hero/${timestamp}-${file.name}`;
+    // Sanitize filename - remove spaces and special characters
+    const sanitizedFileName = file.name
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^a-zA-Z0-9._-]/g, '') // Remove special characters
+      .toLowerCase();
+    const fileName = `hero/${timestamp}-${sanitizedFileName}`;
     const buffer = await file.arrayBuffer();
 
     const { error: uploadError, data: uploadData } = await supabase.storage
