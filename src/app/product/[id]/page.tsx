@@ -16,7 +16,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   
   // Redirect old kissimy route to UUID
   if (id === 'kissimy') {
-    redirect('/products/b0593506-2bda-4606-ba7c-d4bc1c26a1e2');
+    redirect('/product/b0593506-2bda-4606-ba7c-d4bc1c26a1e2');
   }
   
   const product = await getProductById(id);
