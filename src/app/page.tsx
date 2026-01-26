@@ -74,7 +74,6 @@ export default async function HomePage() {
                           width={400}
                           height={300}
                           className="w-full h-full object-cover"
-                          unoptimized
                         />
                       ) : (
                         categoryIcons[category.slug] || categoryIcons['store-banne']
