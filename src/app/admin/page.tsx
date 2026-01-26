@@ -128,66 +128,8 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="flex gap-8">
-      {/* Menu latéral gauche */}
-      <div className="w-80 flex-shrink-0">
-        <div className="bg-white rounded-lg shadow-md p-6 sticky top-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Navigation</h2>
-          <nav className="space-y-2">
-            <Link
-              href="/admin"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-700 font-medium"
-            >
-              <span className="text-xl">📊</span>
-              <span>Dashboard</span>
-            </Link>
-            
-            <Link
-              href="/admin/orders"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
-            >
-              <span className="text-xl">📦</span>
-              <span>Commandes</span>
-            </Link>
-            
-            <Link
-              href="/admin/toiles"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
-            >
-              <span className="text-xl">🎨</span>
-              <span>Toiles</span>
-            </Link>
-            
-            <Link
-              href="/admin/newsletter"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
-            >
-              <span className="text-xl">📧</span>
-              <span>Newsletter</span>
-            </Link>
-            
-            <Link
-              href="/admin/hero-slides"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
-            >
-              <span className="text-xl">🖼️</span>
-              <span>Carrousel Hero</span>
-            </Link>
-            
-            <Link
-              href="/admin/seo"
-              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
-            >
-              <span className="text-xl">🔍</span>
-              <span>Gestion SEO</span>
-            </Link>
-          </nav>
-        </div>
-      </div>
-
-      {/* Contenu principal */}
-      <div className="flex-1 space-y-8">
-        {/* En-tête */}
+    <div className="space-y-8">
+      {/* En-tête */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600 mt-2">Bienvenue dans l'espace d'administration</p>
@@ -300,10 +242,9 @@ export default function AdminDashboard() {
         <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
           <h2 className="text-xl font-bold text-blue-900 mb-3">🚀 Guide de démarrage</h2>
           <div className="space-y-2 text-sm text-blue-800">
-            <p>✓ <strong>Gérer les toiles :</strong> Ajoutez, modifiez ou supprimez des toiles du catalogue</p>
-            <p>✓ <strong>Traiter les commandes :</strong> Consultez et gérez les commandes clients</p>
-            <p>✓ <strong>Suivre l'activité :</strong> Surveillez les statistiques en temps réel</p>
-          </div>
+          <p>✓ <strong>Gérer les toiles :</strong> Ajoutez, modifiez ou supprimez des toiles du catalogue</p>
+          <p>✓ <strong>Traiter les commandes :</strong> Consultez et gérez les commandes clients</p>
+          <p>✓ <strong>Suivre l'activité :</strong> Surveillez les statistiques en temps réel</p>
         </div>
       </div>
     </div>

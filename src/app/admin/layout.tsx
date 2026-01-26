@@ -29,6 +29,24 @@ export default function AdminLayout({
       icon: '🎨',
       description: 'Catalogue des toiles'
     },
+    {
+      title: 'Newsletter',
+      href: '/admin/newsletter',
+      icon: '📧',
+      description: 'Abonnés newsletter'
+    },
+    {
+      title: 'Carrousel Hero',
+      href: '/admin/hero-slides',
+      icon: '🖼️',
+      description: 'Slides d\'accueil'
+    },
+    {
+      title: 'Gestion SEO',
+      href: '/admin/seo',
+      icon: '🔍',
+      description: 'Métadonnées'
+    },
   ];
 
   return (
