@@ -89,8 +89,10 @@ export default function AdminHeroSlidesPage() {
         .getPublicUrl(fileName);
 
       if (data?.publicUrl) {
-        setSelectedSlide({ ...selectedSlide, image_url: data.publicUrl });
-        setMessage({ type: 'success', text: 'Image téléchargée avec succès' });
+        const updatedSlide = { ...selectedSlide, image_url: data.publicUrl } as HeroSlide;
+        setSelectedSlide(updatedSlide);
+        await handleSave(updatedSlide);
+        setMessage({ type: 'success', text: 'Image téléchargée et sauvegardée' });
       }
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -98,8 +100,9 @@ export default function AdminHeroSlidesPage() {
     }
   };
 
-  const handleSave = async () => {
-    if (!selectedSlide) return;
+  const handleSave = async (slideToSave?: HeroSlide) => {
+    const payload = slideToSave || selectedSlide;
+    if (!payload) return;
 
     setSaving(true);
     try {
@@ -115,13 +118,14 @@ export default function AdminHeroSlidesPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify(selectedSlide),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error('Failed to save');
 
       const updated = await response.json();
       setMessage({ type: 'success', text: 'Slide mis à jour avec succès' });
+      setSelectedSlide(updated);
       fetchSlides();
     } catch (error) {
       console.error('Error saving slide:', error);
