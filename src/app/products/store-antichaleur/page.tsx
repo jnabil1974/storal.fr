@@ -25,8 +25,14 @@ export default async function StoreAntichaleurPage() {
             <Link key={sub.id} href={`/products/store-antichaleur/${sub.slug}`}>
               <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full flex flex-col overflow-hidden">
                 <div className="w-full h-48 bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center overflow-hidden">
-                  {sub.imageUrl ? (
-                    <Image src={sub.imageUrl} alt={sub.imageAlt || sub.name} width={400} height={300} className="w-full h-full object-cover" />
+                      {sub.imageUrl ? (
+                        <Image
+                          src={sub.imageUrl}
+                          alt={sub.imageAlt || sub.name}
+                          width={400}
+                          height={300}
+                          className="w-full h-full object-cover"
+                        />
                   ) : (
                     <svg className="w-20 h-20 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
