@@ -128,184 +128,182 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* En-tête */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-2">Bienvenue dans l'espace d'administration</p>
-      </div>
-
-      {/* Cartes de statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Commandes</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalOrders}</p>
-            </div>
-            <div className="bg-blue-100 rounded-full p-4">
-              <span className="text-3xl">📦</span>
-            </div>
-          </div>
-          <Link href="/admin/orders" className="text-sm text-blue-600 hover:text-blue-700 mt-4 inline-block">
-            Voir toutes les commandes →
-          </Link>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Commandes en attente</p>
-              <p className="text-3xl font-bold text-orange-600 mt-2">{stats.pendingOrders}</p>
-            </div>
-            <div className="bg-orange-100 rounded-full p-4">
-              <span className="text-3xl">⏳</span>
-            </div>
-          </div>
-          <Link href="/admin/orders" className="text-sm text-orange-600 hover:text-orange-700 mt-4 inline-block">
-            Traiter les commandes →
-          </Link>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Toiles au catalogue</p>
-              <p className="text-3xl font-bold text-green-600 mt-2">{stats.totalToiles}</p>
-            </div>
-            <div className="bg-green-100 rounded-full p-4">
-              <span className="text-3xl">🎨</span>
-            </div>
-          </div>
-          <Link href="/admin/toiles" className="text-sm text-green-600 hover:text-green-700 mt-4 inline-block">
-            Gérer les toiles →
-          </Link>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Abonnés Newsletter</p>
-              <p className="text-3xl font-bold text-purple-600 mt-2">—</p>
-            </div>
-            <div className="bg-purple-100 rounded-full p-4">
-              <span className="text-3xl">📧</span>
-            </div>
-          </div>
-          <Link href="/admin/newsletter" className="text-sm text-purple-600 hover:text-purple-700 mt-4 inline-block">
-            Gérer newsletter →
-          </Link>
+    <div className="flex gap-8">
+      {/* Menu latéral gauche */}
+      <div className="w-80 flex-shrink-0">
+        <div className="bg-white rounded-lg shadow-md p-6 sticky top-8">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Navigation</h2>
+          <nav className="space-y-2">
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-700 font-medium"
+            >
+              <span className="text-xl">📊</span>
+              <span>Dashboard</span>
+            </Link>
+            
+            <Link
+              href="/admin/orders"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+            >
+              <span className="text-xl">📦</span>
+              <span>Commandes</span>
+            </Link>
+            
+            <Link
+              href="/admin/toiles"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+            >
+              <span className="text-xl">🎨</span>
+              <span>Toiles</span>
+            </Link>
+            
+            <Link
+              href="/admin/newsletter"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+            >
+              <span className="text-xl">📧</span>
+              <span>Newsletter</span>
+            </Link>
+            
+            <Link
+              href="/admin/hero-slides"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+            >
+              <span className="text-xl">🖼️</span>
+              <span>Carrousel Hero</span>
+            </Link>
+            
+            <Link
+              href="/admin/seo"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors"
+            >
+              <span className="text-xl">🔍</span>
+              <span>Gestion SEO</span>
+            </Link>
+          </nav>
         </div>
       </div>
 
-      {/* Actions rapides */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Actions rapides</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Link
-            href="/admin/toiles"
-            className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
-          >
-            <span className="text-3xl">➕</span>
-            <div>
-              <p className="font-semibold text-gray-900">Ajouter une toile</p>
-              <p className="text-sm text-gray-600">Enrichir le catalogue</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/orders"
-            className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
-          >
-            <span className="text-3xl">👀</span>
-            <div>
-              <p className="font-semibold text-gray-900">Voir les commandes</p>
-              <p className="text-sm text-gray-600">Gérer les demandes clients</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/newsletter"
-            className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
-          >
-            <span className="text-3xl">📧</span>
-            <div>
-              <p className="font-semibold text-gray-900">Abonnés Newsletter</p>
-              <p className="text-sm text-gray-600">Gérer les inscriptions</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/seo"
-            className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
-          >
-            <span className="text-3xl">🔍</span>
-            <div>
-              <p className="font-semibold text-gray-900">Gestion SEO</p>
-              <p className="text-sm text-gray-600">Métadonnées et référencement</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/hero-slides"
-            className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
-          >
-            <span className="text-3xl">🎨</span>
-            <div>
-              <p className="font-semibold text-gray-900">Carrousel Hero</p>
-              <p className="text-sm text-gray-600">Gérer les slides d'accueil</p>
-            </div>
-          </Link>
+      {/* Contenu principal */}
+      <div className="flex-1 space-y-8">
+        {/* En-tête */}
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-2">Bienvenue dans l'espace d'administration</p>
         </div>
-      </div>
 
-      {/* Commandes récentes */}
-      {stats.recentOrders.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Commandes récentes</h2>
-            <Link href="/admin/orders" className="text-sm text-blue-600 hover:text-blue-700">
-              Voir tout →
+        {/* Cartes de statistiques */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Commandes</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalOrders}</p>
+              </div>
+              <div className="bg-blue-100 rounded-full p-4">
+                <span className="text-3xl">📦</span>
+              </div>
+            </div>
+            <Link href="/admin/orders" className="text-sm text-blue-600 hover:text-blue-700 mt-4 inline-block">
+              Voir toutes les commandes →
             </Link>
           </div>
-          <div className="space-y-3">
-            {stats.recentOrders.map((order) => (
-              <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                <div>
-                  <p className="font-semibold text-gray-900">#{order.id.slice(0, 8).toUpperCase()}</p>
-                  <p className="text-sm text-gray-600">{order.customer_email || order.customer_name || 'Client'}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900">{Number(order.total_amount || 0).toFixed(2)}€</p>
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    order.status === 'pending' ? 'bg-orange-100 text-orange-700' :
-                    order.status === 'paid' ? 'bg-green-100 text-green-700' :
-                    order.status === 'processing' ? 'bg-blue-100 text-blue-700' :
-                    order.status === 'shipped' ? 'bg-purple-100 text-purple-700' :
-                    order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
-                    {order.status === 'pending' ? 'En attente' :
-                     order.status === 'paid' ? 'Payée' :
-                     order.status === 'processing' ? 'Préparation' :
-                     order.status === 'shipped' ? 'Expédiée' :
-                     order.status === 'delivered' ? 'Livrée' :
-                     order.status}
-                  </span>
-                </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Commandes en attente</p>
+                <p className="text-3xl font-bold text-orange-600 mt-2">{stats.pendingOrders}</p>
               </div>
-            ))}
+              <div className="bg-orange-100 rounded-full p-4">
+                <span className="text-3xl">⏳</span>
+              </div>
+            </div>
+            <Link href="/admin/orders" className="text-sm text-orange-600 hover:text-orange-700 mt-4 inline-block">
+              Traiter les commandes →
+            </Link>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Toiles au catalogue</p>
+                <p className="text-3xl font-bold text-green-600 mt-2">{stats.totalToiles}</p>
+              </div>
+              <div className="bg-green-100 rounded-full p-4">
+                <span className="text-3xl">🎨</span>
+              </div>
+            </div>
+            <Link href="/admin/toiles" className="text-sm text-green-600 hover:text-green-700 mt-4 inline-block">
+              Gérer les toiles →
+            </Link>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Abonnés Newsletter</p>
+                <p className="text-3xl font-bold text-purple-600 mt-2">—</p>
+              </div>
+              <div className="bg-purple-100 rounded-full p-4">
+                <span className="text-3xl">📧</span>
+              </div>
+            </div>
+            <Link href="/admin/newsletter" className="text-sm text-purple-600 hover:text-purple-700 mt-4 inline-block">
+              Gérer newsletter →
+            </Link>
           </div>
         </div>
-      )}
 
-      {/* Guide de démarrage */}
-      <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
-        <h2 className="text-xl font-bold text-blue-900 mb-3">🚀 Guide de démarrage</h2>
-        <div className="space-y-2 text-sm text-blue-800">
-          <p>✓ <strong>Gérer les toiles :</strong> Ajoutez, modifiez ou supprimez des toiles du catalogue</p>
-          <p>✓ <strong>Traiter les commandes :</strong> Consultez et gérez les commandes clients</p>
-          <p>✓ <strong>Suivre l'activité :</strong> Surveillez les statistiques en temps réel</p>
+      {/* Commandes récentes */}
+        {stats.recentOrders.length > 0 && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Commandes récentes</h2>
+              <Link href="/admin/orders" className="text-sm text-blue-600 hover:text-blue-700">
+                Voir tout →
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {stats.recentOrders.map((order) => (
+                <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                  <div>
+                    <p className="font-semibold text-gray-900">#{order.id.slice(0, 8).toUpperCase()}</p>
+                    <p className="text-sm text-gray-600">{order.customer_email || order.customer_name || 'Client'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900">{Number(order.total_amount || 0).toFixed(2)}€</p>
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      order.status === 'pending' ? 'bg-orange-100 text-orange-700' :
+                      order.status === 'paid' ? 'bg-green-100 text-green-700' :
+                      order.status === 'processing' ? 'bg-blue-100 text-blue-700' :
+                      order.status === 'shipped' ? 'bg-purple-100 text-purple-700' :
+                      order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {order.status === 'pending' ? 'En attente' :
+                       order.status === 'paid' ? 'Payée' :
+                       order.status === 'processing' ? 'Préparation' :
+                       order.status === 'shipped' ? 'Expédiée' :
+                       order.status === 'delivered' ? 'Livrée' :
+                       order.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Guide de démarrage */}
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
+          <h2 className="text-xl font-bold text-blue-900 mb-3">🚀 Guide de démarrage</h2>
+          <div className="space-y-2 text-sm text-blue-800">
+            <p>✓ <strong>Gérer les toiles :</strong> Ajoutez, modifiez ou supprimez des toiles du catalogue</p>
+            <p>✓ <strong>Traiter les commandes :</strong> Consultez et gérez les commandes clients</p>
+            <p>✓ <strong>Suivre l'activité :</strong> Surveillez les statistiques en temps réel</p>
+          </div>
         </div>
       </div>
     </div>
