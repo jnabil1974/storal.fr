@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, title, subtitle, description, button_text, button_link, image_url, bg_gradient, text_color, display_order, is_active } = body;
+    const { id, title, subtitle, description, button_text, button_link, image_url, image_overlay, bg_gradient, text_color, display_order, is_active } = body;
 
     if (id) {
       // Update existing slide
@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
           button_text,
           button_link,
           image_url,
+          image_overlay,
           bg_gradient,
           text_color,
           display_order,
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
           button_text,
           button_link,
           image_url,
+          image_overlay,
           bg_gradient,
           text_color,
           display_order: display_order || 0,

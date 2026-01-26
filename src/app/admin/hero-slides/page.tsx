@@ -12,6 +12,7 @@ interface HeroSlide {
   button_text: string;
   button_link: string;
   image_url?: string;
+  image_overlay: number; // 0-100, opacité du voile noir
   bg_gradient: string;
   text_color: string;
   display_order: number;
@@ -186,6 +187,7 @@ export default function AdminHeroSlidesPage() {
       description: '',
       button_text: '',
       button_link: '',
+      image_overlay: 40,
       bg_gradient: 'from-blue-500 to-blue-600',
       text_color: 'text-white',
       display_order: slides.length + 1,
@@ -383,6 +385,19 @@ export default function AdminHeroSlidesPage() {
                         min="1"
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Assombrissement de l'image ({selectedSlide.image_overlay}%)</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={selectedSlide.image_overlay || 40}
+                      onChange={(e) => setSelectedSlide({ ...selectedSlide, image_overlay: parseInt(e.target.value) })}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">0 = transparent, 100 = totalement noir</p>
                   </div>
 
                   <div className="flex items-center gap-2">

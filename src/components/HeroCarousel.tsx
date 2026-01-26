@@ -11,6 +11,7 @@ interface Slide {
   button_text: string;
   button_link: string;
   image_url?: string;
+  image_overlay?: number;
   bg_gradient: string;
   text_color: string;
 }
@@ -88,7 +89,12 @@ export default function HeroCarousel() {
             }`}
             style={slide.image_url ? { backgroundImage: `url(${slide.image_url})` } : {}}
           >
-            {slide.image_url && <div className="absolute inset-0 bg-black/40" />}
+            {slide.image_url && (
+              <div 
+                className="absolute inset-0" 
+                style={{ backgroundColor: `rgba(0, 0, 0, ${(slide.image_overlay || 40) / 100})` }}
+              />
+            )}
             <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
               <h2 className={`text-5xl font-bold mb-4 ${slide.text_color}`}>
                 {slide.title}
