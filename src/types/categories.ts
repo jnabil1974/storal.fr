@@ -6,6 +6,8 @@ export interface ProductCategory {
   displayName: string; // Display name (Stores Bannes, Portes Blindées)
   description?: string;
   iconSvg?: string;
+  imageUrl?: string; // New field
+  imageAlt?: string; // New field
   gradientFrom?: string;
   gradientTo?: string;
   orderIndex: number;
@@ -19,6 +21,8 @@ export interface ProductSubcategory {
   slug: string;
   name: string;
   description?: string;
+  imageUrl?: string; // New field
+  imageAlt?: string; // New field
   orderIndex: number;
   createdAt: Date;
   updatedAt: Date;
