@@ -11,6 +11,8 @@ export default function AdminDashboard() {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [setupMessage, setSetupMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [setupLoading, setSetupLoading] = useState(false);
   const [stats, setStats] = useState({
     totalOrders: 0,
     pendingOrders: 0,
@@ -99,7 +101,34 @@ export default function AdminDashboard() {
     }
   };
 
-  // Afficher un loader pendant la vérification d'authentification
+  const initializeStorage = async () => {
+    setSetupLoading(true);
+    try {
+      const supabase = getSupabaseClient();
+      if (!supabase) throw new Error('Supabase non initialisé');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error('Non authentifié');
+
+      const response = await fetch('/api/admin/setup-storage', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur initialisation');
+      }
+
+      const result = await response.json();
+      setSetupMessage({ type: 'success', text: result.message });
+    } catch (error: any) {
+      console.error('Setup error:', error);
+      setSetupMessage({ type: 'error', text: error?.message || 'Erreur' });
+    } finally {
+      setSetupLoading(false);
+    }
+  };
   if (checkingAuth) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -130,12 +159,26 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* En-tête */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">Bienvenue dans l'espace d'administration</p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-2">Bienvenue dans l'espace d'administration</p>
+      </div>
 
-        {/* Cartes de statistiques */}
+      {setupMessage && (
+        <div className={`p-4 rounded-lg ${setupMessage.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {setupMessage.text}
+        </div>
+      )}
+
+      <button
+        onClick={initializeStorage}
+        disabled={setupLoading}
+        className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:bg-gray-400"
+      >
+        {setupLoading ? 'Initialisation...' : '⚙️ Initialiser le stockage'}
+      </button>
+
+      {/* Cartes de statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between">
