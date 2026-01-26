@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+function getAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.warn('HeroSlides: Supabase env vars missing');
+    return null;
+  }
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
 
 export async function GET() {
   try {
+    const supabase = getAdminClient();
+    if (!supabase) return NextResponse.json([]);
     const { data, error } = await supabase
       .from('hero_slides')
       .select('*')
@@ -31,6 +38,8 @@ export async function POST(request: NextRequest) {
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const supabase = getAdminClient();
+    if (!supabase) return NextResponse.json({ error: 'Server config missing' }, { status: 500 });
 
     const body = await request.json();
     const { id, title, subtitle, description, button_text, button_link, image_url, image_overlay, bg_gradient, text_color, display_order, is_active } = body;
@@ -96,6 +105,8 @@ export async function DELETE(request: NextRequest) {
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const supabase = getAdminClient();
+    if (!supabase) return NextResponse.json({ error: 'Server config missing' }, { status: 500 });
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

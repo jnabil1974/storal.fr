@@ -1,9 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+function getSeoClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('SEO: Supabase env vars are missing');
+    return null;
+  }
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
 
 export interface SEOMetadata {
   slug: string;
@@ -22,6 +27,8 @@ export interface SEOMetadata {
  */
 export async function getSEOMetadata(slug: string): Promise<SEOMetadata | null> {
   try {
+    const supabase = getSeoClient();
+    if (!supabase) return null;
     const { data, error } = await supabase
       .from('seo_pages')
       .select('*')
@@ -45,6 +52,8 @@ export async function getSEOMetadata(slug: string): Promise<SEOMetadata | null> 
  */
 export async function getAllSEOPages(): Promise<SEOMetadata[]> {
   try {
+    const supabase = getSeoClient();
+    if (!supabase) return [];
     const { data, error } = await supabase
       .from('seo_pages')
       .select('*')
@@ -63,6 +72,8 @@ export async function getAllSEOPages(): Promise<SEOMetadata[]> {
  */
 export async function updateSEOMetadata(slug: string, updates: Partial<SEOMetadata>): Promise<SEOMetadata | null> {
   try {
+    const supabase = getSeoClient();
+    if (!supabase) return null;
     const { data, error } = await supabase
       .from('seo_pages')
       .update(updates)
