@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     if (uploadError) {
       console.error('Storage upload error:', uploadError);
       return NextResponse.json(
-        { error: 'Failed to upload image' },
+        { error: `Erreur d'upload: ${uploadError.message}` },
         { status: 500 }
       );
     }
@@ -48,8 +48,9 @@ export async function POST(request: NextRequest) {
 
     const imageUrl = publicUrlData?.publicUrl;
     if (!imageUrl) {
+      console.error('No public URL returned:', publicUrlData);
       return NextResponse.json(
-        { error: 'Failed to get public URL' },
+        { error: 'Impossible de générer l\'URL publique' },
         { status: 500 }
       );
     }
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error('Slide update error:', updateError);
       return NextResponse.json(
-        { error: 'Failed to update slide' },
+        { error: `Erreur mise à jour: ${updateError.message}` },
         { status: 500 }
       );
     }
