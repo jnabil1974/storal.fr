@@ -4,6 +4,9 @@ import Image from 'next/image';
 import { getSubcategoriesByCategorySlug } from '@/lib/categories';
 import { getSEOMetadata } from '@/lib/seo';
 
+// Regenerate page every 60 seconds for fresh subcategory images
+export const revalidate = 60;
+
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSEOMetadata('products/store-banne');
   return {

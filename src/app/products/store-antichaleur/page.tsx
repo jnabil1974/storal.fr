@@ -2,6 +2,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getSubcategoriesByCategorySlug } from '@/lib/categories';
 
+// Regenerate page every 60 seconds for fresh subcategory images
+export const revalidate = 60;
+
 export default async function StoreAntichaleurPage() {
   const subcategories = await getSubcategoriesByCategorySlug('store-antichaleur');
 

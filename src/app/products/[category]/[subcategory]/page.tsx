@@ -4,6 +4,9 @@ import { Metadata } from 'next';
 import { getProductCategoryBySlug, getSubcategoriesByCategorySlug } from '@/lib/categories';
 import { getProducts } from '@/lib/database';
 
+// Regenerate page every 60 seconds for fresh subcategory images
+export const revalidate = 60;
+
 export async function generateMetadata({ params }: { params: Promise<{ category: string; subcategory: string }> }): Promise<Metadata> {
   const { category, subcategory } = await params;
   const cat = await getProductCategoryBySlug(category);
