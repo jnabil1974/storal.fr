@@ -276,13 +276,26 @@ export default function AdminHeroSlidesPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Lien du bouton</label>
-                      <input
-                        type="text"
+                      <select
                         value={selectedSlide.button_link}
                         onChange={(e) => setSelectedSlide({ ...selectedSlide, button_link: e.target.value })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                        placeholder="/products/..."
-                      />
+                      >
+                        <option value="">Sélectionner une page...</option>
+                        <option value="/">🏠 Accueil</option>
+                        <optgroup label="Produits">
+                          <option value="/products/store-banne">Store Banne</option>
+                          <option value="/products/porte-blindee">Porte Blindée</option>
+                          <option value="/products/store-antichaleur">Store Anti-Chaleur</option>
+                          <option value="/kissimy">Kissimy</option>
+                        </optgroup>
+                        <optgroup label="Pages">
+                          <option value="/contact">Contact</option>
+                          <option value="/cgv">Conditions Générales de Vente</option>
+                          <option value="/confidentialite">Politique de Confidentialité</option>
+                          <option value="/mentions-legales">Mentions Légales</option>
+                        </optgroup>
+                      </select>
                     </div>
                   </div>
 
