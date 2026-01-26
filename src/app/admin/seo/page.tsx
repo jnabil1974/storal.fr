@@ -86,7 +86,7 @@ export default function AdminSEOPage() {
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
-        setMessage({ type: 'error', text: 'Erreur lors du téléchargement de l''image' });
+        setMessage({ type: 'error', text: 'Erreur lors du téléchargement de l\'image' });
         return;
       }
 
@@ -101,7 +101,7 @@ export default function AdminSEOPage() {
       }
     } catch (error) {
       console.error('Error uploading image:', error);
-      setMessage({ type: 'error', text: 'Erreur lors du téléchargement de l''image' });
+      setMessage({ type: 'error', text: 'Erreur lors du téléchargement de l\'image' });
     }
   };
 
@@ -157,7 +157,7 @@ export default function AdminSEOPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-8 flex items-center justify-center">
-        <div className="text-gray-600">Vérification de l''authentification...</div>
+        <div className="text-gray-600">Vérification de l'authentification...</div>
       </div>
     );
   }
