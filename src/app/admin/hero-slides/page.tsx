@@ -62,41 +62,53 @@ export default function AdminHeroSlidesPage() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !selectedSlide) return;
+    if (!file || !selectedSlide || !selectedSlide.id) return;
 
+    setSaving(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setMessage({ type: 'error', text: 'Session expirée' });
+        setSaving(false);
         return;
       }
 
-      const timestamp = Date.now();
-      const fileName = `hero/${timestamp}-${file.name}`;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('slideId', selectedSlide.id.toString());
 
-      const { error: uploadError } = await supabase.storage
-        .from('seo-images')
-        .upload(fileName, file, { upsert: true });
+      const response = await fetch('/api/hero-slides/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: formData,
+      });
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        setMessage({ type: 'error', text: 'Erreur lors du téléchargement de l\'image' });
+      if (!response.ok) {
+        let errText = 'Erreur lors du téléchargement';
+        try {
+          const errJson = await response.json();
+          errText = errJson?.error || errText;
+        } catch {
+          // ignore
+        }
+        setMessage({ type: 'error', text: errText });
+        setSaving(false);
         return;
       }
 
-      const { data } = supabase.storage
-        .from('seo-images')
-        .getPublicUrl(fileName);
-
-      if (data?.publicUrl) {
-        const updatedSlide = { ...selectedSlide, image_url: data.publicUrl } as HeroSlide;
-        setSelectedSlide(updatedSlide);
-        await handleSave(updatedSlide);
+      const result = await response.json();
+      if (result.success && result.slide) {
+        setSelectedSlide(result.slide);
         setMessage({ type: 'success', text: 'Image téléchargée et sauvegardée' });
+        fetchSlides();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading image:', error);
-      setMessage({ type: 'error', text: 'Erreur lors du téléchargement de l\'image' });
+      setMessage({ type: 'error', text: error?.message || 'Erreur lors du téléchargement' });
+    } finally {
+      setSaving(false);
     }
   };
 
