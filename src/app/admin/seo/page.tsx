@@ -64,6 +64,47 @@ export default function AdminSEOPage() {
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedPage) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setMessage({ type: 'error', text: 'Session expirée' });
+        return;
+      }
+
+      // Générer un nom de fichier unique
+      const timestamp = Date.now();
+      const fileName = `seo/${selectedPage.slug.replace(/\//g, '-')}-${timestamp}.jpg`;
+
+      // Uploader l'image vers Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('seo-images')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        setMessage({ type: 'error', text: 'Erreur lors du téléchargement de l''image' });
+        return;
+      }
+
+      // Obtenir l'URL publique
+      const { data } = supabase.storage
+        .from('seo-images')
+        .getPublicUrl(fileName);
+
+      if (data?.publicUrl) {
+        setSelectedPage({ ...selectedPage, og_image: data.publicUrl });
+        setMessage({ type: 'success', text: 'Image téléchargée avec succès' });
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setMessage({ type: 'error', text: 'Erreur lors du téléchargement de l''image' });
+    }
+  };
+
   const handleSave = async () => {
     if (!selectedPage) return;
 
@@ -261,15 +302,51 @@ export default function AdminSEOPage() {
                   {/* OG Image */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      OG Image (URL complète)
+                      OG Image (Téléchargement ou URL)
                     </label>
-                    <input
-                      type="text"
-                      value={selectedPage.og_image || ''}
-                      onChange={(e) => setSelectedPage({ ...selectedPage, og_image: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://example.com/image.jpg"
-                    />
+                    <div className="space-y-3">
+                      {/* Upload d'image */}
+                      <div className="flex items-center gap-2">
+                        <label className="flex-1 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 cursor-pointer transition-colors">
+                          <div className="text-center">
+                            <span className="text-sm text-gray-600">📤 Télécharger une image</span>
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+
+                      {/* Afficher l'aperçu si image existante */}
+                      {selectedPage.og_image && (
+                        <div className="relative">
+                          <img
+                            src={selectedPage.og_image}
+                            alt="OG Image preview"
+                            className="w-full h-32 object-cover rounded-lg border border-gray-300"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPage({ ...selectedPage, og_image: '' })}
+                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded hover:bg-red-600"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+
+                      {/* URL manuelle */}
+                      <input
+                        type="text"
+                        value={selectedPage.og_image || ''}
+                        onChange={(e) => setSelectedPage({ ...selectedPage, og_image: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Ou collez une URL complète"
+                      />
+                    </div>
                     <div className="text-xs text-gray-500 mt-1">
                       Image affichée lors du partage sur les réseaux sociaux (1200x630px recommandé)
                     </div>

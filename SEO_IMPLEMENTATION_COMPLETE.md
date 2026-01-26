@@ -73,7 +73,7 @@ Lien ajouté au dashboard admin :
 
 ## 📋 Ce Qui Manque (À Faire Manuellement)
 
-### ⚠️ ÉTAPE CRITIQUE : Créer la Table Supabase
+### ⚠️ ÉTAPE 1 CRITIQUE : Créer la Table Supabase
 
 **VOUS DEVEZ EXÉCUTER LE SCRIPT SQL :**
 
@@ -83,6 +83,20 @@ Lien ajouté au dashboard admin :
 4. Cliquez **▶️ Run**
 
 Sans cette étape, les métadonnées ne se sauvegarderont pas.
+
+### ⚠️ ÉTAPE 2 : Créer le Bucket de Stockage
+
+Pour permettre le téléchargement d'images OG :
+
+1. Allez sur https://app.supabase.com
+2. Projet **storal.fr** → **SQL Editor** → **New Query**
+3. Copiez-collez le contenu de : `scripts/create-seo-storage-bucket.sql`
+4. Cliquez **▶️ Run**
+
+Cela crée :
+- Un bucket `seo-images` public
+- Les permissions pour uploader et lire les images
+- L'accès admin pour supprimer les images
 
 ### 📝 Pages à Intégrer (7 restantes)
 
