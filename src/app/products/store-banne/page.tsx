@@ -47,7 +47,7 @@ export default async function StoreBannePage() {
               <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer h-full flex flex-col overflow-hidden">
                 <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-yellow-100 flex items-center justify-center overflow-hidden">
                   {sub.imageUrl ? (
-                    <Image src={sub.imageUrl} alt={sub.imageAlt || sub.displayName} width={400} height={300} className="w-full h-full object-cover" />
+                    <Image src={sub.imageUrl} alt={sub.imageAlt || sub.name} width={400} height={300} className="w-full h-full object-cover" />
                   ) : (
                     <svg className="w-20 h-20 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
@@ -55,7 +55,7 @@ export default async function StoreBannePage() {
                   )}
                 </div>
                 <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{sub.displayName}</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{sub.name}</h3>
                   <p className="text-gray-600 text-sm mb-4 flex-grow">{sub.description || 'Découvrez nos produits de cette sous-catégorie.'}</p>
                 </div>
               </div>

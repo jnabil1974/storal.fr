@@ -92,7 +92,6 @@ export async function getSubcategoriesByCategorySlug(categorySlug: string): Prom
     id: row.id,
     slug: row.slug,
     name: row.name,
-    displayName: row.display_name,
     description: row.description,
     imageUrl: row.image_url,
     imageAlt: row.image_alt,
