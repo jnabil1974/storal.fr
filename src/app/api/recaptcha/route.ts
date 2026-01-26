@@ -12,6 +12,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Token reCAPTCHA manquant' }, { status: 400 });
   }
 
+  // En développement local, accepter les clés de test
+  if (process.env.NODE_ENV === 'development') {
+    const testSecret = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe';
+    if (secret === testSecret) {
+      console.log('🧪 Mode DEV: Utilisation des clés de test reCAPTCHA');
+      return NextResponse.json({ ok: true, score: 0.9, isDev: true });
+    }
+    // Permettre aussi au dev de contourner en acceptant n'importe quel token
+    console.log('⚠️ Mode DEV: Token reCAPTCHA contourné');
+    return NextResponse.json({ ok: true, score: 0.9, isDev: true });
+  }
+
   try {
     const verifyRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
@@ -29,3 +41,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erreur vérification reCAPTCHA' }, { status: 500 });
   }
 }
+
