@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = getSupabaseClient();
     if (!supabase) return NextResponse.json({ error: 'Database error' }, { status: 500 });
 
-    const id = params.id;
     const body = await request.json();
     const { slug, name, description, orderIndex, imageUrl, imageAlt } = body;
 
@@ -38,13 +38,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = getSupabaseClient();
     if (!supabase) return NextResponse.json({ error: 'Database error' }, { status: 500 });
-
-    const id = params.id;
 
     const { error } = await supabase
       .from('product_subcategories')
