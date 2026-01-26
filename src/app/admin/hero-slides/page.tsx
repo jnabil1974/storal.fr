@@ -121,15 +121,24 @@ export default function AdminHeroSlidesPage() {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error('Failed to save');
+      if (!response.ok) {
+        let errText = 'Erreur lors de la sauvegarde';
+        try {
+          const errJson = await response.json();
+          errText = errJson?.error || errText;
+        } catch {
+          // ignore json parse error
+        }
+        throw new Error(errText);
+      }
 
       const updated = await response.json();
       setMessage({ type: 'success', text: 'Slide mis à jour avec succès' });
       setSelectedSlide(updated);
       fetchSlides();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving slide:', error);
-      setMessage({ type: 'error', text: 'Erreur lors de la sauvegarde' });
+      setMessage({ type: 'error', text: error?.message || 'Erreur lors de la sauvegarde' });
     } finally {
       setSaving(false);
     }
