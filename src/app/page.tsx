@@ -29,7 +29,7 @@ export default async function HomePage() {
   const categories = await getProductCategories();
 
   // Icônes par défaut pour chaque catégorie
-  const categoryIcons: Record<string, JSX.Element> = {
+  const categoryIcons: Record<string, React.JSX.Element> = {
     'store-banne': (
       <svg className="w-16 h-16 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
