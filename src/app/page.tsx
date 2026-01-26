@@ -27,6 +27,8 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   // Récupérer les catégories depuis la base de données
   const categories = await getProductCategories();
+  console.log('📂 HomePage: fetched categories count =', categories.length);
+  if (categories.length === 0) console.warn('⚠️  Categories are empty!');
 
   // Icônes par défaut pour chaque catégorie
   const categoryIcons: Record<string, React.JSX.Element> = {
