@@ -245,6 +245,17 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-600">Métadonnées et référencement</p>
             </div>
           </Link>
+
+          <Link
+            href="/admin/hero-slides"
+            className="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
+          >
+            <span className="text-3xl">🎨</span>
+            <div>
+              <p className="font-semibold text-gray-900">Carrousel Hero</p>
+              <p className="text-sm text-gray-600">Gérer les slides d'accueil</p>
+            </div>
+          </Link>
         </div>
       </div>
 
