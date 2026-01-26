@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ categoryId: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { categoryId } = await params;
     const supabase = getSupabaseClient();
     if (!supabase) return NextResponse.json({ error: 'Database error' }, { status: 500 });
 
@@ -26,7 +26,7 @@ export async function PUT(
         image_url: imageUrl,
         image_alt: imageAlt,
       })
-      .eq('id', id)
+      .eq('id', categoryId)
       .select()
       .single();
 
@@ -41,17 +41,17 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ categoryId: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { categoryId } = await params;
     const supabase = getSupabaseClient();
     if (!supabase) return NextResponse.json({ error: 'Database error' }, { status: 500 });
 
     const { error } = await supabase
       .from('product_categories')
       .delete()
-      .eq('id', id);
+      .eq('id', categoryId);
 
     if (error) throw error;
 
