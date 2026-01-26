@@ -6,13 +6,46 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { getSupabaseClient } from '@/lib/supabase';
 import Logo from './Logo';
+import { ProductCategory } from '@/types/categories';
 
 export default function Header() {
   const { cart } = useCart();
   const { user, signOut } = useAuth();
   const [hasOrders, setHasOrders] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [authDebug, setAuthDebug] = useState<{userEmail?: string|null; allowList: string[]}>({ allowList: [] });
+
+  // Charger les catégories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const supabase = getSupabaseClient();
+        if (!supabase) return;
+        const { data, error } = await supabase
+          .from('product_categories')
+          .select('*')
+          .order('order_index', { ascending: true });
+        if (!error && data) {
+          setCategories(data.map((row: any) => ({
+            id: row.id,
+            slug: row.slug,
+            name: row.name,
+            displayName: row.display_name,
+            description: row.description,
+            imageUrl: row.image_url,
+            imageAlt: row.image_alt,
+            orderIndex: row.order_index,
+            createdAt: new Date(row.created_at),
+            updatedAt: new Date(row.updated_at),
+          })));
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
@@ -119,6 +152,18 @@ export default function Header() {
               <Link href="/" className="px-4 py-2 text-gray-100 hover:text-white hover:bg-slate-700/50 rounded-lg transition-all font-medium text-base">
                 Accueil
               </Link>
+              
+              {/* Category Links */}
+              {categories.map((cat) => (
+                <Link 
+                  key={cat.id} 
+                  href={`/products/${cat.slug}`} 
+                  className="px-4 py-2 text-gray-100 hover:text-white hover:bg-slate-700/50 rounded-lg transition-all font-medium text-base"
+                >
+                  {cat.displayName}
+                </Link>
+              ))}
+
               {showMyOrders && (
                 <Link href="/my-orders" className="px-4 py-2 text-gray-100 hover:text-white hover:bg-slate-700/50 rounded-lg transition-all font-medium text-base">
                   Mes commandes
