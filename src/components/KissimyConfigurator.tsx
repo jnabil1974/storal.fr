@@ -77,7 +77,11 @@ export default function KissimyConfigurator() {
   }, []);
 
   // Charger les toiles
-  useEffif (!response.ok) {
+  useEffect(() => {
+    const fetchToiles = async () => {
+      try {
+        const response = await fetch('/api/calcul-prix/options?category=Toile&productId=1');
+        if (!response.ok) {
           console.error('Erreur API toiles:', response.status);
           return;
         }
@@ -95,11 +99,7 @@ export default function KissimyConfigurator() {
     };
     
     fetchToiles();
-  }, [
-    };
-    
-    fetchToiles();
-  }, [toileId]);
+  }, []);
 
   // Récupérer les limites de largeur selon la projection sélectionnée
   useEffect(() => {
