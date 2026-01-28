@@ -31,11 +31,15 @@ export default function KissimyConfigurator() {
     const fetchMotorisations = async () => {
       try {
         const response = await fetch('/api/calcul-prix/options?category=Motorisation&productId=1');
+        if (!response.ok) {
+          console.error('Erreur API motorisation:', response.status);
+          return;
+        }
         const data = await response.json();
-        if (data.options) {
+        if (data.options && Array.isArray(data.options)) {
           setMotorisations(data.options);
-          // Sélectionner automatiquement la première motorisation (Somfy IO)
-          if (data.options.length > 0 && motorisationId === null) {
+          // Sélectionner automatiquement la première motorisation si aucune n'est sélectionnée
+          if (data.options.length > 0) {
             setMotorisationId(data.options[0].id);
           }
         }
@@ -52,11 +56,15 @@ export default function KissimyConfigurator() {
     const fetchEmetteurs = async () => {
       try {
         const response = await fetch('/api/calcul-prix/options?category=Émetteur&productId=1');
+        if (!response.ok) {
+          console.error('Erreur API émetteurs:', response.status);
+          return;
+        }
         const data = await response.json();
-        if (data.options) {
+        if (data.options && Array.isArray(data.options)) {
           setEmetteurs(data.options);
-          // Sélectionner automatiquement le premier émetteur
-          if (data.options.length > 0 && emetteurId === null) {
+          // Sélectionner automatiquement le premier émetteur si aucun n'est sélectionné
+          if (data.options.length > 0) {
             setEmetteurId(data.options[0].id);
           }
         }
@@ -69,15 +77,15 @@ export default function KissimyConfigurator() {
   }, []);
 
   // Charger les toiles
-  useEffect(() => {
-    const fetchToiles = async () => {
-      try {
-        const response = await fetch('/api/calcul-prix/options?category=Toile&productId=1');
+  useEffif (!response.ok) {
+          console.error('Erreur API toiles:', response.status);
+          return;
+        }
         const data = await response.json();
-        if (data.options) {
+        if (data.options && Array.isArray(data.options)) {
           setToiles(data.options);
-          // Sélectionner automatiquement la première toile
-          if (data.options.length > 0 && toileId === null) {
+          // Sélectionner automatiquement la première toile si aucune n'est sélectionnée
+          if (data.options.length > 0) {
             setToileId(data.options[0].id);
           }
         }
@@ -87,7 +95,11 @@ export default function KissimyConfigurator() {
     };
     
     fetchToiles();
-  }, []);
+  }, [
+    };
+    
+    fetchToiles();
+  }, [toileId]);
 
   // Récupérer les limites de largeur selon la projection sélectionnée
   useEffect(() => {
