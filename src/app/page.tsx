@@ -84,7 +84,8 @@ export default async function HomePage() {
 
       {/* Contenu principal */}
       <main className="max-w-7xl mx-auto px-4 py-16">
-        <section className="mb-16">
+        {/* SECTION PRODUITS TEMPORAIREMENT DÉSACTIVÉE - En attente de la nouvelle base de données */}
+        {/* <section className="mb-16">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Nos Gammes de Produits</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">Découvrez nos solutions sur-mesure pour transformer votre habitat</p>
@@ -98,7 +99,6 @@ export default async function HomePage() {
               return (
                 <Link key={category.id} href={`/products/${category.slug}`}>
                   <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-all cursor-pointer h-full flex flex-col overflow-hidden group">
-                    {/* Header avec image ou icône */}
                     <div className={`w-full h-48 bg-gradient-to-br ${gradientClass} flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden`}>
                       {category.imageUrl ? (
                         <Image
@@ -113,12 +113,10 @@ export default async function HomePage() {
                       )}
                     </div>
 
-                    {/* Contenu */}
                     <div className="p-6 flex flex-col flex-grow">
                       <h3 className="text-2xl font-bold text-gray-900 mb-3">{category.displayName}</h3>
                       <p className="text-gray-600 mb-4 flex-grow">{category.description || 'Découvrez nos produits'}</p>
                       
-                      {/* Bouton */}
                       <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition mt-4 group-hover:bg-blue-700">
                         Découvrir →
                       </button>
@@ -128,7 +126,7 @@ export default async function HomePage() {
               );
             })}
           </div>
-        </section>
+        </section> */}
 
         {/* Section Confiance / Testimonial */}
         <section className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-12 mb-16 text-white">
