@@ -30,7 +30,7 @@ export default function KissimyConfigurator() {
   useEffect(() => {
     const fetchMotorisations = async () => {
       try {
-        const response = await fetch('/api/calcul-prix/options?category=Motorisation');
+        const response = await fetch('/api/calcul-prix/options?category=Motorisation&productId=1');
         const data = await response.json();
         if (data.options) {
           setMotorisations(data.options);
@@ -51,7 +51,7 @@ export default function KissimyConfigurator() {
   useEffect(() => {
     const fetchEmetteurs = async () => {
       try {
-        const response = await fetch('/api/calcul-prix/options?category=Émetteur');
+        const response = await fetch('/api/calcul-prix/options?category=Émetteur&productId=1');
         const data = await response.json();
         if (data.options) {
           setEmetteurs(data.options);
@@ -72,7 +72,7 @@ export default function KissimyConfigurator() {
   useEffect(() => {
     const fetchToiles = async () => {
       try {
-        const response = await fetch('/api/calcul-prix/options?category=Toile');
+        const response = await fetch('/api/calcul-prix/options?category=Toile&productId=1');
         const data = await response.json();
         if (data.options) {
           setToiles(data.options);
