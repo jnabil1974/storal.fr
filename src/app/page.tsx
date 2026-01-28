@@ -50,14 +50,59 @@ export default async function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gray-50">
+      {/* Top Info Bar */}
+      <div className="bg-slate-900 text-white text-sm py-3 border-b border-slate-700">
+        <div className="max-w-7xl mx-auto px-4 flex flex-wrap justify-center md:justify-between items-center gap-4">
+          <div className="hidden md:flex space-x-6 text-gray-300">
+            <span className="flex items-center gap-2">🇫🇷 Fabrication Française</span>
+            <span className="flex items-center gap-2">🛡️ Garantie Jusqu'à 12 Ans</span>
+            <span className="flex items-center gap-2">🚚 Livraison Incluse</span>
+          </div>
+          <div className="flex space-x-4 text-gray-300">
+            <a href="tel:+33185093446" className="font-bold text-white hover:text-blue-400 transition">📞 01 85 09 34 46</a>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Carousel */}
       <HeroCarousel />
 
+      {/* Section Avantages - 4 Cards */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="text-center p-6 border border-gray-100 rounded-xl hover:shadow-lg transition">
+              <div className="text-5xl mb-4">🎯</div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Sur-Mesure</h3>
+              <p className="text-gray-600 text-sm">Adaptés à vos dimensions exactes avec une précision millimétrique</p>
+            </div>
+            <div className="text-center p-6 border border-gray-100 rounded-xl hover:shadow-lg transition">
+              <div className="text-5xl mb-4">🇫🇷</div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Qualité Premium</h3>
+              <p className="text-gray-600 text-sm">Matériaux sélectionnés et fabrication française certifiée</p>
+            </div>
+            <div className="text-center p-6 border border-gray-100 rounded-xl hover:shadow-lg transition">
+              <div className="text-5xl mb-4">⏱️</div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Livraison Rapide</h3>
+              <p className="text-gray-600 text-sm">Fabrication express et livraison dans les meilleurs délais</p>
+            </div>
+            <div className="text-center p-6 border border-gray-100 rounded-xl hover:shadow-lg transition">
+              <div className="text-5xl mb-4">💰</div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Prix Transparent</h3>
+              <p className="text-gray-600 text-sm">Calculez votre devis en ligne en quelques clics</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Contenu principal */}
-      <main className="max-w-6xl mx-auto px-4 py-12">
-        <section className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Nos Gammes de Produits</h2>
+      <main className="max-w-7xl mx-auto px-4 py-16">
+        <section className="mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Nos Gammes de Produits</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">Découvrez nos solutions sur-mesure pour transformer votre habitat</p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {categories.map((category) => {
               const gradientClass = category.gradientFrom && category.gradientTo
@@ -99,36 +144,37 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Section Info */}
-        <section className="bg-blue-50 rounded-lg p-8 mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Pourquoi nous choisir ?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <h3 className="font-bold text-gray-900 mb-2">✓ Sur Mesure</h3>
-              <p className="text-gray-600">Tous nos produits sont adaptés à vos dimensions exactes</p>
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-900 mb-2">✓ Qualité Premium</h3>
-              <p className="text-gray-600">Matériaux sélectionnés et fabrication française</p>
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-900 mb-2">✓ Configurateur Facile</h3>
-              <p className="text-gray-600">Calculez votre prix en quelques clics</p>
+        {/* Section Confiance / Testimonial */}
+        <section className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-12 mb-16 text-white">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-6">L'Excellence du Sur-Mesure, La Sérénité en Plus</h2>
+            <p className="text-xl text-gray-300 mb-8">
+              Transformez votre extérieur et sécurisez votre intérieur avec des équipements certifiés et garantis. Fabrication française, service client dédié.
+            </p>
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ Certification CE</span>
+              <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ Garantie Étendue</span>
+              <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ SAV Réactif</span>
             </div>
           </div>
         </section>
       </main>
 
       {/* Contact Section */}
-      <section className="max-w-6xl mx-auto px-4 py-12 mb-12">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-8 text-white text-center">
-          <h2 className="text-3xl font-bold mb-4">Une Question ? Contactez-Nous</h2>
-          <p className="text-blue-100 mb-6 text-lg">Notre équipe vous répondra dans les plus brefs délais pour répondre à vos questions ou vous aider dans votre projet.</p>
-          <Link href="/contact">
-            <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition">
-              Formulaire de Contact
-            </button>
-          </Link>
+      <section className="max-w-7xl mx-auto px-4 py-12 mb-12">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-12 text-white text-center shadow-xl">
+          <h2 className="text-4xl font-bold mb-4">Une Question ? Besoin d'un Conseil ?</h2>
+          <p className="text-blue-100 mb-8 text-lg max-w-2xl mx-auto">Notre équipe d'experts vous accompagne dans votre projet. Devis gratuit et sans engagement.</p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/contact">
+              <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-blue-50 transition shadow-lg">
+                Demander un Devis
+              </button>
+            </Link>
+            <a href="tel:+33185093446" className="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white/10 transition">
+              Appeler le 01 85 09 34 46
+            </a>
+          </div>
         </div>
       </section>
     </div>
