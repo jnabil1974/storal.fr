@@ -10,6 +10,7 @@ export default function KissimyConfigurator() {
   const [inclinaison, setInclinaison] = useState(15);
   const [motorisationId, setMotorisationId] = useState<number | null>(null);
   const [emetteurId, setEmetteurId] = useState<number | null>(null);
+  const [toileId, setToileId] = useState<number | null>(null);
   const [prixHT, setPrixHT] = useState<string | null>(null);
   const [messageTransport, setMessageTransport] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +24,7 @@ export default function KissimyConfigurator() {
   const [warningInclinaison, setWarningInclinaison] = useState('');
   const [motorisations, setMotorisations] = useState<any[]>([]);
   const [emetteurs, setEmetteurs] = useState<any[]>([]);
+  const [toiles, setToiles] = useState<any[]>([]);
 
   // Charger les options de motorisation
   useEffect(() => {
@@ -64,6 +66,27 @@ export default function KissimyConfigurator() {
     };
     
     fetchEmetteurs();
+  }, []);
+
+  // Charger les toiles
+  useEffect(() => {
+    const fetchToiles = async () => {
+      try {
+        const response = await fetch('/api/calcul-prix/options?category=Toile');
+        const data = await response.json();
+        if (data.options) {
+          setToiles(data.options);
+          // Sélectionner automatiquement la première toile
+          if (data.options.length > 0 && toileId === null) {
+            setToileId(data.options[0].id);
+          }
+        }
+      } catch (err) {
+        console.error('Erreur chargement toiles:', err);
+      }
+    };
+    
+    fetchToiles();
   }, []);
 
   // Récupérer les limites de largeur selon la projection sélectionnée
@@ -156,6 +179,7 @@ export default function KissimyConfigurator() {
           inclinaison: parseInt(inclinaison.toString()),
           motorisationId: motorisationId,
           emetteurId: emetteurId,
+          toileId: toileId,
         }),
       });
 
@@ -185,7 +209,7 @@ export default function KissimyConfigurator() {
   // Calculer le prix automatiquement quand les valeurs changent
   useEffect(() => {
     calculerPrix();
-  }, [avancee, largeur, inclinaison, motorisationId, emetteurId, minLargeur, maxLargeur, minInclinaison, maxInclinaison]);
+  }, [avancee, largeur, inclinaison, motorisationId, emetteurId, toileId, minLargeur, maxLargeur, minInclinaison, maxInclinaison]);
 
   const ajouterAuPanier = () => {
     if (!prixHT) {
@@ -195,6 +219,7 @@ export default function KissimyConfigurator() {
 
     const motorisationNom = motorisations.find(m => m.id === motorisationId)?.name || 'Sans motorisation';
     const emetteurNom = emetteurs.find(e => e.id === emetteurId)?.name || 'Sans émetteur';
+    const toileNom = toiles.find(t => t.id === toileId)?.name || 'Sans toile';
 
     addItem({
       productId: 'store-banne-kissimy',
@@ -207,6 +232,7 @@ export default function KissimyConfigurator() {
         inclinaison: inclinaison,
         motorisation: motorisationNom,
         emetteur: emetteurNom,
+        toile: toileNom,
         // Format texte pour affichage
         largeurDisplay: `${largeur}mm`,
         projectionDisplay: `${avancee}mm`,
@@ -337,6 +363,37 @@ export default function KissimyConfigurator() {
           </div>
           <p className="text-xs text-gray-500 mt-1">
             Choisissez une télécommande pour contrôler votre store
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Toile
+          </label>
+          <div className="flex gap-3 items-start">
+            <select
+              value={toileId || ''}
+              onChange={(e) => setToileId(e.target.value ? parseInt(e.target.value) : null)}
+              className="flex-1 mt-1 block w-full p-2 border border-gray-300 rounded-md"
+            >
+              {toiles.map((toile) => (
+                <option key={toile.id} value={toile.id}>
+                  {toile.name} (+{toile.prixVenteHT}€/m² HT)
+                </option>
+              ))}
+            </select>
+            {toileId && toiles.find(t => t.id === toileId)?.imageUrl && (
+              <div className="mt-1 w-20 h-20 border border-gray-300 rounded-md overflow-hidden flex-shrink-0">
+                <img
+                  src={toiles.find(t => t.id === toileId)?.imageUrl}
+                  alt="Toile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Prix au m² - Surface calculée: {((avancee * largeur) / 1000000).toFixed(2)} m²
           </p>
         </div>
 

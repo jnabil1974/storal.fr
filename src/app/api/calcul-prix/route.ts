@@ -4,8 +4,8 @@ import { getSupabaseClient } from '@/lib/supabase';
 export async function POST(req: NextRequest) {
   try {
     // A. Récupérer les données envoyées par le client
-    const { slug, largeur, avancee, motorisationId, emetteurId } = await req.json();
-    console.log(`🔍 Demande reçue : ${slug} | ${largeur}x${avancee} | Motorisation: ${motorisationId || 'Aucune'} | Émetteur: ${emetteurId || 'Aucun'}`);
+    const { slug, largeur, avancee, motorisationId, emetteurId, toileId } = await req.json();
+    console.log(`🔍 Demande reçue : ${slug} | ${largeur}x${avancee} | Motorisation: ${motorisationId || 'Aucune'} | Émetteur: ${emetteurId || 'Aucun'} | Toile: ${toileId || 'Aucune'}`);
 
     // B. Initialiser Supabase
     const supabase = getSupabaseClient();
@@ -84,6 +84,23 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 2c. Ajouter le prix de la toile si sélectionnée (prix au m²)
+    let prixToile = 0;
+    if (toileId) {
+      const { data: toileData, error: toileError } = await supabase
+        .from('product_options')
+        .select('*')
+        .eq('id', toileId)
+        .single();
+
+      if (!toileError && toileData) {
+        // Calculer la surface en m² (largeur et avancée sont en mm)
+        const surfaceM2 = (largeur * avancee) / 1000000;
+        prixToile = toileData.purchase_price_ht * toileData.sales_coefficient * surfaceM2;
+        console.log(`🎨 Toile ajoutée : ${toileData.name} = ${toileData.purchase_price_ht}€/m² × ${toileData.sales_coefficient} × ${surfaceM2.toFixed(2)}m² = ${prixToile.toFixed(2)}€`);
+      }
+    }
+
     // 3. Gestion du Transport (Règle : > 3650mm = +139€)
     let fraisPort = 0;
     let messageTransport = '';
@@ -94,10 +111,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Total Final
-    const prixFinal = prixVenteStore + prixMotorisation + prixEmetteur + fraisPort;
+    const prixFinal = prixVenteStore + prixMotorisation + prixEmetteur + prixToile + fraisPort;
 
     // G. Réponse au client
-    console.log(`✅ Prix calculé : ${prixFinal.toFixed(2)} € (Store: ${prixVenteStore.toFixed(2)}€ + Motorisation: ${prixMotorisation.toFixed(2)}€ + Émetteur: ${prixEmetteur.toFixed(2)}€ + Transport: ${fraisPort.toFixed(2)}€)`);
+    console.log(`✅ Prix calculé : ${prixFinal.toFixed(2)} € (Store: ${prixVenteStore.toFixed(2)}€ + Motorisation: ${prixMotorisation.toFixed(2)}€ + Émetteur: ${prixEmetteur.toFixed(2)}€ + Toile: ${prixToile.toFixed(2)}€ + Transport: ${fraisPort.toFixed(2)}€)`);
 
     return NextResponse.json({
       success: true,
