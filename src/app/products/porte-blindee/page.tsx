@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import Image from 'next/image';
-import { getSubcategoriesByCategorySlug } from '@/lib/categories';
+import { getSubcategoriesByCategorySlug, getProductCategoryBySlug } from '@/lib/categories';
 import { getSEOMetadata } from '@/lib/seo';
 
 // Regenerate page every 60 seconds for fresh subcategory images
@@ -9,9 +9,10 @@ export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSEOMetadata('products/porte-blindee');
+  const category = await getProductCategoryBySlug('porte-blindee');
   return {
-    title: seo?.title || 'Portes Blindées | Storal.fr',
-    description: seo?.description || 'Portes blindées sécurisées, certifiées A2P avec isolation phonique et thermique',
+    title: seo?.title || `${category?.displayName || 'Portes Blindées'} | Storal.fr`,
+    description: seo?.description || category?.description || 'Portes blindées sécurisées, certifiées A2P avec isolation phonique et thermique',
     keywords: seo?.keywords,
     openGraph: {
       title: seo?.og_title || seo?.title,
@@ -28,6 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PorteBlindeePage() {
   const subcategories = await getSubcategoriesByCategorySlug('porte-blindee');
+  const category = await getProductCategoryBySlug('porte-blindee');
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -37,9 +39,9 @@ export default async function PorteBlindeePage() {
           <Link href="/" className="text-blue-600 hover:underline mb-4 inline-block">
             ← Retour à l'accueil
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Portes Blindées</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">{category?.displayName || 'Portes Blindées'}</h1>
           <p className="text-gray-600 text-lg">
-            Sécurité maximale pour votre domicile. Certification A2P, isolation phonique et thermique.
+            {category?.description || 'Sécurité maximale pour votre domicile. Certification A2P, isolation phonique et thermique.'}
           </p>
         </div>
 

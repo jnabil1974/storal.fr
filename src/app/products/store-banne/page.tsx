@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import Image from 'next/image';
-import { getSubcategoriesByCategorySlug } from '@/lib/categories';
+import { getSubcategoriesByCategorySlug, getProductCategoryBySlug } from '@/lib/categories';
 import { getSEOMetadata } from '@/lib/seo';
 
 // Regenerate page every 60 seconds for fresh subcategory images
@@ -9,9 +9,10 @@ export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSEOMetadata('products/store-banne');
+  const category = await getProductCategoryBySlug('store-banne');
   return {
-    title: seo?.title || 'Stores Bannes | Storal.fr',
-    description: seo?.description || 'Stores bannes élégants pour terrasses et balcons. Personnalisables en dimensions et motorisation.',
+    title: seo?.title || `${category?.displayName || 'Stores Bannes'} | Storal.fr`,
+    description: seo?.description || category?.description || 'Stores bannes élégants pour terrasses et balcons. Personnalisables en dimensions et motorisation.',
     keywords: seo?.keywords,
     openGraph: {
       title: seo?.og_title || seo?.title,
@@ -28,6 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function StoreBannePage() {
   const subcategories = await getSubcategoriesByCategorySlug('store-banne');
+  const category = await getProductCategoryBySlug('store-banne');
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -37,9 +39,9 @@ export default async function StoreBannePage() {
           <Link href="/" className="text-blue-600 hover:underline mb-4 inline-block">
             ← Retour à l'accueil
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Stores Bannes</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">{category?.displayName || 'Stores Bannes'}</h1>
           <p className="text-gray-600 text-lg">
-            Protection solaire élégante pour terrasses et balcons. Personnalisables en dimensions et coloris.
+            {category?.description || 'Protection solaire élégante pour terrasses et balcons. Personnalisables en dimensions et coloris.'}
           </p>
         </div>
 

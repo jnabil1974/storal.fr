@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { getSubcategoriesByCategorySlug } from '@/lib/categories';
+import { getSubcategoriesByCategorySlug, getProductCategoryBySlug } from '@/lib/categories';
 
 // Regenerate page every 60 seconds for fresh subcategory images
 export const revalidate = 60;
 
 export default async function StoreAntichaleurPage() {
   const subcategories = await getSubcategoriesByCategorySlug('store-antichaleur');
+  const category = await getProductCategoryBySlug('store-antichaleur');
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -16,9 +17,9 @@ export default async function StoreAntichaleurPage() {
           <Link href="/" className="text-blue-600 hover:underline mb-4 inline-block">
             ← Retour à l'accueil
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Stores Anti-Chaleur</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">{category?.displayName || 'Stores Anti-Chaleur'}</h1>
           <p className="text-gray-600 text-lg">
-            Solutions thermiques pour fenêtres et vérandas. Réduction efficace de la température intérieure.
+            {category?.description || 'Solutions thermiques pour fenêtres et vérandas. Réduction efficace de la température intérieure.'}
           </p>
         </div>
 
