@@ -46,8 +46,9 @@ export async function POST(req: NextRequest) {
 
     // E. Extraction des données brutes
     const prixAchat = data.price_ht;
-    const marge = data.products.sales_coefficient;
-    const nomProduit = data.products.name;
+    const product = Array.isArray(data.products) ? data.products[0] : data.products;
+    const marge = product.sales_coefficient;
+    const nomProduit = product.name;
 
     // F. Calculs Financiers
     // 1. Prix du store margé
