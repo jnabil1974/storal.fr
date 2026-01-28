@@ -24,18 +24,7 @@ export async function GET(req: NextRequest) {
     // Récupérer les largeurs min et max pour KISSIMY et cette projection
     const { data, error } = await supabase
       .from('product_purchase_prices')
-      .select(`
-        width_min,
-        width_max,
-        products!inner (
-          id,
-          slug,
-          inclinaison_min,
-          inclinaison_max,
-          inclinaison_unite
-        )
-      `)
-      .eq('products.slug', 'store-banne-kissimy')  // Filtrer par produit KISSIMY
+      .select('width_min, width_max')
       .eq('projection', parseInt(projection))
       .order('width_max', { ascending: true });
 
@@ -50,18 +39,14 @@ export async function GET(req: NextRequest) {
     // Trouver le min et le max pour ce produit et cette projection
     const minWidth = Math.min(...data.map(d => d.width_min || 0).filter(w => w > 0));
     const maxWidth = Math.max(...data.map(d => d.width_max));
-    
-    // Récupérer les infos d'inclinaison (identiques pour toutes les lignes)
-    const firstProduct = data[0]?.products;
-    const productData = Array.isArray(firstProduct) ? firstProduct[0] : firstProduct;
 
     return NextResponse.json({
       minWidth,
       maxWidth,
       projection: parseInt(projection),
-      inclinaisonMin: productData?.inclinaison_min || 0,
-      inclinaisonMax: productData?.inclinaison_max || 60,
-      inclinaisonUnite: productData?.inclinaison_unite || '°',
+      inclinaisonMin: 0,
+      inclinaisonMax: 60,
+      inclinaisonUnite: '°',
     });
   } catch (err) {
     console.error('🔥 Erreur Serveur:', err);
