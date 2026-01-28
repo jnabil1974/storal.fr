@@ -52,15 +52,16 @@ export async function GET(req: NextRequest) {
     const maxWidth = Math.max(...data.map(d => d.width_max));
     
     // Récupérer les infos d'inclinaison (identiques pour toutes les lignes)
-    const product = data[0]?.products;
+    const firstProduct = data[0]?.products;
+    const productData = Array.isArray(firstProduct) ? firstProduct[0] : firstProduct;
 
     return NextResponse.json({
       minWidth,
       maxWidth,
       projection: parseInt(projection),
-      inclinaisonMin: product?.inclinaison_min || 0,
-      inclinaisonMax: product?.inclinaison_max || 60,
-      inclinaisonUnite: product?.inclinaison_unite || '°',
+      inclinaisonMin: productData?.inclinaison_min || 0,
+      inclinaisonMax: productData?.inclinaison_max || 60,
+      inclinaisonUnite: productData?.inclinaison_unite || '°',
     });
   } catch (err) {
     console.error('🔥 Erreur Serveur:', err);
