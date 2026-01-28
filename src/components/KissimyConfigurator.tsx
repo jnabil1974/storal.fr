@@ -55,7 +55,8 @@ export default function KissimyConfigurator() {
   useEffect(() => {
     const fetchEmetteurs = async () => {
       try {
-        const response = await fetch('/api/calcul-prix/options?category=Émetteur&productId=1');
+        const category = encodeURIComponent('Émetteur');
+        const response = await fetch(`/api/calcul-prix/options?category=${category}&productId=1`);
         if (!response.ok) {
           console.error('Erreur API émetteurs:', response.status);
           return;
