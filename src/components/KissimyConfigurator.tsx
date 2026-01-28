@@ -25,6 +25,8 @@ export default function KissimyConfigurator() {
   const [motorisations, setMotorisations] = useState<any[]>([]);
   const [emetteurs, setEmetteurs] = useState<any[]>([]);
   const [toiles, setToiles] = useState<any[]>([]);
+  const [toileColors, setToileColors] = useState<any[]>([]);
+  const [selectedToileColorId, setSelectedToileColorId] = useState<number | null>(null);
 
   // Charger les options de motorisation
   useEffect(() => {
@@ -101,6 +103,39 @@ export default function KissimyConfigurator() {
     
     fetchToiles();
   }, []);
+
+  // Charger les couleurs de toile quand une toile est sélectionnée
+  useEffect(() => {
+    if (!toileId) {
+      setToileColors([]);
+      setSelectedToileColorId(null);
+      return;
+    }
+
+    const fetchToileColors = async () => {
+      try {
+        const response = await fetch(`/api/calcul-prix/toile-colors?optionId=${toileId}`);
+        if (!response.ok) {
+          console.error('Erreur API couleurs de toile:', response.status);
+          setToileColors([]);
+          return;
+        }
+        const data = await response.json();
+        if (data.colors && Array.isArray(data.colors)) {
+          setToileColors(data.colors);
+          // Sélectionner automatiquement la première couleur
+          if (data.colors.length > 0) {
+            setSelectedToileColorId(data.colors[0].id);
+          }
+        }
+      } catch (err) {
+        console.error('Erreur chargement couleurs de toile:', err);
+        setToileColors([]);
+      }
+    };
+
+    fetchToileColors();
+  }, [toileId]);
 
   // Récupérer les limites de largeur selon la projection sélectionnée
   useEffect(() => {
@@ -409,6 +444,44 @@ export default function KissimyConfigurator() {
             Prix au m² - Surface calculée: {((avancee * largeur) / 1000000).toFixed(2)} m²
           </p>
         </div>
+
+        {/* Couleurs de toile */}
+        {toileColors.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Couleur de toile
+            </label>
+            <div className="mt-1 space-y-2">
+              {toileColors.map((color) => (
+                <label key={color.id} className="flex items-center gap-3 p-2 border border-gray-300 rounded-md cursor-pointer hover:bg-blue-50">
+                  <input
+                    type="radio"
+                    name="toileColor"
+                    value={color.id}
+                    checked={selectedToileColorId === color.id}
+                    onChange={(e) => setSelectedToileColorId(parseInt(e.target.value))}
+                    className="w-4 h-4"
+                  />
+                  <div className="flex items-center gap-3 flex-1">
+                    {color.color_hex && (
+                      <div
+                        className="w-6 h-6 rounded border border-gray-300"
+                        style={{ backgroundColor: color.color_hex }}
+                        title={color.color_name}
+                      />
+                    )}
+                    <span className="text-sm">
+                      {color.color_name}
+                      {color.price_adjustment > 0 && (
+                        <span className="text-blue-600 font-semibold"> +{color.price_adjustment.toFixed(2)}€</span>
+                      )}
+                    </span>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Prix et messages */}
         {prixHT && !error && (
