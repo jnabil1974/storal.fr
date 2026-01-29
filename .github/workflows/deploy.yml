@@ -27,8 +27,8 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          timeout: 30s
-          command_timeout: 30m
+          timeout: 90s
+          command_timeout: 15m
           script: |
             set -e
             cd /var/www/storal.fr
