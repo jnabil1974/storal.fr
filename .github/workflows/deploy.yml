@@ -27,35 +27,9 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          timeout: 90s
-          command_timeout: 15m
           script: |
-            set -e
+            echo "✅ Connexion SSH réussie!"
             cd /var/www/storal.fr
-            
-            # Arrêt propre
-            pm2 stop all || true
-            sudo pkill -9 -f next || true
-            sudo lsof -ti:3000 | xargs sudo kill -9 2>/dev/null || true
-            
-            # Mise à jour
-            git fetch origin
-            git reset --hard origin/main
-            
-            # Nettoyage complet
-            rm -rf .next node_modules/.cache /tmp/next-*
-            
-            # Installation et build
-            npm install --no-audit
-            npm run build
-            
-            # Redémarrage
-            pm2 delete all || true
-            pm2 start ecosystem.config.js
-            pm2 save
-            
-            # Purge cache Nginx
-            sudo rm -rf /var/cache/nginx/* || true
-            sudo systemctl reload nginx
-            
-            pm2 status
+            git fetch origin && git reset --hard origin/main
+            pm2 restart all
+            echo "✅ Déploiement terminé!"
