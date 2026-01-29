@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     let prixMotorisation = 0;
     if (motorisationId) {
       const { data: motorData, error: motorError } = await supabase
-        .from('sb_product_options')
+        .from('product_options')
         .select('*')
         .eq('id', motorisationId)
         .single();
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     let prixEmetteur = 0;
     if (emetteurId) {
       const { data: emetteurData, error: emetteurError } = await supabase
-        .from('sb_product_options')
+        .from('product_options')
         .select('*')
         .eq('id', emetteurId)
         .single();
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
     let prixToile = 0;
     if (toileId) {
       const { data: toileData, error: toileError } = await supabase
-        .from('sb_product_options')
+        .from('product_options')
         .select('*')
         .eq('id', toileId)
         .single();
