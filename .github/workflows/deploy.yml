@@ -32,27 +32,38 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             
-            # Lancer le déploiement en arrière-plan pour éviter le timeout
+            # Lancer le déploiement en arrière-plan
             nohup bash -c '
-              # Arrêt propre
+              # Arrêt complet de tous les processus
               pm2 stop all || true
-              sudo pkill -9 -f next || true
+              pm2 delete all || true
+              sudo pkill -9 -f "next" || true
+              sudo lsof -ti:3000 | xargs sudo kill -9 2>/dev/null || true
+              sleep 2
               
-              # Nettoyage
+              # Nettoyage des caches
               rm -rf .next node_modules/.cache /tmp/next-*
               
-              # Build
+              # Installation et build
               npm install --no-audit
               npm run build
               
-              # Redémarrage
-              pm2 delete all || true
+              # Vérification que le build a réussi
+              if [ ! -d ".next" ]; then
+                echo "❌ Build failed - .next directory not found"
+                exit 1
+              fi
+              
+              # Démarrage PM2
               pm2 start ecosystem.config.js
               pm2 save
               
               # Purge cache Nginx
               sudo rm -rf /var/cache/nginx/* || true
               sudo systemctl reload nginx
+              
+              echo "✅ Déploiement terminé!"
             ' > /tmp/deploy.log 2>&1 &
             
-            echo "🚀 Déploiement lancé en arrière-plan. Logs: /tmp/deploy.log"
+            echo "🚀 Déploiement lancé en arrière-plan"
+            echo "📋 Suivre les logs: ssh ubuntu@51.210.244.26 tail -f /tmp/deploy.log"
