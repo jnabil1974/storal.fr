@@ -27,14 +27,14 @@ export async function POST(req: NextRequest) {
       .select(
         `
         price_ht,
-        products!inner (
+        sb_products!inner (
           id,
           name,
           sales_coefficient
         )
       `
       )
-      .eq('products.slug', slug) // Le bon produit
+      .eq('sb_products.slug', slug) // Le bon produit
       .eq('projection', avancee) // La bonne avancée
       .gte('width_max', largeur) // Largeur >= Demande
       .order('width_max', { ascending: true }) // Le plus petit qui rentre
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     // E. Extraction des données brutes
     const prixAchat = data.price_ht;
-    const product = Array.isArray(data.products) ? data.products[0] : data.products;
+    const product = Array.isArray(data.sb_products) ? data.sb_products[0] : data.sb_products;
     const marge = product.sales_coefficient;
     const nomProduit = product.name;
 
