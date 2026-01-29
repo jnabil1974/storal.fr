@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/supabase';
 
+const normalizeImageUrl = (imageUrl?: string | null) => {
+  if (!imageUrl) return null;
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
+  if (imageUrl.startsWith('/')) return imageUrl;
+  return `/assets/img/options/${imageUrl}`;
+};
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -46,7 +53,7 @@ export async function GET(req: NextRequest) {
       name: option.name,
       category: option.category,
       prixVenteHT: (option.purchase_price_ht * option.sales_coefficient).toFixed(2),
-      imageUrl: option.image_url,
+      imageUrl: normalizeImageUrl(option.image_url),
       // Ne PAS envoyer purchase_price_ht ni sales_coefficient au client
     }));
 
