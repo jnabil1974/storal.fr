@@ -11,6 +11,126 @@
 			],
 			"isBackground": true,
 			"group": "build"
+		},
+		{
+			"label": "Fix Remote Server",
+			"type": "shell",
+			"command": "ssh ubuntu@51.210.244.26 \"cd /var/www/storal.fr && git fetch origin && git reset --hard origin/main && npm install && npm run build && pm2 restart ecosystem.config.js\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Restart Nginx",
+			"type": "shell",
+			"command": "ssh ubuntu@51.210.244.26 \"sudo systemctl reload nginx\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Fix Permissions and Rebuild",
+			"type": "shell",
+			"command": "ssh ubuntu@51.210.244.26 \"sudo chown -R ubuntu:ubuntu /var/www/storal.fr && cd /var/www/storal.fr && pm2 stop all && rm -rf .next && npm run build && pm2 restart ecosystem.config.js\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Check Server Build",
+			"type": "shell",
+			"command": "ssh ubuntu@51.210.244.26 \"cd /var/www/storal.fr && ls -la .next/static/css/ && echo '---BUILD_ID---' && cat .next/BUILD_ID && echo '---PM2 LIST---' && pm2 list\"",
+			"args": [],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Check PM2 Logs",
+			"type": "shell",
+			"command": "ssh ubuntu@51.210.244.26 \"cd /var/www/storal.fr && pm2 logs storal-fr --lines 50 --nostream\"",
+			"args": [],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Full Server Restart",
+			"type": "shell",
+			"command": "ssh ubuntu@51.210.244.26 \"cd /var/www/storal.fr && pm2 delete all && lsof -ti:3000 | xargs kill -9 2>/dev/null || true && npm run build && pm2 start ecosystem.config.js && pm2 save && pm2 logs --lines 10\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Clear Nginx Cache",
+			"type": "shell",
+			"command": "ssh ubuntu@51.210.244.26 \"sudo rm -rf /var/cache/nginx/* && sudo systemctl reload nginx && cd /var/www/storal.fr && ls -la .next/static/css/\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Test Direct Node Start",
+			"type": "shell",
+			"command": "ssh ubuntu@51.210.244.26 \"cd /var/www/storal.fr && pm2 stop all && PORT=3000 npm start > /tmp/next.log 2>&1 & sleep 5 && curl -s http://localhost:3000/ | grep -o 'href=\\\"/_next/static/css/[^\\\"]*\\\"' && pkill -f 'npm start'\"",
+			"args": [],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Complete Clean Rebuild",
+			"type": "shell",
+			"command": "ssh ubuntu@51.210.244.26 \"cd /var/www/storal.fr && pkill -f next && pm2 delete all && rm -rf .next && npm run build && pm2 start ecosystem.config.js && pm2 save && sleep 5 && pm2 status\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Check Next Config",
+			"type": "shell",
+			"command": "ssh ubuntu@51.210.244.26 \"cd /var/www/storal.fr && cat next.config.ts | head -20 && echo '---' && ls -la .next/ | head -15\"",
+			"args": [],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Nuclear Rebuild",
+			"type": "shell",
+			"command": "ssh ubuntu@51.210.244.26 \"cd /var/www/storal.fr && pkill -9 -f next && pm2 delete all && rm -rf .next node_modules/.cache && npm install && npm run build && pm2 start ecosystem.config.js && pm2 save\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Commit and Push",
+			"type": "shell",
+			"command": "cd /Applications/MAMP/htdocs/store_menuiserie && git add deploy.sh .github/workflows/deploy.yml DEPLOYMENT_GUIDE.md && git commit -m 'chore: améliorer le processus de déploiement pour éviter les problèmes récurrents' && git push origin main",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Deploy to Production",
+			"type": "shell",
+			"command": "cd /Applications/MAMP/htdocs/store_menuiserie && ./deploy.sh --production",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Get SSH Key",
+			"type": "shell",
+			"command": "cat ~/.ssh/id_rsa 2>/dev/null || cat ~/.ssh/id_ed25519 2>/dev/null || echo 'Aucune clé SSH trouvée'",
+			"args": [],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Test GitHub Actions",
+			"type": "shell",
+			"command": "cd /Applications/MAMP/htdocs/store_menuiserie && git add TEST_GITHUB_ACTIONS.md && git commit -m 'test: déclencher GitHub Actions' && git push origin main",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }
