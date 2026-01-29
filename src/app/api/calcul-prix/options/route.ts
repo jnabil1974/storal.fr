@@ -6,6 +6,7 @@ const normalizeImageUrl = (imageUrl?: string | null) => {
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
   if (imageUrl.startsWith('/assets/')) return imageUrl;
   const normalized = imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl;
+  if (normalized.startsWith('assets/')) return `/${normalized}`;
   return `/assets/img/options/${normalized}`;
 };
 
