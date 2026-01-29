@@ -1,0 +1,48 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: 51.210.244.26
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd /var/www/storal.fr
+            
+            # Arrêt propre
+            pm2 stop all || true
+            pkill -9 -f next || true
+            lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+            
+            # Mise à jour
+            git fetch origin
+            git reset --hard origin/main
+            
+            # Nettoyage complet
+            rm -rf .next node_modules/.cache /tmp/next-*
+            
+            # Installation et build
+            npm install --no-audit
+            npm run build
+            
+            # Redémarrage
+            pm2 delete all || true
+            pm2 start ecosystem.config.js
+            pm2 save
+            
+            # Purge cache Nginx
+            sudo rm -rf /var/cache/nginx/* || true
+            sudo systemctl reload nginx
+            
+            pm2 status
