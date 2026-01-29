@@ -3,8 +3,42 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '@/contexts/CartContext';
 
-export default function StoreBanneConfigurator() {
+type StoreBanneProductData = {
+  id?: string | number;
+  name?: string | null;
+  slug?: string | null;
+  description?: string | null;
+  img_store?: string[] | null;
+  image_store_small?: string | null;
+  img_larg_ht?: string | null;
+  img_tol_dim?: string | null;
+  img_dim_coffre?: string | null;
+  bras?: string | null;
+  img_bras_led?: string | null;
+};
+
+type StoreBanneConfiguratorProps = {
+  product?: StoreBanneProductData;
+  productSlug?: string;
+  productId?: string | number;
+  productName?: string;
+  basePrice?: number;
+};
+
+export default function StoreBanneConfigurator({
+  product,
+  productSlug,
+  productId,
+  productName,
+}: StoreBanneConfiguratorProps) {
   const { addItem } = useCart();
+  const resolvedSlug = product?.slug || productSlug || 'store-banne';
+  const resolvedName = product?.name || productName || 'Store Banne';
+  const resolvedDescription = product?.description || '';
+  const resolvedProductId = typeof product?.id !== 'undefined' ? product?.id : productId;
+  const numericProductId = typeof resolvedProductId === 'number'
+    ? resolvedProductId
+    : parseInt(String(resolvedProductId || ''), 10) || 1;
   const [avancee, setAvancee] = useState(1500);
   const [largeur, setLargeur] = useState(3800);
   const [inclinaison, setInclinaison] = useState(15);
@@ -32,7 +66,7 @@ export default function StoreBanneConfigurator() {
   useEffect(() => {
     const fetchMotorisations = async () => {
       try {
-        const response = await fetch('/api/calcul-prix/options?category=Motorisation&productId=1');
+        const response = await fetch(`/api/calcul-prix/options?category=Motorisation&productId=${numericProductId}`);
         if (!response.ok) {
           console.error('Erreur API motorisation:', response.status);
           return;
@@ -51,14 +85,14 @@ export default function StoreBanneConfigurator() {
     };
     
     fetchMotorisations();
-  }, []);
+  }, [numericProductId]);
 
   // Charger les émetteurs (télécommandes)
   useEffect(() => {
     const fetchEmetteurs = async () => {
       try {
         const category = encodeURIComponent('Émetteur');
-        const response = await fetch(`/api/calcul-prix/options?category=${category}&productId=1`);
+        const response = await fetch(`/api/calcul-prix/options?category=${category}&productId=${numericProductId}`);
         if (!response.ok) {
           console.error('Erreur API émetteurs:', response.status);
           return;
@@ -77,13 +111,13 @@ export default function StoreBanneConfigurator() {
     };
     
     fetchEmetteurs();
-  }, []);
+  }, [numericProductId]);
 
   // Charger les toiles
   useEffect(() => {
     const fetchToiles = async () => {
       try {
-        const response = await fetch('/api/calcul-prix/options?category=Toile&productId=1');
+        const response = await fetch(`/api/calcul-prix/options?category=Toile&productId=${numericProductId}`);
         if (!response.ok) {
           console.error('Erreur API toiles:', response.status);
           return;
@@ -102,7 +136,7 @@ export default function StoreBanneConfigurator() {
     };
     
     fetchToiles();
-  }, []);
+  }, [numericProductId]);
 
   // Charger les couleurs de toile quand une toile est sélectionnée
   useEffect(() => {
@@ -221,7 +255,7 @@ export default function StoreBanneConfigurator() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          slug: 'store-banne-kissimy',
+          slug: resolvedSlug,
           largeur: parseInt(largeur.toString()),
           avancee: parseInt(avancee.toString()),
           inclinaison: parseInt(inclinaison.toString()),
@@ -270,9 +304,9 @@ export default function StoreBanneConfigurator() {
     const toileNom = toiles.find(t => t.id === toileId)?.name || 'Sans toile';
 
     addItem({
-      productId: 'store-banne-kissimy',
+      productId: resolvedSlug,
       productType: 'store-banne' as any,
-      productName: 'Store Banne KISSIMY',
+      productName: resolvedName,
       basePrice: parseFloat(prixHT),
       configuration: {
         largeur: largeur,
@@ -299,27 +333,135 @@ export default function StoreBanneConfigurator() {
   const emetteurNom = emetteurs.find(e => e.id === emetteurId)?.name || 'Sans émetteur';
   const toileNom = toiles.find(t => t.id === toileId)?.name || 'Sans toile';
   const toileColorNom = toileColors.find(c => c.id === selectedToileColorId)?.color_name || 'Couleur standard';
+  const carouselImages = (product?.img_store || []).filter(Boolean);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCarouselIndex(0);
+  }, [carouselImages.length]);
+
+  useEffect(() => {
+    if (carouselImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % carouselImages.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [carouselImages.length]);
 
   return (
     <div className="max-w-6xl mx-auto">
       <div className="bg-white/95 backdrop-blur border border-gray-200 p-6 md:p-8 rounded-2xl shadow-xl pb-28">
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-semibold tracking-widest uppercase text-blue-600">
-            Configurateur
-          </span>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-            Store Banne KISSIMY
-          </h1>
-          <p className="text-sm md:text-base text-gray-600 max-w-2xl">
-            Personnalisez votre store et obtenez un prix instantané. Toutes les options sont recalculées en temps réel.
-          </p>
+        <div className="mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">{resolvedName}</h1>
+          {resolvedDescription && (
+            <p className="text-sm md:text-base text-gray-600 max-w-2xl">
+              {resolvedDescription}
+            </p>
+          )}
         </div>
 
-        <div className="mt-8 grid lg:grid-cols-[2fr,1fr] gap-8">
-          <div className="space-y-6">
-            <section className="rounded-xl border border-gray-200 p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-gray-900 mb-4">Dimensions</h2>
-              <div className="grid md:grid-cols-3 gap-4">
+        <div className="mt-6 grid gap-6 grid-cols-1 sm:grid-cols-[1.6fr_1fr]">
+          {(carouselImages.length > 0 || product?.bras || product?.img_dim_coffre || product?.img_bras_led) && (
+            <div className="rounded-xl border border-gray-200 p-5 shadow-sm bg-white">
+              <h2 className="text-sm font-semibold text-gray-900 mb-4">Fiche produit</h2>
+              <div className="space-y-4">
+                {carouselImages.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 mb-2">Images</p>
+                    <div className="relative w-full rounded-lg border border-gray-200 bg-gray-50 overflow-hidden" style={{ aspectRatio: '4 / 3' }}>
+                      <button
+                        type="button"
+                        onClick={() => setZoomImage(carouselImages[carouselIndex])}
+                        className="w-full h-full"
+                        aria-label="Agrandir l'image"
+                      >
+                        <img
+                          src={carouselImages[carouselIndex]}
+                          alt={`${resolvedName} ${carouselIndex + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                      {carouselImages.length > 1 && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setCarouselIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length)}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-2 py-1 text-sm shadow hover:bg-white"
+                          >
+                            ←
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCarouselIndex((prev) => (prev + 1) % carouselImages.length)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-2 py-1 text-sm shadow hover:bg-white"
+                          >
+                            →
+                          </button>
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                            {carouselImages.map((_, idx) => (
+                              <span
+                                key={`dot-${idx}`}
+                                className={`h-2 w-2 rounded-full ${idx === carouselIndex ? 'bg-blue-600' : 'bg-white/80'}`}
+                              />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {(product?.bras || product?.img_dim_coffre || product?.img_bras_led) && (
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-gray-700">Infos complémentaires</p>
+                    {product?.img_dim_coffre && (
+                      <div>
+                        <p className="text-xs font-medium text-gray-600 mb-1">Dimensions coffre</p>
+                        <img
+                          src={product.img_dim_coffre}
+                          alt="Schéma coffre"
+                          className="w-full rounded object-contain border border-gray-200 bg-gray-50"
+                        />
+                      </div>
+                    )}
+                    {product?.img_bras_led && (
+                      <div>
+                        <p className="text-xs font-medium text-gray-600 mb-1">Bras LED</p>
+                        <img
+                          src={product.img_bras_led}
+                          alt="Bras LED"
+                          className="w-full rounded object-contain border border-gray-200 bg-gray-50"
+                        />
+                      </div>
+                    )}
+                    {product?.bras && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p className="text-xs font-semibold text-blue-700 mb-1">Type de bras</p>
+                        <p className="text-base font-medium text-blue-900">{product.bras}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <section className="rounded-xl border border-gray-200 p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-gray-900 mb-4">Dimensions</h2>
+              
+              {product?.img_larg_ht && (
+                <div className="mb-4">
+                  <p className="text-xs font-medium text-gray-600 mb-2">Schéma Largeur / Hauteur</p>
+                  <img
+                    src={product.img_larg_ht}
+                    alt="Schéma largeur hauteur"
+                    className="h-32 w-full rounded object-contain border border-gray-200 bg-gray-50"
+                  />
+                </div>
+              )}
+
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Avancée (Projection)
@@ -352,25 +494,40 @@ export default function StoreBanneConfigurator() {
                     {warningLargeur || `Entre ${minLargeur} et ${maxLargeur} mm`}
                   </p>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Inclinaison (réglage usine)
-                  </label>
-                  <input
-                    type="number"
-                    value={inclinaison}
-                    onChange={(e) => handleInclinaisonChange(e.target.value)}
-                    className={`mt-1 block w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      warningInclinaison ? 'border-orange-400 bg-orange-50' : 'border-gray-300'
-                    }`}
-                  />
-                  <p className={`text-xs mt-1 ${warningInclinaison ? 'text-orange-600 font-semibold' : 'text-gray-500'}`}>
-                    {warningInclinaison || `Entre ${minInclinaison} et ${maxInclinaison}${inclinaisonUnite}`}
-                  </p>
-                </div>
               </div>
-            </section>
+
+              {product?.img_tol_dim && (
+                <div className="mt-4">
+                  <p className="text-xs font-medium text-gray-600 mb-2">Schéma Dimensions toile</p>
+                  <img
+                    src={product.img_tol_dim}
+                    alt="Schéma toile"
+                    className="h-32 w-full rounded object-contain border border-gray-200 bg-gray-50"
+                  />
+                </div>
+              )}
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Inclinaison (réglage usine)
+              </label>
+              <input
+                type="number"
+                value={inclinaison}
+                onChange={(e) => handleInclinaisonChange(e.target.value)}
+                className={`mt-1 block w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  warningInclinaison ? 'border-orange-400 bg-orange-50' : 'border-gray-300'
+                }`}
+              />
+              <p className={`text-xs mt-1 ${warningInclinaison ? 'text-orange-600 font-semibold' : 'text-gray-500'}`}>
+                {warningInclinaison || `Entre ${minInclinaison} et ${maxInclinaison}${inclinaisonUnite}`}
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <div className="mt-8 grid lg:grid-cols-[2fr_1fr] gap-8">
+          <div className="space-y-6">
 
             <section className="rounded-xl border border-gray-200 p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-gray-900 mb-4">Options</h2>
@@ -602,6 +759,28 @@ export default function StoreBanneConfigurator() {
           </button>
         </div>
       </div>
+
+      {zoomImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-6"
+          onClick={() => setZoomImage(null)}
+        >
+          <div className="relative max-w-5xl w-full">
+            <button
+              type="button"
+              className="absolute -top-10 right-0 text-white text-sm"
+              onClick={() => setZoomImage(null)}
+            >
+              Fermer ✕
+            </button>
+            <img
+              src={zoomImage}
+              alt="Aperçu"
+              className="w-full max-h-[80vh] object-contain bg-white rounded-lg"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

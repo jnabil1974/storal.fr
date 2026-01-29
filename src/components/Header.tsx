@@ -134,6 +134,9 @@ export default function Header() {
               </Link>
             ))} */}
 
+            <Link href="/store-banne" className="px-4 py-2 text-gray-700 hover:text-blue-600 font-semibold transition-all">
+              Store Banne
+            </Link>
             {showMyOrders && (
               <Link href="/my-orders" className="px-4 py-2 text-gray-700 hover:text-blue-600 font-semibold transition-all">
                 Mes commandes

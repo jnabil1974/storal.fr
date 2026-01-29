@@ -96,7 +96,7 @@ function mapRowToProduct(row: DbProductRow): Product {
 
 function withMockFallback<T>(fn: () => Promise<T>, fallback: () => T | Promise<T>): Promise<T> {
   return fn().catch((err) => {
-    console.error('Supabase error, fallback to mock data:', err);
+    console.warn('⚠️ Database query failed, returning empty result:', err?.message || err);
     return fallback();
   });
 }
@@ -104,8 +104,8 @@ function withMockFallback<T>(fn: () => Promise<T>, fallback: () => T | Promise<T
 export async function getProducts(): Promise<Product[]> {
   const supabase = getSupabaseClient();
   if (!supabase) {
-    console.log('[getProducts] No supabase, returning mock');
-    return mockProducts;
+    console.log('[getProducts] No supabase, returning empty array');
+    return [];
   }
 
   return withMockFallback(async () => {
@@ -120,7 +120,7 @@ export async function getProducts(): Promise<Product[]> {
     console.log(`[getProducts] Got ${data.length} products from Supabase`);
     
     return data.map(mapRowToProduct);
-  }, () => mockProducts);
+  }, () => []);
 }
 
 export async function getProductById(id: string): Promise<Product | null> {

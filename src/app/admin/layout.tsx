@@ -36,6 +36,12 @@ export default function AdminLayout({
       description: 'Catalogue des toiles'
     },
     {
+      title: 'Produits Store Banne',
+      href: '/admin/store-banne-products',
+      icon: '☀️',
+      description: 'Images & infos stores'
+    },
+    {
       title: 'Newsletter',
       href: '/admin/newsletter',
       icon: '📧',
