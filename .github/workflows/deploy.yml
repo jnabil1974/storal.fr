@@ -28,8 +28,31 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            echo "✅ Connexion SSH réussie!"
             cd /var/www/storal.fr
-            git fetch origin && git reset --hard origin/main
-            pm2 restart all
-            echo "✅ Déploiement terminé!"
+            git fetch origin
+            git reset --hard origin/main
+            
+            # Lancer le déploiement en arrière-plan pour éviter le timeout
+            nohup bash -c '
+              # Arrêt propre
+              pm2 stop all || true
+              sudo pkill -9 -f next || true
+              
+              # Nettoyage
+              rm -rf .next node_modules/.cache /tmp/next-*
+              
+              # Build
+              npm install --no-audit
+              npm run build
+              
+              # Redémarrage
+              pm2 delete all || true
+              pm2 start ecosystem.config.js
+              pm2 save
+              
+              # Purge cache Nginx
+              sudo rm -rf /var/cache/nginx/* || true
+              sudo systemctl reload nginx
+            ' > /tmp/deploy.log 2>&1 &
+            
+            echo "🚀 Déploiement lancé en arrière-plan. Logs: /tmp/deploy.log"
