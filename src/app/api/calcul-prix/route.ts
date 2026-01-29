@@ -64,15 +64,15 @@ export async function POST(req: NextRequest) {
     let prixMotorisation = 0;
     if (motorisationId) {
       const { data: motorData, error: motorError } = await supabase
-        .from('product_options')
+        .from('sb_product_options')
         .select('*')
         .eq('id', motorisationId)
         .single();
 
       if (!motorError && motorData) {
-        prixMotorisation = motorData.purchase_price_ht * motorData.sales_coefficient;
+        prixMotorisation = motorData.price_ht || 0;
         console.log(
-          `⚙️ Motorisation ajoutée : ${motorData.name} = ${prixMotorisation.toFixed(2)}€`
+          `⚙️ Motorisation ajoutée : ${motorData.option_name} = ${prixMotorisation.toFixed(2)}€`
         );
       }
     }
@@ -81,15 +81,15 @@ export async function POST(req: NextRequest) {
     let prixEmetteur = 0;
     if (emetteurId) {
       const { data: emetteurData, error: emetteurError } = await supabase
-        .from('product_options')
+        .from('sb_product_options')
         .select('*')
         .eq('id', emetteurId)
         .single();
 
       if (!emetteurError && emetteurData) {
-        prixEmetteur = emetteurData.purchase_price_ht * emetteurData.sales_coefficient;
+        prixEmetteur = emetteurData.price_ht || 0;
         console.log(
-          `📡 Émetteur ajouté : ${emetteurData.name} = ${prixEmetteur.toFixed(2)}€`
+          `📡 Émetteur ajouté : ${emetteurData.option_name} = ${prixEmetteur.toFixed(2)}€`
         );
       }
     }
@@ -98,18 +98,19 @@ export async function POST(req: NextRequest) {
     let prixToile = 0;
     if (toileId) {
       const { data: toileData, error: toileError } = await supabase
-        .from('product_options')
+        .from('sb_product_options')
         .select('*')
         .eq('id', toileId)
         .single();
 
       if (!toileError && toileData) {
-        // Calculer la surface en m² (largeur et avancée sont en mm)
+        // Dans sb_product_options, price_ht est déjà le prix complet
+        // Pour les toiles, il faut vérifier si c'est au m² ou au mètre linéaire
         const surfaceM2 = (largeur * avancee) / 1000000;
-        prixToile =
-          toileData.purchase_price_ht * toileData.sales_coefficient * surfaceM2;
+        // Supposer que price_ht est un prix de base et appliquer la surface
+        prixToile = toileData.price_ht * surfaceM2;
         console.log(
-          `🎨 Toile ajoutée : ${toileData.name} = ${toileData.purchase_price_ht}€/m² × ${toileData.sales_coefficient} × ${surfaceM2.toFixed(2)}m² = ${prixToile.toFixed(2)}€`
+          `🎨 Toile ajoutée : ${toileData.option_name} = ${toileData.price_ht}€/m² × ${surfaceM2.toFixed(2)}m² = ${prixToile.toFixed(2)}€`
         );
       }
     }

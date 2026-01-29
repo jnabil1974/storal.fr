@@ -29,11 +29,11 @@ export async function GET(req: NextRequest) {
 
     // Récupérer les options par catégorie ET product_id
     const { data, error } = await supabase
-      .from('product_options')
-      .select('id, name, category, purchase_price_ht, sales_coefficient, image_url')
-      .eq('category', category)
+      .from('sb_product_options')
+      .select('id, option_name as name, option_type as category, price_ht as purchase_price_ht, (1.5::float) as sales_coefficient')
       .eq('product_id', productId)
-      .order('purchase_price_ht', { ascending: true });
+      .eq('option_type', category)
+      .order('price_ht', { ascending: true });
 
     console.log('📊 Données reçues de Supabase:', { count: data?.length, error });
 
