@@ -4,10 +4,10 @@ import { getPricingCoefficient } from '@/lib/pricingRules';
 import { DICKSON_TOILES } from '@/lib/dicksonToiles';
 
 /**
- * Grille de prix KISSIMY en HT (avant coefficient)
- * Source: PRIX DIM KISSIMY.csv
+ * Grille de prix Store Banne en HT (avant coefficient)
+ * Source: PRIX DIM STORE BANNE.csv
  */
-const KISSIMY_PRICING_GRID = [
+const STORE_BANNE_PRICING_GRID = [
   { avancee: 1500, largeurMin: 1800, largeurMax: 2470, priceHT: 1010 },
   { avancee: 1500, largeurMin: 2470, largeurMax: 3650, priceHT: 1039 },
   { avancee: 1500, largeurMin: 3650, largeurMax: 4830, priceHT: 1068 },
@@ -26,9 +26,9 @@ const KISSIMY_PRICING_GRID = [
 ];
 
 /**
- * Prix des options KISSIMY en HT (avant coefficient)
+ * Prix des options Store Banne en HT (avant coefficient)
  */
-const KISSIMY_OPTIONS_PRICES = {
+const STORE_BANNE_OPTIONS_PRICES = {
   // Couleur cadre
   couleurCadre: {
     RAL_9010: 0,
@@ -49,19 +49,19 @@ const KISSIMY_OPTIONS_PRICES = {
  * Retourne le prix HT pour la couleur de cadre sélectionnée.
  */
 function getCouleurCadrePriceHT(couleurCadre: string): number {
-  const map = KISSIMY_OPTIONS_PRICES.couleurCadre as Record<string, number>;
+  const map = STORE_BANNE_OPTIONS_PRICES.couleurCadre as Record<string, number>;
   return map[couleurCadre] ?? 0;
 }
 
 /**
- * Récupère le prix de base HT du grid de tarification KISSIMY
+ * Récupère le prix de base HT du grid de tarification Store Banne
  * 
  * @param avancee Avancée en mm (1500, 2000, 2500, 3000)
  * @param largeur Largeur en mm (1800-4830)
  * @returns Prix HT du produit de base, ou null si dimensions invalides
  */
-export function getKissimyBasePriceHT(avancee: number, largeur: number): number | null {
-  const row = KISSIMY_PRICING_GRID.find(
+export function getStoreBanneBasePriceHT(avancee: number, largeur: number): number | null {
+  const row = STORE_BANNE_PRICING_GRID.find(
     (item) =>
       item.avancee === avancee &&
       largeur >= item.largeurMin &&
@@ -72,13 +72,13 @@ export function getKissimyBasePriceHT(avancee: number, largeur: number): number 
 }
 
 /**
- * Calcule le prix total TTC pour une configuration KISSIMY
+ * Calcule le prix total TTC pour une configuration Store Banne
  * 
- * @param config Configuration KISSIMY
+ * @param config Configuration Store Banne
  * @param coefficient Coefficient de tarification (marge + taxes)
  * @returns Objet avec détails du prix
  */
-export function calculateKissimyPriceTTC(
+export function calculateStoreBannePriceTTC(
   config: StoreBanneKissimyConfig,
   coefficient: number
 ): {
@@ -89,14 +89,14 @@ export function calculateKissimyPriceTTC(
   breakdownHT: { [key: string]: number };
 } {
   // Récupérer le prix de base
-  const basePriceHT = getKissimyBasePriceHT(config.avancee, config.largeur);
+  const basePriceHT = getStoreBanneBasePriceHT(config.avancee, config.largeur);
   
   if (basePriceHT === null) {
     throw new Error(`Invalid dimensions: avancee=${config.avancee}, largeur=${config.largeur}`);
   }
 
   // Calculer le prix des options
-  const optionsPriceHT = calculateKissimyOptionsPrice(config);
+  const optionsPriceHT = calculateStoreBanneOptionsPrice(config);
   
   // Total HT
   const totalPriceHT = basePriceHT + optionsPriceHT;
@@ -107,16 +107,16 @@ export function calculateKissimyPriceTTC(
   // Détail
   const breakdown: { [key: string]: number } = { base: basePriceHT };
   if (config.poseSousPlafond) {
-    breakdown['poseSousPlafond'] = KISSIMY_OPTIONS_PRICES.accessoires.poseSousPlafond;
+    breakdown['poseSousPlafond'] = STORE_BANNE_OPTIONS_PRICES.accessoires.poseSousPlafond;
   }
   if (config.capteurVent) {
-    breakdown['capteurVent'] = KISSIMY_OPTIONS_PRICES.accessoires.capteurVent;
+    breakdown['capteurVent'] = STORE_BANNE_OPTIONS_PRICES.accessoires.capteurVent;
   }
   if (config.tahoma) {
-    breakdown['tahoma'] = KISSIMY_OPTIONS_PRICES.accessoires.tahoma;
+    breakdown['tahoma'] = STORE_BANNE_OPTIONS_PRICES.accessoires.tahoma;
   }
   if (config.cablage10m) {
-    breakdown['cablage10m'] = KISSIMY_OPTIONS_PRICES.accessoires.cablage10m;
+    breakdown['cablage10m'] = STORE_BANNE_OPTIONS_PRICES.accessoires.cablage10m;
   }
   if (config.couleurCadre) {
     const colorPrice = getCouleurCadrePriceHT(config.couleurCadre);
@@ -137,23 +137,23 @@ export function calculateKissimyPriceTTC(
 /**
  * Calcule uniquement le prix des options en HT
  */
-export function calculateKissimyOptionsPrice(config: StoreBanneKissimyConfig): number {
+export function calculateStoreBanneOptionsPrice(config: StoreBanneKissimyConfig): number {
   let total = 0;
 
   if (config.poseSousPlafond) {
-    total += KISSIMY_OPTIONS_PRICES.accessoires.poseSousPlafond;
+    total += STORE_BANNE_OPTIONS_PRICES.accessoires.poseSousPlafond;
   }
 
   if (config.capteurVent) {
-    total += KISSIMY_OPTIONS_PRICES.accessoires.capteurVent;
+    total += STORE_BANNE_OPTIONS_PRICES.accessoires.capteurVent;
   }
 
   if (config.tahoma) {
-    total += KISSIMY_OPTIONS_PRICES.accessoires.tahoma;
+    total += STORE_BANNE_OPTIONS_PRICES.accessoires.tahoma;
   }
 
   if (config.cablage10m) {
-    total += KISSIMY_OPTIONS_PRICES.accessoires.cablage10m;
+    total += STORE_BANNE_OPTIONS_PRICES.accessoires.cablage10m;
   }
 
   // Couleur de cadre

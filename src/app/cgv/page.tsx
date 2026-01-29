@@ -1,5 +1,25 @@
 import Link from 'next/link';
+import { Metadata } from 'next';
+import { getSEOMetadata } from '@/lib/seo';
 
+export async function generateMetadata(): Promise<Metadata> {
+  // Le slug 'cgv' est pré-configuré dans la base de données (voir SEO_IMPLEMENTATION_COMPLETE.md)
+  const seo = await getSEOMetadata('cgv');
+
+  const defaultTitle = 'Conditions Générales de Vente - Storal';
+  const defaultDescription = 'Consultez les conditions générales de vente de Storal pour les produits sur-mesure et standards.';
+
+  return {
+    title: seo?.title || defaultTitle,
+    description: seo?.description || defaultDescription,
+    keywords: seo?.keywords || ['cgv', 'conditions générales de vente', 'storal'],
+    openGraph: {
+      title: seo?.og_title || seo?.title || defaultTitle,
+      description: seo?.og_description || seo?.description || defaultDescription,
+    },
+    robots: seo?.robots || 'index, follow',
+  };
+}
 export default function CGVPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">

@@ -3,10 +3,10 @@
 import { useState, useCallback, useMemo } from 'react';
 import { StoreBanneKissimyConfig, ProductType } from '@/types/products';
 import {
-  calculateKissimyPriceTTC,
+  calculateStoreBannePriceTTC,
   getKissimyAvailableOptions,
   validateKissimyConfig,
-} from '@/lib/kissimyPricing';
+} from '@/lib/storeBannePricing';
 import { useCart } from '@/contexts/CartContext';
 
 interface StoreBanneKissimyConfiguratorProps {
@@ -59,7 +59,7 @@ export function StoreBanneKissimyConfigurator({
         cablage10m: config.cablage10m || false,
       } as StoreBanneKissimyConfig;
 
-      return calculateKissimyPriceTTC(validated, coefficient);
+      return calculateStoreBannePriceTTC(validated, coefficient);
     } catch {
       return null;
     }

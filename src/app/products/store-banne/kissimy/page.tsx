@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import KissimyConfigurator from '@/components/KissimyConfigurator';
+import StoreBanneConfigurator from '@/components/StoreBanneConfigurator';
 
 export const metadata: Metadata = {
   title: 'Store Banne KISSIMY - Configurateur de Prix | Storal.fr',
@@ -62,7 +62,7 @@ export default function KissimyPage() {
 
         {/* Configurateur */}
         <div id="configurateur" className="scroll-mt-24">
-          <KissimyConfigurator />
+          <StoreBanneConfigurator />
         </div>
 
         {/* Caractéristiques produit */}
