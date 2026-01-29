@@ -353,7 +353,10 @@ export default function StoreBanneConfigurator({
     <div className="max-w-6xl mx-auto">
       <div className="bg-white/95 backdrop-blur border border-gray-200 p-6 md:p-8 rounded-2xl shadow-xl pb-28">
         <div className="mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">{resolvedName}</h1>
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{resolvedName}</h1>
+            <p className="text-base md:text-lg font-semibold text-blue-700 whitespace-nowrap">Configurer votre store</p>
+          </div>
           {resolvedDescription && (
             <p className="text-sm md:text-base text-gray-600 max-w-2xl">
               {resolvedDescription}
