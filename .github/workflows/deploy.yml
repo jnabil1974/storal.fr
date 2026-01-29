@@ -35,8 +35,8 @@ jobs:
             
             # Arrêt propre
             pm2 stop all || true
-            pkill -9 -f next || true
-            lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+            sudo pkill -9 -f next || true
+            sudo lsof -ti:3000 | xargs sudo kill -9 2>/dev/null || true
             
             # Mise à jour
             git fetch origin
