@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
     // Récupérer les options par catégorie ET product_id
     const { data, error } = await supabase
-      .from('product_options')
+      .from('sb_product_options')
       .select('id, name, category, purchase_price_ht, sales_coefficient, image_url')
       .eq('category', category)
       .eq('product_id', productId)

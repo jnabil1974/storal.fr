@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
     // Récupérer les largeurs min et max pour KISSIMY et cette projection
     const { data, error } = await supabase
-      .from('product_purchase_prices')
+      .from('sb_product_purchase_prices')
       .select('width_min, width_max')
       .eq('projection', parseInt(projection))
       .order('width_max', { ascending: true });

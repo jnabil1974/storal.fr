@@ -39,14 +39,14 @@ export async function GET(req: NextRequest) {
 
     // D'abord, essayer de récupérer avec SELECT * pour voir la structure réelle
     const { data: sampleData, error: sampleError } = await supabase
-      .from('product_toile_colors')
+      .from('sb_product_toile_colors')
       .select('*')
       .limit(1);
 
     let columnNames: string[] = [];
     if (sampleData && sampleData.length > 0) {
       columnNames = Object.keys(sampleData[0]);
-      console.log('📊 Colonnes détectées dans product_toile_colors:', columnNames);
+      console.log('📊 Colonnes détectées dans sb_product_toile_colors:', columnNames);
     } else {
       console.log('📊 Aucune donnée ou erreur lors de la vérification de structure:', sampleError?.message);
     }
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
     // Essayer de récupérer les couleurs depuis la table product_toile_colors
     // En utilisant SELECT * pour éviter les erreurs de colonnes manquantes
     const { data, error } = await supabase
-      .from('product_toile_colors')
+      .from('sb_product_toile_colors')
       .select('*')
       .eq('option_id', optionId)
       .order('id', { ascending: true });
