@@ -95,7 +95,7 @@ export default async function StoreBanneCatalogPage() {
               return (
                 <div
                   key={product.id}
-                  className="group bg-white rounded-xl shadow-lg hover:shadow-2xl hover:scale-y-105 transition-all duration-300 overflow-hidden border border-slate-100 flex flex-col"
+                  className="group bg-white rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden border border-slate-100 flex flex-col"
                 >
                   {/* Image */}
                   <div className="relative h-56 bg-slate-100 overflow-hidden">
