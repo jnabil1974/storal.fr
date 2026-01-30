@@ -59,13 +59,7 @@ async function getStoreBanneProducts() {
 }
 
 export default async function StoreBanneCatalogPage() {
-  console.log('🎯 Page render starts - env vars:', {
-    hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    urlLength: process.env.NEXT_PUBLIC_SUPABASE_URL?.length || 0
-  });
   const products = await getStoreBanneProducts();
-  console.log('🎯 Page render - products received:', products.length);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
