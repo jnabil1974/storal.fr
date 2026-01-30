@@ -311,7 +311,8 @@ export default function AdminHeroSlidesPage() {
                         <option value="">Sélectionner une page...</option>
                         <option value="/">🏠 Accueil</option>
                         <optgroup label="Produits">
-                          <option value="/products/store-banne">Store Banne</option>
+                          <option value="/store-banne">Store Banne (Catalogue)</option>
+                          <option value="/products/store-banne">Store Banne (Ancien)</option>
                           <option value="/products/porte-blindee">Porte Blindée</option>
                           <option value="/products/store-antichaleur">Store Anti-Chaleur</option>
                           <option value="/kissimy">Kissimy</option>
