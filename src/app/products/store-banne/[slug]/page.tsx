@@ -49,6 +49,15 @@ export default async function StoreBanneProductPage({ params }: Props) {
          .join(' '),
        slug: slug,
       description: `Configurateur de store banne ${slug}. Choisissez vos dimensions, motorisation et coloris.`,
+      hero_title: 'Store HELiOM & HELiOM PLUS',
+      hero_subtitle: 'Le coffre intégral haute performance pour une protection absolue',
+      hero_tagline: 'Coffre Intégral',
+      hero_text: "Le store HELiOM est conçu pour abriter intégralement la toile et les bras dans un coffre hermétique une fois refermé. Cette conception garantit une longévité maximale à vos composants face à la pollution et aux intempéries.",
+      hero_points: [
+        'Largeur : de 2 340 mm à 6 000 mm',
+        'Avancée HELiOM : jusqu\'à 3 500 mm',
+        'Avancée HELiOM PLUS : jusqu\'à 4 000 mm',
+      ],
       sales_coefficient: 1.5,
        image_hero: null,
       min_width: 1800,
@@ -57,6 +66,16 @@ export default async function StoreBanneProductPage({ params }: Props) {
       max_projection: 3000,
       product_type: 'Standard',
        tags: ['Coffre Standard', 'Polyvalent', 'Économique'],
+      comparison_table: {
+        title: 'HELiOM vs HELiOM PLUS',
+        headers: ['Caractéristiques', 'HELiOM', 'HELiOM PLUS'],
+        rows: [
+          { label: 'Type de Bras', values: ['Articulés standard', 'Bras renforcés haute performance'] },
+          { label: 'Projection Max', values: ['3,50 m (8 choix)', '4,00 m (5 choix)'] },
+          { label: 'Lambrequin Déroulant', values: ['Non disponible', 'Optionnel (Manuel ou Motorisé)'] },
+          { label: 'Encombrement Coffre', values: ['Hauteur 288 mm x Profondeur 206 mm', 'Hauteur 288 mm x Profondeur 206 mm'] },
+        ],
+      },
       features: {
         arm_type: 'Articulés standard',
         coffre_height: 250,
@@ -70,12 +89,36 @@ export default async function StoreBanneProductPage({ params }: Props) {
         motor: 3,
         fabric: 3,
       },
+      guarantees: [
+        { years: 12, label: 'Garantie Armature' },
+        { years: 10, label: 'Tenue du Laquage' },
+        { years: 5, label: 'Moteur & Toile' },
+      ],
       options_description: {
          LED: 'Éclairage LED optionnel pour vos soirées',
          Motorisation: 'Motorisation Somfy avec télécommande',
          Wind_Security: 'Sécurité vent optionnelle avec capteur',
          Colors: 'Large gamme de coloris disponibles',
       },
+      options_cards: [
+        {
+          title: 'Éclairage LED',
+          description: 'Bandeaux LED intégrés sous le coffre ou directement dans les bras pour illuminer vos soirées.',
+        },
+        {
+          title: 'Motorisation Somfy',
+          description: 'Pilotage par télécommande ou smartphone via la technologie io-homecontrol®.',
+        },
+        {
+          title: 'Sécurité Vent',
+          description: 'Capteur Eolis 3D qui remonte automatiquement le store en cas de rafales de vent.',
+        },
+        {
+          title: 'Bi-Coloration',
+          description: 'Personnalisez votre design en choisissant une couleur différente pour le coffre et les bras.',
+        },
+      ],
+      certifications: ['QUALICOAT', 'QUALIMARINE'],
     };
   }
 

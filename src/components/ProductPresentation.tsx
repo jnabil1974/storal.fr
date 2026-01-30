@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-
 type ProductPageProps = {
   product: {
     id: number | string;
     name: string;
     slug: string;
     description: string;
+    hero_title?: string;
+    hero_subtitle?: string;
+    hero_tagline?: string;
+    hero_text?: string;
+    hero_points?: any;
     image_hero?: string;
     min_width?: number;
     max_width?: number;
@@ -18,6 +21,10 @@ type ProductPageProps = {
     features?: any;
     warranty?: any;
     options_description?: any;
+    options_cards?: any;
+    comparison_table?: any;
+    guarantees?: any;
+    certifications?: any;
   };
 };
 
@@ -36,18 +43,45 @@ export default function ProductPresentation({ product }: ProductPageProps) {
   });
 
   // Parser les données JSON si elles sont des strings
-  const parsedTags = typeof product.tags === 'string' ? JSON.parse(product.tags) : (Array.isArray(product.tags) ? product.tags : []);
-  const parsedFeatures = typeof product.features === 'string' ? JSON.parse(product.features) : (product.features || {});
-  const parsedWarranty = typeof product.warranty === 'string' ? JSON.parse(product.warranty) : (product.warranty || {});
-  const parsedOptions = typeof product.options_description === 'string' ? JSON.parse(product.options_description) : (product.options_description || {});
+  const parsedTags = typeof product.tags === 'string'
+    ? JSON.parse(product.tags)
+    : (Array.isArray(product.tags) ? product.tags : []);
+  const parsedFeatures = typeof product.features === 'string'
+    ? JSON.parse(product.features)
+    : (product.features || {});
+  const parsedWarranty = typeof product.warranty === 'string'
+    ? JSON.parse(product.warranty)
+    : (product.warranty || {});
+  const parsedOptions = typeof product.options_description === 'string'
+    ? JSON.parse(product.options_description)
+    : (product.options_description || {});
+  const parsedHeroPoints = typeof product.hero_points === 'string'
+    ? JSON.parse(product.hero_points)
+    : (Array.isArray(product.hero_points) ? product.hero_points : []);
+  const parsedOptionsCards = typeof product.options_cards === 'string'
+    ? JSON.parse(product.options_cards)
+    : (Array.isArray(product.options_cards) ? product.options_cards : []);
+  const parsedComparison = typeof product.comparison_table === 'string'
+    ? JSON.parse(product.comparison_table)
+    : (product.comparison_table || null);
+  const parsedGuarantees = typeof product.guarantees === 'string'
+    ? JSON.parse(product.guarantees)
+    : (Array.isArray(product.guarantees) ? product.guarantees : []);
+  const parsedCertifications = typeof product.certifications === 'string'
+    ? JSON.parse(product.certifications)
+    : (Array.isArray(product.certifications) ? product.certifications : []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
       {/* Header */}
       <header className="bg-slate-800 text-white py-12">
         <div className="max-w-6xl mx-auto px-4">
-          <h1 className="text-4xl font-bold uppercase tracking-wider mb-2">{product.name}</h1>
-          <p className="text-lg opacity-90">{product.description}</p>
+          <h1 className="text-4xl font-bold uppercase tracking-wider mb-2">
+            {product.hero_title || product.name}
+          </h1>
+          <p className="text-lg opacity-90">
+            {product.hero_subtitle || product.description}
+          </p>
         </div>
       </header>
 
@@ -69,10 +103,17 @@ export default function ProductPresentation({ product }: ProductPageProps) {
         {/* Hero Section */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <div>
+            {product.hero_tagline && (
+              <span className="inline-block bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold uppercase mb-4">
+                {product.hero_tagline}
+              </span>
+            )}
             <h2 className="text-3xl font-bold border-b-4 border-orange-500 inline-block pb-2 mb-6">
-              {product.product_type === 'HELiOM PLUS' ? 'La Protection Maximale' : 'La Protection Totale'}
+              {product.hero_text ? 'La Protection Totale' : (product.product_type === 'HELiOM PLUS' ? 'La Protection Maximale' : 'La Protection Totale')}
             </h2>
-            <p className="text-lg text-gray-700 mb-6">{product.description}</p>
+            <p className="text-lg text-gray-700 mb-6">
+              {product.hero_text || product.description}
+            </p>
 
             <div className="bg-slate-50 p-6 rounded-lg">
               <h3 className="font-bold text-lg mb-4">Dimensions Disponibles :</h3>
@@ -90,6 +131,14 @@ export default function ProductPresentation({ product }: ProductPageProps) {
                   </span>
                 </li>
               </ul>
+
+              {parsedHeroPoints.length > 0 && (
+                <ul className="mt-4 list-disc list-inside text-gray-700">
+                  {parsedHeroPoints.map((point: string, idx: number) => (
+                    <li key={idx}>{point}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
 
@@ -108,8 +157,41 @@ export default function ProductPresentation({ product }: ProductPageProps) {
           </div>
         </section>
 
-        {/* Features Table (if comparing variants) */}
-         {parsedFeatures.arm_type && (
+        {/* Comparison Table (if provided) */}
+        {parsedComparison?.rows?.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-3xl font-bold border-b-4 border-orange-500 inline-block pb-2 mb-6">
+              {parsedComparison.title || 'Comparatif'}
+            </h2>
+
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse bg-white">
+                <thead>
+                  <tr>
+                    {(parsedComparison.headers || []).map((header: string, idx: number) => (
+                      <th key={idx} className="px-6 py-4 border border-gray-200 bg-gray-100 text-left">
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(parsedComparison.rows || []).map((row: any, idx: number) => (
+                    <tr key={idx} className="border-b-2 border-gray-200">
+                      <td className="px-6 py-4 font-bold bg-gray-50">{row.label}</td>
+                      {(row.values || []).map((value: string, valueIdx: number) => (
+                        <td key={valueIdx} className="px-6 py-4">{value}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {/* Features Table fallback */}
+        {!parsedComparison?.rows?.length && parsedFeatures.arm_type && (
           <section className="mb-12">
             <h2 className="text-3xl font-bold border-b-4 border-orange-500 inline-block pb-2 mb-6">
               Caractéristiques Techniques
@@ -149,60 +231,80 @@ export default function ProductPresentation({ product }: ProductPageProps) {
         )}
 
         {/* Options/Equipment */}
-         {Object.keys(parsedOptions).length > 0 && (
+        {(parsedOptionsCards.length > 0 || Object.keys(parsedOptions).length > 0) && (
           <section className="mb-12">
             <h2 className="text-3xl font-bold border-b-4 border-orange-500 inline-block pb-2 mb-6">
               Équipements et Options Premium
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-               {Object.entries(parsedOptions).map(([key, description]) => (
-                <div key={key} className="bg-slate-50 p-6 rounded-lg border-t-4 border-slate-800">
-                  <h4 className="font-bold text-lg mb-3 text-slate-800">
-                    {key.replace(/_/g, ' ')}
-                  </h4>
-                  <p className="text-gray-700">{String(description)}</p>
-                </div>
-              ))}
+              {parsedOptionsCards.length > 0
+                ? parsedOptionsCards.map((card: any, idx: number) => (
+                    <div key={idx} className="bg-slate-50 p-6 rounded-lg border-t-4 border-slate-800">
+                      <h4 className="font-bold text-lg mb-3 text-slate-800">
+                        {card.title}
+                      </h4>
+                      <p className="text-gray-700">{card.description}</p>
+                    </div>
+                  ))
+                : Object.entries(parsedOptions).map(([key, description]) => (
+                    <div key={key} className="bg-slate-50 p-6 rounded-lg border-t-4 border-slate-800">
+                      <h4 className="font-bold text-lg mb-3 text-slate-800">
+                        {key.replace(/_/g, ' ')}
+                      </h4>
+                      <p className="text-gray-700">{String(description)}</p>
+                    </div>
+                  ))}
             </div>
           </section>
         )}
 
         {/* Warranty */}
-         {Object.keys(parsedWarranty).length > 0 && (
+        {(parsedGuarantees.length > 0 || Object.keys(parsedWarranty).length > 0) && (
           <section className="mb-12">
             <div className="border-2 border-green-600 rounded-lg p-8 flex justify-around flex-wrap gap-6">
-               {Object.entries(parsedWarranty).map(([key, years]: [string, any]) => (
-                <div key={key} className="text-center">
-                  <div className="text-3xl font-bold text-green-600 mb-2">
-                    {years} <span className="text-xl">ANS</span>
-                  </div>
-                  <div className="text-gray-700 font-semibold">
-                    {key === 'armature'
-                      ? 'Garantie Armature'
-                      : key === 'paint'
-                      ? 'Tenue du Laquage'
-                      : key === 'motor'
-                      ? 'Moteur'
-                      : key === 'fabric'
-                      ? 'Toile'
-                      : key}
-                  </div>
-                </div>
-              ))}
+              {parsedGuarantees.length > 0
+                ? parsedGuarantees.map((item: any, idx: number) => (
+                    <div key={idx} className="text-center">
+                      <div className="text-3xl font-bold text-green-600 mb-2">
+                        {item.years} <span className="text-xl">ANS</span>
+                      </div>
+                      <div className="text-gray-700 font-semibold">{item.label}</div>
+                    </div>
+                  ))
+                : Object.entries(parsedWarranty).map(([key, years]: [string, any]) => (
+                    <div key={key} className="text-center">
+                      <div className="text-3xl font-bold text-green-600 mb-2">
+                        {years} <span className="text-xl">ANS</span>
+                      </div>
+                      <div className="text-gray-700 font-semibold">
+                        {key === 'armature'
+                          ? 'Garantie Armature'
+                          : key === 'paint'
+                          ? 'Tenue du Laquage'
+                          : key === 'motor'
+                          ? 'Moteur'
+                          : key === 'fabric'
+                          ? 'Toile'
+                          : key}
+                      </div>
+                    </div>
+                  ))}
             </div>
           </section>
         )}
 
         {/* Certifications Footer */}
-         {parsedFeatures.certifications && (
+        {(parsedCertifications.length > 0 || parsedFeatures.certifications) && (
           <footer className="text-center py-8 border-t-2 border-gray-300">
             <p className="text-gray-600">
               Produit certifié{' '}
               <strong>
-                 {Array.isArray(parsedFeatures.certifications)
-                   ? parsedFeatures.certifications.map((c: any) => `${c}®`).join(' et ')
-                   : parsedFeatures.certifications}
+               {parsedCertifications.length > 0
+                 ? parsedCertifications.map((c: any) => `${c}®`).join(' et ')
+                 : (Array.isArray(parsedFeatures.certifications)
+                    ? parsedFeatures.certifications.map((c: any) => `${c}®`).join(' et ')
+                    : parsedFeatures.certifications)}
               </strong>{' '}
               pour une résistance maximale à la corrosion.
             </p>
