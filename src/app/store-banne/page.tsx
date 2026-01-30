@@ -19,6 +19,10 @@ interface StoreBanneProduct {
   img_store: string[] | null;
   type?: string;
   active?: boolean;
+  min_width?: number;
+  max_width?: number;
+  min_projection?: number;
+  max_projection?: number;
 }
 
 async function getStoreBanneProducts() {
@@ -37,7 +41,7 @@ async function getStoreBanneProducts() {
     
     const { data, error } = await supabase
       .from('sb_products')
-      .select('id, name, slug, description, image_store_small, img_store, type, active')
+      .select('id, name, slug, description, image_store_small, img_store, type, active, min_width, max_width, min_projection, max_projection')
       .eq('active', true)
       .order('name', { ascending: true });
 
@@ -132,11 +136,23 @@ export default async function StoreBanneCatalogPage() {
                     </p>
                     
                     {/* Specs */}
-                    <div className="text-sm border-t border-slate-200 pt-4 mb-4 flex-grow">
-                      <div className="flex justify-between py-1 mb-1">
+                    <div className="text-sm border-t border-slate-200 pt-4 mb-4 flex-grow space-y-2">
+                      <div className="flex justify-between">
                         <span className="text-slate-600">Type:</span>
                         <span className="font-bold text-slate-900">{product.type || 'Standard'}</span>
                       </div>
+                      {(product.min_width !== undefined && product.max_width !== undefined) && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Largeur:</span>
+                          <span className="font-bold text-slate-900">{product.min_width} - {product.max_width} mm</span>
+                        </div>
+                      )}
+                      {(product.min_projection !== undefined && product.max_projection !== undefined) && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-600">Avancée:</span>
+                          <span className="font-bold text-slate-900">{product.min_projection} - {product.max_projection} mm</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Bouton */}
