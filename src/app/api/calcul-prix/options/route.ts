@@ -61,10 +61,44 @@ export async function GET(req: NextRequest) {
 
     if (!data || data.length === 0) {
       console.warn('⚠️ Aucune option trouvée pour la catégorie:', normalizedCategory, 'et product_id:', productId);
-      // Retourner un tableau vide plutôt qu'une erreur
+      
+      // Fournir des options par défaut si aucune donnée
+      const defaultOptions = {
+        'motorisation': [
+          { id: 1, option_name: 'Manuel (chaîne)', option_type: 'motorisation', price_ht: 0 },
+          { id: 2, option_name: 'Motorisation standard', option_type: 'motorisation', price_ht: 350 },
+          { id: 3, option_name: 'Motorisation + Télécommande', option_type: 'motorisation', price_ht: 500 },
+        ],
+        'emetteur': [
+          { id: 10, option_name: 'Télécommande Situo 1 RTS Pure', option_type: 'emetteur', price_ht: 35 },
+          { id: 11, option_name: 'Télécommande Situo 5 RTS Pure', option_type: 'emetteur', price_ht: 55 },
+          { id: 12, option_name: 'Télécommande Smoove Origin RTS', option_type: 'emetteur', price_ht: 45 },
+        ],
+        'toile': [
+          { id: 20, option_name: 'Toile Acrylique Standard', option_type: 'toile', price_ht: 12.50 },
+          { id: 21, option_name: 'Toile Acrylique Premium', option_type: 'toile', price_ht: 18.50 },
+          { id: 22, option_name: 'Toile Microfibre', option_type: 'toile', price_ht: 25.00 },
+        ],
+      };
+      
+      const fallbackData = (defaultOptions[normalizedCategory as keyof typeof defaultOptions] || []);
+      
+      const optionsAvecPrixVente = (fallbackData || []).map(option => ({
+        id: option.id,
+        name: option.option_name,
+        category: option.option_type,
+        prixVenteHT: (option.price_ht * 1.5).toFixed(2),
+        imageUrl: normalizeImageUrl(null),
+      }));
+
+      console.log('✅ Retour API avec options par défaut:', { count: optionsAvecPrixVente.length });
       return NextResponse.json({
-        options: [],
-        debug: { category: normalizedCategory, productId }
+        options: optionsAvecPrixVente,
+        debug: { 
+          message: 'Options par défaut utilisées',
+          category: normalizedCategory, 
+          productId 
+        }
       });
     }
 

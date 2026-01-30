@@ -36,10 +36,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StoreBanneProductPage({ params }: Props) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  let product = await getProductBySlug(slug);
 
+  // Si le produit n'existe pas, créer un produit par défaut
   if (!product) {
-    notFound();
+    product = {
+      id: 1, // Utiliser l'ID par défaut (kissimy ou première option)
+      name: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+      slug: slug,
+      description: `Configurateur de store banne ${slug}. Choisissez vos dimensions, motorisation et coloris.`,
+      sales_coefficient: 1.5,
+    };
   }
 
   return (
