@@ -3,7 +3,8 @@ import Image from 'next/image';
 import { Metadata } from 'next';
 import { createClient } from '@supabase/supabase-js';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: 'Stores Bannes | Storal.fr',
