@@ -27,6 +27,20 @@ export default function ProductPresentation({ product }: ProductPageProps) {
   const warranty = product.warranty || {};
   const optionsDesc = product.options_description || {};
 
+  console.log('🎨 ProductPresentation loaded with:', {
+    product: product.name,
+    tags: tags.length,
+    features: Object.keys(features).length,
+    warranty: Object.keys(warranty).length,
+    options: Object.keys(optionsDesc).length,
+  });
+
+  // Parser les données JSON si elles sont des strings
+  const parsedTags = typeof product.tags === 'string' ? JSON.parse(product.tags) : (Array.isArray(product.tags) ? product.tags : []);
+  const parsedFeatures = typeof product.features === 'string' ? JSON.parse(product.features) : (product.features || {});
+  const parsedWarranty = typeof product.warranty === 'string' ? JSON.parse(product.warranty) : (product.warranty || {});
+  const parsedOptions = typeof product.options_description === 'string' ? JSON.parse(product.options_description) : (product.options_description || {});
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
       {/* Header */}
@@ -39,9 +53,9 @@ export default function ProductPresentation({ product }: ProductPageProps) {
 
       <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Tags */}
-        {tags.length > 0 && (
+       {parsedTags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-8">
-            {tags.map((tag, idx) => (
+           {parsedTags.map((tag, idx) => (
               <span
                 key={idx}
                 className="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold uppercase"
@@ -95,7 +109,7 @@ export default function ProductPresentation({ product }: ProductPageProps) {
         </section>
 
         {/* Features Table (if comparing variants) */}
-        {features.arm_type && (
+         {parsedFeatures.arm_type && (
           <section className="mb-12">
             <h2 className="text-3xl font-bold border-b-4 border-orange-500 inline-block pb-2 mb-6">
               Caractéristiques Techniques
@@ -106,26 +120,26 @@ export default function ProductPresentation({ product }: ProductPageProps) {
                 <tbody>
                   <tr className="border-b-2 border-gray-200">
                     <td className="px-6 py-4 font-bold bg-gray-100">Type de Bras</td>
-                    <td className="px-6 py-4">{features.arm_type}</td>
+                     <td className="px-6 py-4">{parsedFeatures.arm_type}</td>
                   </tr>
                   <tr className="border-b-2 border-gray-200">
                     <td className="px-6 py-4 font-bold bg-gray-100">Coffre</td>
                     <td className="px-6 py-4">
-                      {features.coffre_height} mm × {features.coffre_depth} mm
+                       {parsedFeatures.coffre_height} mm × {parsedFeatures.coffre_depth} mm
                     </td>
                   </tr>
-                  {features.lambrequin && (
+                   {parsedFeatures.lambrequin && (
                     <tr className="border-b-2 border-gray-200">
                       <td className="px-6 py-4 font-bold bg-gray-100">Lambrequin</td>
-                      <td className="px-6 py-4">{features.lambrequin}</td>
+                       <td className="px-6 py-4">{parsedFeatures.lambrequin}</td>
                     </tr>
                   )}
                   <tr className="border-b-2 border-gray-200">
                     <td className="px-6 py-4 font-bold bg-gray-100">Certifications</td>
                     <td className="px-6 py-4">
-                      {Array.isArray(features.certifications)
-                        ? features.certifications.join(', ')
-                        : features.certifications}
+                       {Array.isArray(parsedFeatures.certifications)
+                         ? parsedFeatures.certifications.join(', ')
+                         : parsedFeatures.certifications}
                     </td>
                   </tr>
                 </tbody>
@@ -135,14 +149,14 @@ export default function ProductPresentation({ product }: ProductPageProps) {
         )}
 
         {/* Options/Equipment */}
-        {Object.keys(optionsDesc).length > 0 && (
+         {Object.keys(parsedOptions).length > 0 && (
           <section className="mb-12">
             <h2 className="text-3xl font-bold border-b-4 border-orange-500 inline-block pb-2 mb-6">
               Équipements et Options Premium
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Object.entries(optionsDesc).map(([key, description]) => (
+               {Object.entries(parsedOptions).map(([key, description]) => (
                 <div key={key} className="bg-slate-50 p-6 rounded-lg border-t-4 border-slate-800">
                   <h4 className="font-bold text-lg mb-3 text-slate-800">
                     {key.replace(/_/g, ' ')}
@@ -155,10 +169,10 @@ export default function ProductPresentation({ product }: ProductPageProps) {
         )}
 
         {/* Warranty */}
-        {Object.keys(warranty).length > 0 && (
+         {Object.keys(parsedWarranty).length > 0 && (
           <section className="mb-12">
             <div className="border-2 border-green-600 rounded-lg p-8 flex justify-around flex-wrap gap-6">
-              {Object.entries(warranty).map(([key, years]: [string, any]) => (
+               {Object.entries(parsedWarranty).map(([key, years]: [string, any]) => (
                 <div key={key} className="text-center">
                   <div className="text-3xl font-bold text-green-600 mb-2">
                     {years} <span className="text-xl">ANS</span>
@@ -181,14 +195,14 @@ export default function ProductPresentation({ product }: ProductPageProps) {
         )}
 
         {/* Certifications Footer */}
-        {features.certifications && (
+         {parsedFeatures.certifications && (
           <footer className="text-center py-8 border-t-2 border-gray-300">
             <p className="text-gray-600">
               Produit certifié{' '}
               <strong>
-                {Array.isArray(features.certifications)
-                  ? features.certifications.map((c: any) => `${c}®`).join(' et ')
-                  : features.certifications}
+                 {Array.isArray(parsedFeatures.certifications)
+                   ? parsedFeatures.certifications.map((c: any) => `${c}®`).join(' et ')
+                   : parsedFeatures.certifications}
               </strong>{' '}
               pour une résistance maximale à la corrosion.
             </p>

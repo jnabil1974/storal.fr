@@ -42,22 +42,27 @@ export default async function StoreBanneProductPage({ params }: Props) {
   // Si le produit n'existe pas, créer un produit par défaut
   if (!product) {
     product = {
-      id: 1,
-      name: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-      slug: slug,
+       id: 1,
+       name: slug
+         .split('-')
+         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+         .join(' '),
+       slug: slug,
       description: `Configurateur de store banne ${slug}. Choisissez vos dimensions, motorisation et coloris.`,
       sales_coefficient: 1.5,
+       image_hero: null,
       min_width: 1800,
       max_width: 5500,
       min_projection: 800,
       max_projection: 3000,
       product_type: 'Standard',
-      tags: ['Coffre Standard', 'Polyvalent'],
+       tags: ['Coffre Standard', 'Polyvalent', 'Économique'],
       features: {
         arm_type: 'Articulés standard',
         coffre_height: 250,
         coffre_depth: 180,
         certifications: ['QUALICOAT'],
+         good_value: true,
       },
       warranty: {
         armature: 10,
@@ -66,9 +71,10 @@ export default async function StoreBanneProductPage({ params }: Props) {
         fabric: 3,
       },
       options_description: {
-        LED: 'Éclairage LED optionnel',
-        Motorisation: 'Motorisation Somfy disponible',
-        Wind_Security: 'Sécurité vent optionnelle',
+         LED: 'Éclairage LED optionnel pour vos soirées',
+         Motorisation: 'Motorisation Somfy avec télécommande',
+         Wind_Security: 'Sécurité vent optionnelle avec capteur',
+         Colors: 'Large gamme de coloris disponibles',
       },
     };
   }
