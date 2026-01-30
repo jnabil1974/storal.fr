@@ -16,7 +16,21 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get('category') || 'Motorisation';
     const productId = searchParams.get('productId') ? parseInt(searchParams.get('productId')!) : 1;
 
-    console.log('🔍 Options API - Catégorie:', category, '| Product ID:', productId);
+    // Normaliser la catégorie (minuscules, sans accents)
+    const normalizeCategory = (cat: string): string => {
+      const mapping: { [key: string]: string } = {
+        'Motorisation': 'motorisation',
+        'motorisation': 'motorisation',
+        'Émetteur': 'emetteur',
+        'emetteur': 'emetteur',
+        'Toile': 'toile',
+        'toile': 'toile',
+      };
+      return mapping[cat] || cat.toLowerCase();
+    };
+
+    const normalizedCategory = normalizeCategory(category);
+    console.log('🔍 Options API - Catégorie:', category, 'normalisée:', normalizedCategory, '| Product ID:', productId);
 
     const supabase = getSupabaseClient();
     if (!supabase) {
@@ -30,43 +44,48 @@ export async function GET(req: NextRequest) {
     // Récupérer les options par catégorie ET product_id
     const { data, error } = await supabase
       .from('sb_product_options')
-      .select('id, option_name as name, option_type as category, price_ht as purchase_price_ht, (1.5::float) as sales_coefficient')
+      .select('id, option_name, option_type, price_ht')
       .eq('product_id', productId)
-      .eq('option_type', category)
+      .eq('option_type', normalizedCategory)
       .order('price_ht', { ascending: true });
 
-    console.log('📊 Données reçues de Supabase:', { count: data?.length, error });
+    console.log('📊 Données reçues de Supabase:', { count: data?.length, error, errorMessage: error?.message });
 
     if (error) {
       console.error('❌ Erreur lors de la récupération des options:', error);
       return NextResponse.json(
-        { error: 'Erreur de récupération des options' },
+        { error: `Erreur de récupération des options: ${error.message}` },
         { status: 500 }
       );
     }
 
     if (!data || data.length === 0) {
-      console.warn('⚠️ Aucune option trouvée pour la catégorie:', category);
+      console.warn('⚠️ Aucune option trouvée pour la catégorie:', normalizedCategory, 'et product_id:', productId);
+      // Retourner un tableau vide plutôt qu'une erreur
+      return NextResponse.json({
+        options: [],
+        debug: { category: normalizedCategory, productId }
+      });
     }
 
-    // Calculer les prix de vente côté serveur, ne pas exposer les coefficients
+    // Mapper les données avec les colonnes réelles
     const optionsAvecPrixVente = (data || []).map(option => ({
       id: option.id,
-      name: option.name,
-      category: option.category,
-      prixVenteHT: (option.purchase_price_ht * option.sales_coefficient).toFixed(2),
-      imageUrl: normalizeImageUrl(option.image_url),
-      // Ne PAS envoyer purchase_price_ht ni sales_coefficient au client
+      name: option.option_name,
+      category: option.option_type,
+      prixVenteHT: (option.price_ht * 1.5).toFixed(2), // Appliquer un coefficient par défaut
+      imageUrl: normalizeImageUrl(null), // pas d'images dans sb_product_options
+      // Ne PAS envoyer les données brutes au client
     }));
 
-    console.log('✅ Retour API:', { count: optionsAvecPrixVente.length });
+    console.log('✅ Retour API:', { count: optionsAvecPrixVente.length, options: optionsAvecPrixVente });
     return NextResponse.json({
       options: optionsAvecPrixVente,
     });
   } catch (err) {
     console.error('🔥 Erreur Serveur:', err);
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { error: `Erreur interne du serveur: ${err instanceof Error ? err.message : String(err)}` },
       { status: 500 }
     );
   }
