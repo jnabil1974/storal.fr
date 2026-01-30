@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getSupabaseClient } from '@/lib/supabase';
-import Image from 'next/image';
+import AdminStoreBanneForm from '@/components/AdminStoreBanneForm';
 
 interface StoreBanneProduct {
   id: string;
@@ -17,12 +17,35 @@ interface StoreBanneProduct {
   bras: string | null;
   img_bras_led: string | null;
   image_store_small: string | null;
+  image_hero?: string | null;
+  hero_title?: string | null;
+  hero_subtitle?: string | null;
+  hero_tagline?: string | null;
+  hero_text?: string | null;
+  hero_points?: string | null;
+  tags?: string | null;
+  features?: any;
+  warranty?: any;
+  guarantees?: string | null;
+  options_description?: any;
+  options_cards?: string | null;
+  comparison_table?: any;
+  certifications?: string | null;
+  min_width?: number;
+  max_width?: number;
+  min_projection?: number;
+  max_projection?: number;
+  product_type?: string;
+  category?: string;
+  type?: string;
+  active?: boolean;
 }
 
 export default function StoreBanneProductsAdmin() {
   const [products, setProducts] = useState<StoreBanneProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<StoreBanneProduct>>({});
   const [message, setMessage] = useState('');
   const [uploading, setUploading] = useState<string | null>(null);
@@ -69,12 +92,101 @@ export default function StoreBanneProductsAdmin() {
       bras: product.bras || '',
       img_bras_led: product.img_bras_led || '',
       image_store_small: product.image_store_small || '',
+      image_hero: product.image_hero || '',
+      hero_title: product.hero_title || '',
+      hero_subtitle: product.hero_subtitle || '',
+      hero_tagline: product.hero_tagline || '',
+      hero_text: product.hero_text || '',
+      hero_points: typeof product.hero_points === 'string' ? product.hero_points : JSON.stringify(product.hero_points || []),
+      tags: typeof product.tags === 'string' ? product.tags : JSON.stringify(product.tags || []),
+      guarantees: typeof product.guarantees === 'string' ? product.guarantees : JSON.stringify(product.guarantees || []),
+      options_cards: typeof product.options_cards === 'string' ? product.options_cards : JSON.stringify(product.options_cards || []),
+      certifications: typeof product.certifications === 'string' ? product.certifications : JSON.stringify(product.certifications || []),
+      product_type: product.product_type || '',
+      category: product.category || '',
+      min_width: product.min_width,
+      max_width: product.max_width,
+      min_projection: product.min_projection,
+      max_projection: product.max_projection,
+      type: product.type || 'Monobloc',
+      active: product.active !== false,
     });
   }
 
   function cancelEdit() {
     setEditingId(null);
+    setIsCreating(false);
     setFormData({});
+  }
+
+  function startCreate() {
+    setIsCreating(true);
+    setEditingId(null);
+    
+    // Chercher le produit HELiOM comme modèle
+    const heliomModel = products.find(p => p.slug === 'store-banne-heliom');
+    
+    if (heliomModel) {
+      // Préremplir avec les données de HELiOM comme modèle
+      setFormData({
+        name: '',
+        slug: '',
+        description: '',
+        sales_coefficient: heliomModel.sales_coefficient || 1.5,
+        category: 'store-banne',
+        img_store: [],
+        img_larg_ht: '',
+        img_tol_dim: '',
+        img_dim_coffre: '',
+        bras: '',
+        img_bras_led: '',
+        image_store_small: '',
+        image_hero: '',
+        hero_title: '',
+        hero_subtitle: '',
+        hero_tagline: heliomModel.hero_tagline || '',
+        hero_text: '',
+        hero_points: typeof heliomModel.hero_points === 'string' 
+          ? heliomModel.hero_points 
+          : JSON.stringify(heliomModel.hero_points || ['Point 1', 'Point 2', 'Point 3']),
+        tags: typeof heliomModel.tags === 'string' 
+          ? heliomModel.tags 
+          : JSON.stringify(heliomModel.tags || []),
+        guarantees: typeof heliomModel.guarantees === 'string' 
+          ? heliomModel.guarantees 
+          : JSON.stringify(heliomModel.guarantees || []),
+        options_cards: typeof heliomModel.options_cards === 'string' 
+          ? heliomModel.options_cards 
+          : JSON.stringify(heliomModel.options_cards || []),
+        certifications: typeof heliomModel.certifications === 'string' 
+          ? heliomModel.certifications 
+          : JSON.stringify(heliomModel.certifications || []),
+        product_type: '',
+        type: 'Monobloc',
+        active: true,
+        min_width: undefined,
+        max_width: undefined,
+        min_projection: undefined,
+        max_projection: undefined,
+      });
+    } else {
+      // Valeurs par défaut si HELiOM n'est pas trouvé
+      setFormData({
+        name: '',
+        slug: '',
+        description: '',
+        sales_coefficient: 1.5,
+        category: 'store-banne',
+        img_store: [],
+        tags: '[]',
+        hero_points: '[]',
+        guarantees: '[]',
+        options_cards: '[]',
+        certifications: '[]',
+        type: 'Monobloc',
+        active: true,
+      });
+    }
   }
 
   async function handleImageUpload(file: File, fieldName: string, isArray = false, arrayIndex?: number) {
@@ -115,30 +227,65 @@ export default function StoreBanneProductsAdmin() {
   }
 
   async function saveProduct() {
-    if (!editingId) {
-      setMessage('❌ Erreur: données manquantes');
-      return;
+    console.log('💾 Sauvegarde du produit:', isCreating ? 'création' : editingId, formData);
+
+    // Parser les JSON strings
+    const parseJSON = (str: any) => {
+      if (typeof str === 'string') {
+        try {
+          return JSON.parse(str);
+        } catch {
+          return str;
+        }
+      }
+      return str;
+    };
+
+    const endpoint = isCreating 
+      ? '/api/admin/store-banne-products/create' 
+      : '/api/admin/store-banne-products/update';
+
+    const payload: any = {
+      name: formData.name,
+      slug: formData.slug,
+      description: formData.description,
+      sales_coefficient: formData.sales_coefficient,
+      img_store: formData.img_store,
+      img_larg_ht: formData.img_larg_ht,
+      img_tol_dim: formData.img_tol_dim,
+      img_dim_coffre: formData.img_dim_coffre,
+      bras: formData.bras,
+      img_bras_led: formData.img_bras_led,
+      image_store_small: formData.image_store_small,
+      image_hero: formData.image_hero,
+      hero_title: formData.hero_title,
+      hero_subtitle: formData.hero_subtitle,
+      hero_tagline: formData.hero_tagline,
+      hero_text: formData.hero_text,
+      hero_points: parseJSON(formData.hero_points),
+      tags: parseJSON(formData.tags),
+      guarantees: parseJSON(formData.guarantees),
+      options_cards: parseJSON(formData.options_cards),
+      certifications: parseJSON(formData.certifications),
+      product_type: formData.product_type,
+      category: formData.category,
+      min_width: formData.min_width ? parseInt(String(formData.min_width)) : null,
+      max_width: formData.max_width ? parseInt(String(formData.max_width)) : null,
+      min_projection: formData.min_projection ? parseInt(String(formData.min_projection)) : null,
+      max_projection: formData.max_projection ? parseInt(String(formData.max_projection)) : null,
+      type: formData.type || 'Monobloc',
+      active: formData.active !== false,
+    };
+
+    // Ajouter l'ID seulement pour les mises à jour
+    if (!isCreating && editingId) {
+      payload.id = editingId;
     }
 
-    console.log('💾 Sauvegarde du produit:', editingId, formData);
-
-    const response = await fetch('/api/admin/store-banne-products/update', {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: editingId,
-        name: formData.name,
-        slug: formData.slug,
-        description: formData.description,
-        sales_coefficient: formData.sales_coefficient,
-        img_store: formData.img_store,
-        img_larg_ht: formData.img_larg_ht,
-        img_tol_dim: formData.img_tol_dim,
-        img_dim_coffre: formData.img_dim_coffre,
-        bras: formData.bras,
-        img_bras_led: formData.img_bras_led,
-        image_store_small: formData.image_store_small,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const result = await response.json();
@@ -150,8 +297,9 @@ export default function StoreBanneProductsAdmin() {
     }
 
     console.log('✅ Produit sauvegardé');
-    setMessage('✅ Produit mis à jour');
+    setMessage(isCreating ? '✅ Produit créé' : '✅ Produit mis à jour');
     setEditingId(null);
+    setIsCreating(false);
     setFormData({});
     loadProducts();
     setTimeout(() => setMessage(''), 3000);
@@ -167,9 +315,19 @@ export default function StoreBanneProductsAdmin() {
 
   return (
     <div className="p-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Produits Store Banne</h1>
-        <p className="text-gray-600 mt-2">Gérer les informations et images des stores bannes</p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Produits Store Banne</h1>
+          <p className="text-gray-600 mt-2">Gérer les informations et images des stores bannes</p>
+        </div>
+        {!editingId && !isCreating && (
+          <button
+            onClick={startCreate}
+            className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium"
+          >
+            ➕ Nouveau Produit
+          </button>
+        )}
       </div>
 
       {message && (
@@ -178,249 +336,32 @@ export default function StoreBanneProductsAdmin() {
         </div>
       )}
 
+      {isCreating && (
+        <div className="mb-6 bg-white rounded-lg shadow p-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Nouveau Produit</h2>
+          <AdminStoreBanneForm
+            formData={formData}
+            setFormData={setFormData}
+            onImageUpload={handleImageUpload}
+            uploading={uploading}
+            onSave={saveProduct}
+            onCancel={cancelEdit}
+          />
+        </div>
+      )}
+
       <div className="space-y-6">
         {products.map((product) => (
           <div key={product.id} className="bg-white rounded-lg shadow p-6">
             {editingId === product.id ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
-                  <input
-                    type="text"
-                    value={formData.name || ''}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                  <input
-                    type="text"
-                    value={formData.slug || ''}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <textarea
-                    value={formData.description || ''}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Coefficient de vente</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.sales_coefficient || ''}
-                    onChange={(e) => setFormData({ ...formData, sales_coefficient: parseFloat(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div className="border-t pt-4">
-                  <h3 className="font-semibold text-gray-900 mb-3">Images</h3>
-                  
-                  <div className="space-y-4">
-                    {/* Images Store (3 images) */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Images Store (3 photos)
-                      </label>
-                      <div className="grid grid-cols-3 gap-3">
-                        {[0, 1, 2].map((index) => (
-                          <div key={index} className="border rounded-lg p-3">
-                            <div className="text-xs text-gray-600 mb-2">Image {index + 1}</div>
-                            {formData.img_store?.[index] && (
-                              <div className="mb-2 relative h-24 bg-gray-100 rounded">
-                                <Image
-                                  src={formData.img_store[index]}
-                                  alt={`Store ${index + 1}`}
-                                  fill
-                                  sizes="150px"
-                                  className="object-contain"
-                                />
-                              </div>
-                            )}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) handleImageUpload(file, 'img_store', true, index);
-                              }}
-                              disabled={uploading === 'img_store'}
-                              className="text-xs w-full"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Image miniature */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Image miniature</label>
-                      {formData.image_store_small && (
-                        <div className="mb-2 relative h-32 w-32 bg-gray-100 rounded">
-                          <Image
-                            src={formData.image_store_small}
-                            alt="Miniature"
-                            fill
-                            sizes="128px"
-                            className="object-contain"
-                          />
-                        </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleImageUpload(file, 'image_store_small');
-                        }}
-                        disabled={uploading === 'image_store_small'}
-                        className="block"
-                      />
-                    </div>
-
-                    {/* Image Largeur/Hauteur */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Image Largeur/Hauteur</label>
-                      {formData.img_larg_ht && (
-                        <div className="mb-2 relative h-32 w-full bg-gray-100 rounded">
-                          <Image
-                            src={formData.img_larg_ht}
-                            alt="Largeur/Hauteur"
-                            fill
-                            sizes="100vw"
-                            className="object-contain"
-                          />
-                        </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleImageUpload(file, 'img_larg_ht');
-                        }}
-                        disabled={uploading === 'img_larg_ht'}
-                        className="block"
-                      />
-                    </div>
-
-                    {/* Image Dimensions Toile */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Image Dimensions Toile</label>
-                      {formData.img_tol_dim && (
-                        <div className="mb-2 relative h-32 w-full bg-gray-100 rounded">
-                          <Image
-                            src={formData.img_tol_dim}
-                            alt="Dimensions Toile"
-                            fill
-                            sizes="100vw"
-                            className="object-contain"
-                          />
-                        </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleImageUpload(file, 'img_tol_dim');
-                        }}
-                        disabled={uploading === 'img_tol_dim'}
-                        className="block"
-                      />
-                    </div>
-
-                    {/* Image Dimensions Coffre */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Image Dimensions Coffre</label>
-                      {formData.img_dim_coffre && (
-                        <div className="mb-2 relative h-32 w-full bg-gray-100 rounded">
-                          <Image
-                            src={formData.img_dim_coffre}
-                            alt="Dimensions Coffre"
-                            fill
-                            sizes="100vw"
-                            className="object-contain"
-                          />
-                        </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleImageUpload(file, 'img_dim_coffre');
-                        }}
-                        disabled={uploading === 'img_dim_coffre'}
-                        className="block"
-                      />
-                    </div>
-
-                    {/* Image Bras LED */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Image Bras LED</label>
-                      {formData.img_bras_led && (
-                        <div className="mb-2 relative h-32 w-full bg-gray-100 rounded">
-                          <Image
-                            src={formData.img_bras_led}
-                            alt="Bras LED"
-                            fill
-                            sizes="100vw"
-                            className="object-contain"
-                          />
-                        </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleImageUpload(file, 'img_bras_led');
-                        }}
-                        disabled={uploading === 'img_bras_led'}
-                        className="block"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Type de Bras</label>
-                  <input
-                    type="text"
-                    value={formData.bras || ''}
-                    onChange={(e) => setFormData({ ...formData, bras: e.target.value })}
-                    placeholder="Bras articulés double câble"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div className="flex gap-2 pt-4">
-                  <button
-                    onClick={saveProduct}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  >
-                    💾 Enregistrer
-                  </button>
-                  <button
-                    onClick={cancelEdit}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                  >
-                    Annuler
-                  </button>
-                </div>
-              </div>
+              <AdminStoreBanneForm
+                formData={formData}
+                setFormData={setFormData}
+                onImageUpload={handleImageUpload}
+                uploading={uploading}
+                onSave={saveProduct}
+                onCancel={cancelEdit}
+              />
             ) : (
               <div>
                 <div className="flex justify-between items-start mb-4">
@@ -465,6 +406,22 @@ export default function StoreBanneProductsAdmin() {
                   <div className="col-span-2">
                     <span className="font-medium">Bras:</span>{' '}
                     {product.bras || 'Non défini'}
+                  </div>
+                  <div>
+                    <span className="font-medium">Type:</span>{' '}
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                      {product.type || 'Monobloc'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Statut:</span>{' '}
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      product.active !== false 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {product.active !== false ? '✅ Actif' : '❌ Inactif'}
+                    </span>
                   </div>
                 </div>
               </div>

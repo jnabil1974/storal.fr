@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 
 type ProductPageProps = {
   product: {
@@ -12,6 +13,7 @@ type ProductPageProps = {
     hero_text?: string;
     hero_points?: any;
     image_hero?: string;
+    img_store?: string[];
     min_width?: number;
     max_width?: number;
     min_projection?: number;
@@ -26,9 +28,10 @@ type ProductPageProps = {
     guarantees?: any;
     certifications?: any;
   };
+  showCarousel?: boolean;
 };
 
-export default function ProductPresentation({ product }: ProductPageProps) {
+export default function ProductPresentation({ product, showCarousel = false }: ProductPageProps) {
   const tags = Array.isArray(product.tags) ? product.tags : [];
   const features = product.features || {};
   const warranty = product.warranty || {};
@@ -71,6 +74,23 @@ export default function ProductPresentation({ product }: ProductPageProps) {
     ? JSON.parse(product.certifications)
     : (Array.isArray(product.certifications) ? product.certifications : []);
 
+  // Carousel logic
+  const carouselImages = (product?.img_store || []).filter(Boolean);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCarouselIndex(0);
+  }, [carouselImages.length]);
+
+  useEffect(() => {
+    if (carouselImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % carouselImages.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [carouselImages.length]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
       {/* Header */}
@@ -100,7 +120,7 @@ export default function ProductPresentation({ product }: ProductPageProps) {
           </div>
         )}
 
-        {/* Hero Section */}
+        {/* Hero Section avec carousel à droite */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <div>
             {product.hero_tagline && (
@@ -143,7 +163,51 @@ export default function ProductPresentation({ product }: ProductPageProps) {
           </div>
 
           <div>
-            {product.image_hero ? (
+            {showCarousel && carouselImages.length > 0 ? (
+              <div className="rounded-xl border border-gray-200 p-5 shadow-lg bg-white">
+                <h2 className="text-sm font-semibold text-gray-900 mb-4">Galerie Photos</h2>
+                <div className="relative w-full rounded-lg border border-gray-200 bg-gray-50 overflow-hidden" style={{ aspectRatio: '4 / 3' }}>
+                  <button
+                    type="button"
+                    onClick={() => setZoomImage(carouselImages[carouselIndex])}
+                    className="w-full h-full"
+                    aria-label="Agrandir l'image"
+                  >
+                    <img
+                      src={carouselImages[carouselIndex]}
+                      alt={`${product.name} ${carouselIndex + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                  {carouselImages.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setCarouselIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length)}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 text-lg shadow hover:bg-white font-bold"
+                      >
+                        ←
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCarouselIndex((prev) => (prev + 1) % carouselImages.length)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 text-lg shadow hover:bg-white font-bold"
+                      >
+                        →
+                      </button>
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                        {carouselImages.map((_, idx) => (
+                          <span
+                            key={`dot-${idx}`}
+                            className={`h-2 w-2 rounded-full ${idx === carouselIndex ? 'bg-blue-600' : 'bg-white/80'}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : product.image_hero ? (
               <img
                 src={product.image_hero}
                 alt={product.name}
@@ -176,14 +240,25 @@ export default function ProductPresentation({ product }: ProductPageProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {(parsedComparison.rows || []).map((row: any, idx: number) => (
-                    <tr key={idx} className="border-b-2 border-gray-200">
-                      <td className="px-6 py-4 font-bold bg-gray-50">{row.label}</td>
-                      {(row.values || []).map((value: string, valueIdx: number) => (
-                        <td key={valueIdx} className="px-6 py-4">{value}</td>
-                      ))}
-                    </tr>
-                  ))}
+                  {(parsedComparison.rows || []).map((row: any, idx: number) => {
+                    const label = Array.isArray(row) ? row[0] : row?.label;
+                    const rawValues = Array.isArray(row)
+                      ? row.slice(1)
+                      : Array.isArray(row?.values)
+                        ? row.values
+                        : row?.values != null
+                          ? [row.values]
+                          : [];
+
+                    return (
+                      <tr key={idx} className="border-b-2 border-gray-200">
+                        <td className="px-6 py-4 font-bold bg-gray-50">{label}</td>
+                        {rawValues.map((value: string, valueIdx: number) => (
+                          <td key={valueIdx} className="px-6 py-4">{value}</td>
+                        ))}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -311,6 +386,27 @@ export default function ProductPresentation({ product }: ProductPageProps) {
           </footer>
         )}
       </div>
+
+      {/* Modal Zoom Image */}
+      {zoomImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setZoomImage(null)}
+        >
+          <button
+            onClick={() => setZoomImage(null)}
+            className="absolute top-4 right-4 text-white text-4xl hover:text-gray-300"
+            aria-label="Fermer"
+          >
+            ×
+          </button>
+          <img
+            src={zoomImage}
+            alt="Image agrandie"
+            className="max-w-full max-h-full object-contain"
+          />
+        </div>
+      )}
     </div>
   );
 }

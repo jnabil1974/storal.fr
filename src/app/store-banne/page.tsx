@@ -17,6 +17,8 @@ interface StoreBanneProduct {
   description: string;
   image_store_small: string | null;
   img_store: string[] | null;
+  type?: string;
+  active?: boolean;
 }
 
 async function getStoreBanneProducts() {
@@ -35,7 +37,8 @@ async function getStoreBanneProducts() {
     
     const { data, error } = await supabase
       .from('sb_products')
-      .select('id, name, slug, description, image_store_small, img_store')
+      .select('id, name, slug, description, image_store_small, img_store, type, active')
+      .eq('active', true)
       .order('name', { ascending: true });
 
     if (error) {
@@ -92,7 +95,7 @@ export default async function StoreBanneCatalogPage() {
                   href={`/products/store-banne/${product.slug}`}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
                 >
-                  {/* Image */}
+                  {/* Image avec badge */}
                   <div className="relative h-64 bg-gray-100">
                     <Image
                       src={imageUrl}
@@ -101,6 +104,20 @@ export default async function StoreBanneCatalogPage() {
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
+                    {/* Badge Type */}
+                    {product.type && (
+                      <div className="absolute top-3 right-3">
+                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold text-white ${
+                          product.type === 'Store Coffre' ? 'bg-blue-600' :
+                          product.type === 'Semi-coffre' ? 'bg-purple-600' :
+                          product.type === 'Monobloc' ? 'bg-green-600' :
+                          product.type === 'Traditionnel' ? 'bg-amber-600' :
+                          'bg-gray-600'
+                        }`}>
+                          {product.type}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Contenu */}

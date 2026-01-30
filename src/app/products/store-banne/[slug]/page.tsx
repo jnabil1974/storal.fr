@@ -124,14 +124,14 @@ export default async function StoreBanneProductPage({ params }: Props) {
 
   return (
     <div>
-      {/* Section de présentation avec les détails du produit */}
-      <ProductPresentation product={product} />
+      {/* Section de présentation avec carousel en haut à droite */}
+      <ProductPresentation product={product} showCarousel={true} />
 
       {/* Section du configurateur de prix */}
       <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 py-12">
         <div className="max-w-7xl mx-auto px-4">
           <div id="configurateur" className="scroll-mt-24">
-            <StoreBanneConfigurator product={product} productSlug={product.slug} />
+            <StoreBanneConfigurator product={product} productSlug={product.slug} hideCarousel={true} />
           </div>
         </div>
       </div>

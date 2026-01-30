@@ -23,6 +23,7 @@ type StoreBanneConfiguratorProps = {
   productId?: string | number;
   productName?: string;
   basePrice?: number;
+  hideCarousel?: boolean;
 };
 
 export default function StoreBanneConfigurator({
@@ -30,6 +31,7 @@ export default function StoreBanneConfigurator({
   productSlug,
   productId,
   productName,
+  hideCarousel = false,
 }: StoreBanneConfiguratorProps) {
   const { addItem } = useCart();
   const resolvedSlug = product?.slug || productSlug || 'store-banne';
@@ -365,7 +367,7 @@ export default function StoreBanneConfigurator({
         </div>
 
         <div className="mt-6 grid gap-6 grid-cols-1 sm:grid-cols-[1.6fr_1fr]">
-          {(carouselImages.length > 0 || product?.bras || product?.img_dim_coffre || product?.img_bras_led) && (
+          {!hideCarousel && (carouselImages.length > 0 || product?.bras || product?.img_dim_coffre || product?.img_bras_led) && (
             <div className="rounded-xl border border-gray-200 p-5 shadow-sm bg-white">
               <h2 className="text-sm font-semibold text-gray-900 mb-4">Fiche produit</h2>
               <div className="space-y-4">
