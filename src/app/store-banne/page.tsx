@@ -19,8 +19,6 @@ interface StoreBanneProduct {
   img_store: string[] | null;
   type?: string;
   active?: boolean;
-  width?: number;
-  depth?: number;
 }
 
 async function getStoreBanneProducts() {
@@ -39,7 +37,7 @@ async function getStoreBanneProducts() {
     
     const { data, error } = await supabase
       .from('sb_products')
-      .select('id, name, slug, description, image_store_small, img_store, type, active, width, depth')
+      .select('id, name, slug, description, image_store_small, img_store, type, active')
       .eq('active', true)
       .order('name', { ascending: true });
 
@@ -139,18 +137,6 @@ export default async function StoreBanneCatalogPage() {
                         <span className="text-slate-600">Type:</span>
                         <span className="font-bold text-slate-900">{product.type || 'Standard'}</span>
                       </div>
-                      {product.width && (
-                        <div className="flex justify-between py-1 mb-1">
-                          <span className="text-slate-600">Largeur:</span>
-                          <span className="font-bold text-slate-900">{product.width} cm</span>
-                        </div>
-                      )}
-                      {product.depth && (
-                        <div className="flex justify-between py-1">
-                          <span className="text-slate-600">Profondeur:</span>
-                          <span className="font-bold text-slate-900">{product.depth} cm</span>
-                        </div>
-                      )}
                     </div>
 
                     {/* Bouton */}
