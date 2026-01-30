@@ -62,24 +62,31 @@ export default async function StoreBanneCatalogPage() {
   const products = await getStoreBanneProducts();
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* En-tête */}
-        <div className="mb-12">
-          <Link href="/" className="text-blue-600 hover:underline mb-4 inline-block">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Link href="/" className="text-blue-100 hover:text-white mb-4 inline-block transition">
             ← Retour à l'accueil
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Stores Bannes</h1>
-          <p className="text-gray-600 text-lg max-w-3xl">
+          <h1 className="text-5xl font-bold uppercase tracking-wider mb-4">
+            Stores Bannes
+          </h1>
+          <p className="text-xl text-blue-100 max-w-3xl">
             Découvrez notre sélection de stores bannes de qualité. Protection solaire élégante et personnalisable 
             pour vos terrasses et balcons. Configurez vos dimensions, motorisation et toiles.
           </p>
         </div>
+      </header>
 
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Grille de produits */}
         {products.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Aucun produit disponible pour le moment.</p>
+          <div className="text-center py-16">
+            <svg className="w-24 h-24 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+            <p className="text-slate-600 text-lg">Aucun produit disponible pour le moment.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -93,15 +100,15 @@ export default async function StoreBanneCatalogPage() {
                 <Link
                   key={product.id}
                   href={`/products/store-banne/${product.slug}`}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                  className="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100"
                 >
                   {/* Image avec badge */}
-                  <div className="relative h-64 bg-gray-100">
+                  <div className="relative h-64 bg-slate-100 overflow-hidden">
                     <Image
                       src={imageUrl}
                       alt={product.name}
                       fill
-                      className="object-cover"
+                      className="object-cover group-hover:scale-110 transition-transform duration-300"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                     {/* Badge Type */}
@@ -112,7 +119,7 @@ export default async function StoreBanneCatalogPage() {
                           product.type === 'Semi-coffre' ? 'bg-purple-600' :
                           product.type === 'Monobloc' ? 'bg-green-600' :
                           product.type === 'Traditionnel' ? 'bg-amber-600' :
-                          'bg-gray-600'
+                          'bg-slate-600'
                         }`}>
                           {product.type}
                         </span>
@@ -121,14 +128,14 @@ export default async function StoreBanneCatalogPage() {
                   </div>
 
                   {/* Contenu */}
-                  <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                  <div className="p-6 flex flex-col h-full">
+                    <h2 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition">
                       {product.name}
                     </h2>
-                    <p className="text-gray-600 line-clamp-3">
+                    <p className="text-slate-600 line-clamp-3 mb-4 flex-grow">
                       {product.description}
                     </p>
-                    <div className="mt-4 flex items-center text-blue-600 font-medium">
+                    <div className="flex items-center text-blue-600 font-semibold hover:text-blue-700 transition">
                       Configurer
                       <svg
                         className="w-5 h-5 ml-2"
@@ -152,30 +159,43 @@ export default async function StoreBanneCatalogPage() {
         )}
 
         {/* Section informative */}
-        <div className="mt-16 bg-white rounded-lg shadow-md p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <section className="mt-16 bg-white rounded-xl shadow-lg p-8 border border-slate-100">
+          <h2 className="text-3xl font-bold text-slate-900 mb-4 flex items-center">
+            <span className="text-4xl mr-3">☀️</span>
             Pourquoi choisir un store banne ?
           </h2>
-          <div className="grid md:grid-cols-2 gap-6 text-gray-600">
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-2">☀️ Protection solaire</h3>
-              <p>Réduisez la chaleur et protégez-vous des UV tout en profitant de votre terrasse.</p>
+          <div className="grid md:grid-cols-2 gap-8 text-slate-600">
+            <div className="flex gap-4">
+              <span className="text-3xl flex-shrink-0">☀️</span>
+              <div>
+                <h3 className="font-semibold text-slate-900 mb-2">Protection solaire</h3>
+                <p>Réduisez la chaleur et protégez-vous des UV tout en profitant de votre terrasse.</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-2">🎨 Personnalisable</h3>
-              <p>Choisissez parmi une large gamme de toiles et de dimensions adaptées à vos besoins.</p>
+            <div className="flex gap-4">
+              <span className="text-3xl flex-shrink-0">🎨</span>
+              <div>
+                <h3 className="font-semibold text-slate-900 mb-2">Personnalisable</h3>
+                <p>Choisissez parmi une large gamme de toiles et de dimensions adaptées à vos besoins.</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-2">⚡ Motorisation</h3>
-              <p>Options motorisées disponibles pour un confort d'utilisation optimal.</p>
+            <div className="flex gap-4">
+              <span className="text-3xl flex-shrink-0">⚡</span>
+              <div>
+                <h3 className="font-semibold text-slate-900 mb-2">Motorisation</h3>
+                <p>Options motorisées disponibles pour un confort d'utilisation optimal.</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-2">💪 Robuste</h3>
-              <p>Structures en aluminium de qualité pour une durabilité maximale.</p>
+            <div className="flex gap-4">
+              <span className="text-3xl flex-shrink-0">💪</span>
+              <div>
+                <h3 className="font-semibold text-slate-900 mb-2">Robuste</h3>
+                <p>Structures en aluminium de qualité pour une durabilité maximale.</p>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }
