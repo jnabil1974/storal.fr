@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import StoreBanneConfigurator from '@/components/StoreBanneConfigurator';
+import ProductPresentation from '@/components/ProductPresentation';
 import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 
@@ -41,20 +42,48 @@ export default async function StoreBanneProductPage({ params }: Props) {
   // Si le produit n'existe pas, créer un produit par défaut
   if (!product) {
     product = {
-      id: 1, // Utiliser l'ID par défaut (kissimy ou première option)
+      id: 1,
       name: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
       slug: slug,
       description: `Configurateur de store banne ${slug}. Choisissez vos dimensions, motorisation et coloris.`,
       sales_coefficient: 1.5,
+      min_width: 1800,
+      max_width: 5500,
+      min_projection: 800,
+      max_projection: 3000,
+      product_type: 'Standard',
+      tags: ['Coffre Standard', 'Polyvalent'],
+      features: {
+        arm_type: 'Articulés standard',
+        coffre_height: 250,
+        coffre_depth: 180,
+        certifications: ['QUALICOAT'],
+      },
+      warranty: {
+        armature: 10,
+        paint: 8,
+        motor: 3,
+        fabric: 3,
+      },
+      options_description: {
+        LED: 'Éclairage LED optionnel',
+        Motorisation: 'Motorisation Somfy disponible',
+        Wind_Security: 'Sécurité vent optionnelle',
+      },
     };
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Configurateur */}
-        <div id="configurateur" className="scroll-mt-24">
-          <StoreBanneConfigurator product={product} productSlug={product.slug} />
+    <div>
+      {/* Section de présentation avec les détails du produit */}
+      <ProductPresentation product={product} />
+
+      {/* Section du configurateur de prix */}
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div id="configurateur" className="scroll-mt-24">
+            <StoreBanneConfigurator product={product} productSlug={product.slug} />
+          </div>
         </div>
       </div>
     </div>
