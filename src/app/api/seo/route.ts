@@ -49,6 +49,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
+    
     // Vérifier l'authentification admin
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
