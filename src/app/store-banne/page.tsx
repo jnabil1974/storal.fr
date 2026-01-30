@@ -64,17 +64,13 @@ export default async function StoreBanneCatalogPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="text-blue-100 hover:text-white mb-4 inline-block transition">
-            ← Retour à l'accueil
-          </Link>
-          <h1 className="text-5xl font-bold uppercase tracking-wider mb-4">
-            Stores Bannes
+      <header className="bg-slate-800 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-5xl font-bold uppercase tracking-widest mb-4">
+            Notre Gamme Stores Bannes
           </h1>
-          <p className="text-xl text-blue-100 max-w-3xl">
-            Découvrez notre sélection de stores bannes de qualité. Protection solaire élégante et personnalisable 
-            pour vos terrasses et balcons. Configurez vos dimensions, motorisation et toiles.
+          <p className="text-xl text-slate-200">
+            100% sur-mesure | Fabrication Française | Garantie 12 ans sur l'armature
           </p>
         </div>
       </header>
@@ -97,13 +93,12 @@ export default async function StoreBanneCatalogPage() {
                              '/images/placeholder-store.jpg';
 
               return (
-                <Link
+                <div
                   key={product.id}
-                  href={`/products/store-banne/${product.slug}`}
-                  className="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-100"
+                  className="group bg-white rounded-xl shadow-lg hover:shadow-2xl hover:scale-y-105 transition-all duration-300 overflow-hidden border border-slate-100 flex flex-col"
                 >
-                  {/* Image avec badge */}
-                  <div className="relative h-64 bg-slate-100 overflow-hidden">
+                  {/* Image */}
+                  <div className="relative h-56 bg-slate-100 overflow-hidden">
                     <Image
                       src={imageUrl}
                       alt={product.name}
@@ -115,10 +110,10 @@ export default async function StoreBanneCatalogPage() {
                     {product.type && (
                       <div className="absolute top-3 right-3">
                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold text-white ${
-                          product.type === 'Store Coffre' ? 'bg-blue-600' :
-                          product.type === 'Semi-coffre' ? 'bg-purple-600' :
-                          product.type === 'Monobloc' ? 'bg-green-600' :
-                          product.type === 'Traditionnel' ? 'bg-amber-600' :
+                          product.type === 'Store Coffre' ? 'bg-red-600' :
+                          product.type === 'Semi-coffre' ? 'bg-orange-600' :
+                          product.type === 'Monobloc' ? 'bg-yellow-600' :
+                          product.type === 'Traditionnel' ? 'bg-amber-700' :
                           'bg-slate-600'
                         }`}>
                           {product.type}
@@ -128,70 +123,73 @@ export default async function StoreBanneCatalogPage() {
                   </div>
 
                   {/* Contenu */}
-                  <div className="p-6 flex flex-col h-full">
-                    <h2 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition">
+                  <div className="p-6 flex flex-col flex-grow">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-red-600 transition">
                       {product.name}
-                    </h2>
-                    <p className="text-slate-600 line-clamp-3 mb-4 flex-grow">
+                    </h3>
+                    <p className="text-slate-600 line-clamp-2 mb-4">
                       {product.description}
                     </p>
-                    <div className="flex items-center text-blue-600 font-semibold hover:text-blue-700 transition">
-                      Configurer
-                      <svg
-                        className="w-5 h-5 ml-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
+                    
+                    {/* Specs */}
+                    <div className="text-sm border-t border-slate-200 pt-4 mb-4 flex-grow">
+                      <div className="flex justify-between py-1 mb-1">
+                        <span className="text-slate-600">Type:</span>
+                        <span className="font-bold text-slate-900">{product.type || 'Standard'}</span>
+                      </div>
+                      <div className="flex justify-between py-1">
+                        <span className="text-slate-600">Status:</span>
+                        <span className="font-bold text-green-600">{product.active ? '✓ Actif' : '○ Inactif'}</span>
+                      </div>
                     </div>
+
+                    {/* Bouton */}
+                    <Link
+                      href={`/products/store-banne/${product.slug}`}
+                      className="block w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg text-center transition-colors"
+                    >
+                      Voir le modèle →
+                    </Link>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>
         )}
 
         {/* Section informative */}
-        <section className="mt-16 bg-white rounded-xl shadow-lg p-8 border border-slate-100">
-          <h2 className="text-3xl font-bold text-slate-900 mb-4 flex items-center">
-            <span className="text-4xl mr-3">☀️</span>
+        <section className="mt-20 bg-white rounded-xl shadow-lg p-12 border border-slate-100">
+          <h2 className="text-3xl font-bold text-slate-900 mb-12 flex items-center border-l-6 border-red-600 pl-6">
             Pourquoi choisir un store banne ?
           </h2>
-          <div className="grid md:grid-cols-2 gap-8 text-slate-600">
-            <div className="flex gap-4">
-              <span className="text-3xl flex-shrink-0">☀️</span>
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Protection solaire</h3>
-                <p>Réduisez la chaleur et protégez-vous des UV tout en profitant de votre terrasse.</p>
-              </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="text-center">
+              <span className="text-5xl block mb-4">☀️</span>
+              <h3 className="font-bold text-slate-900 mb-3 text-lg">Protection solaire</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                Réduisez la chaleur et protégez-vous des UV tout en profitant de votre terrasse.
+              </p>
             </div>
-            <div className="flex gap-4">
-              <span className="text-3xl flex-shrink-0">🎨</span>
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Personnalisable</h3>
-                <p>Choisissez parmi une large gamme de toiles et de dimensions adaptées à vos besoins.</p>
-              </div>
+            <div className="text-center">
+              <span className="text-5xl block mb-4">🎨</span>
+              <h3 className="font-bold text-slate-900 mb-3 text-lg">Personnalisable</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                Choisissez parmi une large gamme de toiles et de dimensions adaptées à vos besoins.
+              </p>
             </div>
-            <div className="flex gap-4">
-              <span className="text-3xl flex-shrink-0">⚡</span>
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Motorisation</h3>
-                <p>Options motorisées disponibles pour un confort d'utilisation optimal.</p>
-              </div>
+            <div className="text-center">
+              <span className="text-5xl block mb-4">⚡</span>
+              <h3 className="font-bold text-slate-900 mb-3 text-lg">Motorisation</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                Options motorisées Somfy® disponibles pour un confort d'utilisation optimal.
+              </p>
             </div>
-            <div className="flex gap-4">
-              <span className="text-3xl flex-shrink-0">💪</span>
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Robuste</h3>
-                <p>Structures en aluminium de qualité pour une durabilité maximale.</p>
-              </div>
+            <div className="text-center">
+              <span className="text-5xl block mb-4">💪</span>
+              <h3 className="font-bold text-slate-900 mb-3 text-lg">Robuste</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                Structures en aluminium de qualité première fusion pour une durabilité maximale.
+              </p>
             </div>
           </div>
         </section>
