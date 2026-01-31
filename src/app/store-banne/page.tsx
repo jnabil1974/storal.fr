@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Metadata } from 'next';
+import { unstable_noStore as noStore } from 'next/cache';
 import { getSupabaseAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 export const metadata: Metadata = {
   title: 'Stores Bannes | Storal.fr',
@@ -27,6 +29,7 @@ interface StoreBanneProduct {
 }
 
 async function getStoreBanneProducts() {
+  noStore();
   const supabase = getSupabaseAdminClient();
 
   if (!supabase) {
