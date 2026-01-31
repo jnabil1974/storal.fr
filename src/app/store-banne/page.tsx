@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Metadata } from 'next';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdminClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -27,19 +27,16 @@ interface StoreBanneProduct {
 }
 
 async function getStoreBanneProducts() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('❌ Supabase env vars missing:', { supabaseUrl: !!supabaseUrl, supabaseKey: !!supabaseKey });
+  const supabase = getSupabaseAdminClient();
+
+  if (!supabase) {
+    console.error('❌ Supabase admin client missing (SUPABASE_SERVICE_ROLE_KEY)');
     return [];
   }
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('🔍 Tentative de requête sb_products (service role)...');
 
-    console.log('🔍 Tentative de requête sb_products...');
-    
     const { data, error } = await supabase
       .from('sb_products')
       .select('id, name, slug, description, image_store_small, img_store, type, active, min_width, max_width, min_projection, max_projection')
