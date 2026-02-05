@@ -123,6 +123,11 @@ export default function Footer() {
                   Nous contacter
                 </Link>
               </li>
+              <li>
+                <Link href="/auth" className="text-sm hover:text-white transition text-gray-400">
+                  Espace Client / Connexion
+                </Link>
+              </li>
             </ul>
           </div>
 

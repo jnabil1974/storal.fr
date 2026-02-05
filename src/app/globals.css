@@ -42,8 +42,6 @@ h1 {
 }
 
 h2 {
-  border-left: 4px solid var(--primary);
-  padding-left: 1rem;
   margin-top: 2rem;
 }
 

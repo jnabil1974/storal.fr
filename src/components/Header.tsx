@@ -176,31 +176,6 @@ export default function Header() {
                 </svg>
                 <span className="text-base">01 85 09 34 46</span>
               </a>
-
-              {/* User Section */}
-              {user ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span className="text-sm font-medium hidden md:inline">{user.email}</span>
-                  </div>
-                  <button 
-                    onClick={() => signOut()} 
-                    className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                  >
-                    Déconnexion
-                  </button>
-                </div>
-              ) : (
-                <Link href="/auth" className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-all">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <span className="text-sm font-medium hidden md:inline">Connexion</span>
-                </Link>
-              )}
               
               {/* Cart Button */}
               <Link href="/cart" className="relative">
