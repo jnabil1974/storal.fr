@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import StoreBanneConfigurator from '@/components/StoreBanneConfigurator';
+import StoreBanneWizard from '@/components/StoreBanneWizard';
 import ProductPresentation from '@/components/ProductPresentation';
 import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
@@ -127,13 +127,9 @@ export default async function StoreBanneProductPage({ params }: Props) {
       {/* Section de présentation avec carousel en haut à droite */}
       <ProductPresentation product={product} showCarousel={true} />
 
-      {/* Section du configurateur de prix */}
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div id="configurateur" className="scroll-mt-24">
-            <StoreBanneConfigurator product={product} productSlug={product.slug} hideCarousel={true} />
-          </div>
-        </div>
+      {/* Section du configurateur de prix - Nouveau Wizard */}
+      <div id="configurateur" className="scroll-mt-24">
+        <StoreBanneWizard />
       </div>
     </div>
   );
