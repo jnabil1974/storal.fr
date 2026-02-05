@@ -15,6 +15,7 @@ export default function Header() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [authDebug, setAuthDebug] = useState<{userEmail?: string|null; allowList: string[]}>({ allowList: [] });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Charger les catégories
   useEffect(() => {
@@ -115,6 +116,21 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
+            {/* Menu Hamburger (mobile/tablet) */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden flex items-center text-gray-700 hover:text-rose-700"
+              aria-label="Menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+
             {/* Logo */}
             <Link href="/">
               <div className="cursor-pointer hover:scale-105 transition-transform duration-200">
@@ -123,9 +139,9 @@ export default function Header() {
             </Link>
 
             {/* Actions à droite: Téléphone, User, Cart */}
-            <div className="flex items-center gap-4">
-              {/* Phone Number */}
-              <a href="tel:+33185093446" className="hidden md:flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors">
+            <div className="flex items-center gap-2 md:gap-4">
+              {/* Phone Number - Version mobile simplifiée */}
+              <a href="tel:+33185093446" className="md:hidden flex items-center justify-center bg-rose-700 hover:bg-rose-800 text-white p-2 rounded-lg shadow-md transition-all">
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
                   className="h-5 w-5" 
@@ -140,7 +156,25 @@ export default function Header() {
                     d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" 
                   />
                 </svg>
-                <span className="text-lg font-semibold">01 85 09 34 46</span>
+              </a>
+              
+              {/* Phone Number - Version desktop */}
+              <a href="tel:+33185093446" className="hidden md:flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all font-semibold">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-5 w-5" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" 
+                  />
+                </svg>
+                <span className="text-base">01 85 09 34 46</span>
               </a>
 
               {/* User Section */}
@@ -195,33 +229,86 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Navigation sous le logo */}
-          <div className="hidden lg:flex flex-wrap items-center gap-2 border-t border-gray-200 pt-3">
-            {/* Category Links - TEMPORAIREMENT DÉSACTIVÉ */}
-            {/* {categories.map((cat) => (
-              <Link 
-                key={cat.id} 
-                href={`/products/${cat.slug}`} 
-                className="px-4 py-2 text-gray-700 hover:text-blue-600 font-semibold transition-all"
-              >
-                {cat.displayName}
-              </Link>
-            ))} */}
-
-            <Link href="/store-banne" className="px-4 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-all">
+          {/* Navigation sous le logo - Desktop */}
+          <div className="hidden md:flex flex-wrap items-center gap-2 border-t border-gray-200 pt-3">
+            <Link href="/store-banne" className="px-4 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-all uppercase">
               Store Banne
             </Link>
+            <Link href="/store-antichaleur" className="px-4 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-all uppercase">
+              Store Antichaleur
+            </Link>
             {showMyOrders && (
-              <Link href="/my-orders" className="px-4 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-all">
+              <Link href="/my-orders" className="px-4 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-all uppercase">
                 Mes commandes
               </Link>
             )}
             {isAdmin && (
-              <Link href="/admin" className="px-4 py-2 rounded-full text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all">
+              <Link href="/admin" className="px-4 py-2 rounded-full text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all uppercase">
                 Admin
               </Link>
             )}
           </div>
+
+          {/* Menu Mobile/Tablet */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-200 pt-3 pb-2">
+              <div className="flex flex-col gap-2">
+                <Link 
+                  href="/store-banne" 
+                  className="px-4 py-3 text-gray-700 hover:bg-rose-50 hover:text-rose-700 font-semibold transition-all rounded-lg uppercase"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Store Banne
+                </Link>
+                <Link 
+                  href="/store-antichaleur" 
+                  className="px-4 py-3 text-gray-700 hover:bg-rose-50 hover:text-rose-700 font-semibold transition-all rounded-lg uppercase"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Store Antichaleur
+                </Link>
+                {showMyOrders && (
+                  <Link 
+                    href="/my-orders" 
+                    className="px-4 py-3 text-gray-700 hover:bg-rose-50 hover:text-rose-700 font-semibold transition-all rounded-lg uppercase"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Mes commandes
+                  </Link>
+                )}
+                {isAdmin && (
+                  <Link 
+                    href="/admin" 
+                    className="px-4 py-3 text-blue-600 hover:bg-blue-50 font-semibold transition-all rounded-lg uppercase"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Admin
+                  </Link>
+                )}
+                {user ? (
+                  <div className="flex flex-col gap-2 border-t border-gray-200 pt-2 mt-2">
+                    <div className="px-4 py-2 text-sm text-gray-600">
+                      {user.email}
+                    </div>
+                    <button 
+                      onClick={() => { signOut(); setMobileMenuOpen(false); }} 
+                      className="px-4 py-3 text-left text-gray-700 hover:bg-gray-100 font-semibold transition-all rounded-lg"
+                    >
+                      Déconnexion
+                    </button>
+                  </div>
+                ) : (
+                  <Link 
+                    href="/login" 
+                    className="px-4 py-3 text-gray-700 hover:bg-gray-100 font-semibold transition-all rounded-lg border-t border-gray-200 mt-2 pt-4"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Connexion
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </nav>
     </header>

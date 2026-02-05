@@ -1,15 +1,13 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { getSEOMetadata } from '@/lib/seo';
-import { getProductCategories } from '@/lib/categories';
-import HeroCarousel from '@/components/HeroCarousel';
 import Image from 'next/image';
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSEOMetadata('/');
   return {
-    title: seo?.title || 'Storal.fr - Stores et Fermetures sur mesure',
-    description: seo?.description || 'Créez vos stores, portes blindées et fermetures sur mesure',
+    title: seo?.title || 'Storal.fr - Store Banne MATEST® Sur-Mesure | TVA 10%',
+    description: seo?.description || 'Store banne sur-mesure fabriqué en 24h, posé en 7 jours. TVA réduite à 10% avec notre forfait pose. Configurateur en ligne.',
     keywords: seo?.keywords,
     openGraph: {
       title: seo?.og_title || seo?.title,
@@ -25,133 +23,195 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  // Récupérer les catégories depuis la base de données
-  const categories = await getProductCategories();
-  console.log('📂 HomePage: fetched categories count =', categories.length);
-  if (categories.length === 0) console.warn('⚠️  Categories are empty!');
-
-  // Icônes par défaut pour chaque catégorie
-  const categoryIcons: Record<string, React.JSX.Element> = {
-    'store-banne': (
-      <svg className="w-16 h-16 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
-      </svg>
-    ),
-    'store-antichaleur': (
-      <svg className="w-16 h-16 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-      </svg>
-    ),
-    'porte-blindee': (
-      <svg className="w-16 h-16 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-      </svg>
-    ),
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Carousel */}
-      <HeroCarousel />
+      {/* SECTION HERO - Nouvelle version vendeuse */}
+      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Pattern de fond (en attendant l'image) */}
+        <div className="absolute inset-0 z-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+        </div>
 
-      {/* Section Avantages - 4 Cards */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center p-6 border border-gray-100 rounded-xl hover:shadow-lg transition">
-              <div className="text-5xl mb-4">🎯</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Sur-Mesure</h3>
-              <p className="text-gray-600 text-sm">Adaptés à vos dimensions exactes avec une précision millimétrique</p>
+        {/* Contenu Hero */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 py-20 text-center">
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl">
+            Votre Store Banne MATEST®<br />Sur-Mesure
+          </h1>
+          <h2 className="text-2xl md:text-3xl text-white/95 mb-12 font-medium drop-shadow-lg">
+            Fabriqué en 24h. Posé chez vous en 7 jours.<br />
+            <span className="text-yellow-400 font-bold">TVA réduite à 10%</span>
+          </h2>
+
+          {/* Deux cartes côte à côte */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-16">
+            {/* Carte Configurateur Expert */}
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl p-8 shadow-2xl hover:shadow-3xl transition-all hover:scale-105">
+              <div className="text-5xl mb-4">🎨</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Configurateur Expert</h3>
+              <p className="text-gray-600 mb-6">Créez votre store avec précision : dimensions, toile, motorisation...</p>
+              <Link href="/products/store-banne">
+                <button className="w-full bg-gray-900 text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-gray-800 transition shadow-lg">
+                  Je crée mon store →
+                </button>
+              </Link>
             </div>
-            <div className="text-center p-6 border border-gray-100 rounded-xl hover:shadow-lg transition">
-              <div className="text-5xl mb-4">🇫🇷</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Qualité Premium</h3>
-              <p className="text-gray-600 text-sm">Matériaux sélectionnés et fabrication française certifiée</p>
-            </div>
-            <div className="text-center p-6 border border-gray-100 rounded-xl hover:shadow-lg transition">
-              <div className="text-5xl mb-4">⏱️</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Livraison Rapide</h3>
-              <p className="text-gray-600 text-sm">Fabrication express et livraison dans les meilleurs délais</p>
-            </div>
-            <div className="text-center p-6 border border-gray-100 rounded-xl hover:shadow-lg transition">
-              <div className="text-5xl mb-4">💰</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Prix Transparent</h3>
-              <p className="text-gray-600 text-sm">Calculez votre devis en ligne en quelques clics</p>
+
+            {/* Carte Assistant Intelligent (mise en avant) */}
+            <div className="bg-gradient-to-br from-rose-600 to-rose-700 rounded-2xl p-8 shadow-2xl hover:shadow-3xl transition-all hover:scale-105 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1 text-xs font-bold rounded-bl-xl">
+                RECOMMANDÉ
+              </div>
+              <div className="text-5xl mb-4">✨</div>
+              <h3 className="text-2xl font-bold text-white mb-3">Assistant Intelligent</h3>
+              <p className="text-white/90 mb-6">Répondez à quelques questions, on s'occupe du reste !</p>
+              <a href="#assistant">
+                <button className="w-full bg-white text-rose-700 py-4 px-6 rounded-xl font-bold text-lg hover:bg-rose-50 transition shadow-lg">
+                  Aidez-moi à choisir →
+                </button>
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Contenu principal */}
-      <main className="max-w-7xl mx-auto px-4 py-16">
-        {/* SECTION PRODUITS TEMPORAIREMENT DÉSACTIVÉE - En attente de la nouvelle base de données */}
-        {/* <section className="mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Nos Gammes de Produits</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">Découvrez nos solutions sur-mesure pour transformer votre habitat</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {categories.map((category) => {
-              const gradientClass = category.gradientFrom && category.gradientTo
-                ? `from-${category.gradientFrom} to-${category.gradientTo}`
-                : 'from-gray-100 to-gray-200';
-              
-              return (
-                <Link key={category.id} href={`/products/${category.slug}`}>
-                  <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-all cursor-pointer h-full flex flex-col overflow-hidden group">
-                    <div className={`w-full h-48 bg-gradient-to-br ${gradientClass} flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden`}>
-                      {category.imageUrl ? (
-                        <Image
-                          src={category.imageUrl}
-                          alt={category.imageAlt || category.displayName}
-                          width={400}
-                          height={300}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        categoryIcons[category.slug] || categoryIcons['store-banne']
-                      )}
-                    </div>
+      {/* SECTION OFFRE IRRÉSISTIBLE - Bandeau TVA */}
+      <section className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 py-12">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            💰 Pourquoi payer 20% de TVA ?
+          </h2>
+          <p className="text-xl md:text-2xl text-gray-900 font-medium max-w-4xl mx-auto">
+            Avec notre <span className="font-bold underline">Forfait Pose Sérénité</span>, profitez de la TVA à 10% sur tout votre matériel.
+            <br />
+            <span className="text-lg">Économisez sur votre store en le faisant installer par un pro.</span>
+          </p>
+        </div>
+      </section>
 
-                    <div className="p-6 flex flex-col flex-grow">
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3">{category.displayName}</h3>
-                      <p className="text-gray-600 mb-4 flex-grow">{category.description || 'Découvrez nos produits'}</p>
-                      
-                      <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition mt-4 group-hover:bg-blue-700">
-                        Découvrir →
-                      </button>
-                    </div>
-                  </div>
+      {/* SECTION PRODUITS - 3 cartes statiques */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Nos Gammes de Stores Bannes</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">Trouvez le store parfait pour votre terrasse</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            {/* Carte 1 : Le Coffre Intégral */}
+            <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all overflow-hidden group">
+              <div className="relative h-64 bg-gradient-to-br from-blue-500 to-blue-700 overflow-hidden">
+                <div className="absolute top-4 right-4 bg-yellow-400 text-gray-900 px-3 py-1 text-sm font-bold rounded-lg">
+                  BEST-SELLER
+                </div>
+                <div className="flex items-center justify-center h-full">
+                  <svg className="w-32 h-32 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
+                  </svg>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Le Coffre Intégral</h3>
+                <p className="text-gray-600 mb-4">Protection maximale de la toile et des bras. Le plus durable et esthétique.</p>
+                <ul className="space-y-2 mb-6 text-sm text-gray-700">
+                  <li>✓ Toile protégée 24h/24</li>
+                  <li>✓ Design moderne et épuré</li>
+                  <li>✓ Longévité exceptionnelle</li>
+                </ul>
+                <Link href="/products/store-banne">
+                  <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">
+                    Configurer →
+                  </button>
                 </Link>
-              );
-            })}
-          </div>
-        </section> */}
+              </div>
+            </div>
 
-        {/* Section Confiance / Testimonial */}
-        <section className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-12 mb-16 text-white">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-6">L'Excellence du Sur-Mesure, La Sérénité en Plus</h2>
-            <p className="text-xl text-gray-300 mb-8">
-              Transformez votre extérieur et sécurisez votre intérieur avec des équipements certifiés et garantis. Fabrication française, service client dédié.
-            </p>
-            <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ Certification CE</span>
-              <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ Garantie Étendue</span>
-              <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ SAV Réactif</span>
+            {/* Carte 2 : Le Semi-Coffre */}
+            <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all overflow-hidden group">
+              <div className="relative h-64 bg-gradient-to-br from-green-500 to-green-700 overflow-hidden">
+                <div className="flex items-center justify-center h-full">
+                  <svg className="w-32 h-32 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11" />
+                  </svg>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Le Semi-Coffre</h3>
+                <p className="text-gray-600 mb-4">Le compromis parfait entre protection et budget. Le choix malin.</p>
+                <ul className="space-y-2 mb-6 text-sm text-gray-700">
+                  <li>✓ Toile protégée dans un coffre</li>
+                  <li>✓ Excellent rapport qualité/prix</li>
+                  <li>✓ Installation simplifiée</li>
+                </ul>
+                <Link href="/products/store-banne">
+                  <button className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition">
+                    Configurer →
+                  </button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Carte 3 : Le Monobloc */}
+            <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all overflow-hidden group">
+              <div className="relative h-64 bg-gradient-to-br from-orange-500 to-orange-700 overflow-hidden">
+                <div className="flex items-center justify-center h-full">
+                  <svg className="w-32 h-32 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21h18M3 10h18M4 10v11M20 10v11" />
+                  </svg>
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Le Monobloc</h3>
+                <p className="text-gray-600 mb-4">La solution économique sans compromis sur la qualité. Simple et efficace.</p>
+                <ul className="space-y-2 mb-6 text-sm text-gray-700">
+                  <li>✓ Prix le plus accessible</li>
+                  <li>✓ Robuste et fiable</li>
+                  <li>✓ Idéal pour petit budget</li>
+                </ul>
+                <Link href="/products/store-banne">
+                  <button className="w-full bg-orange-600 text-white py-3 rounded-xl font-bold hover:bg-orange-700 transition">
+                    Configurer →
+                  </button>
+                </Link>
+              </div>
             </div>
           </div>
-        </section>
-      </main>
+
+          {/* Bouton Voir tous les modèles */}
+          <div className="text-center">
+            <Link href="/products/store-banne">
+              <button className="bg-gray-900 text-white px-12 py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition shadow-lg">
+                Voir tous les modèles →
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Section Confiance */}
+      <section className="bg-gradient-to-r from-slate-900 to-slate-800 py-16">
+        <div className="max-w-4xl mx-auto px-4 text-center text-white">
+          <h2 className="text-3xl font-bold mb-6">L'Excellence du Sur-Mesure, La Sérénité en Plus</h2>
+          <p className="text-xl text-gray-300 mb-8">
+            Fabrication française, garanties étendues, service client dédié.
+          </p>
+          <div className="flex flex-wrap justify-center gap-6 text-sm">
+            <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ Certification QUALICOAT</span>
+            <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ Garantie 10 ans</span>
+            <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ SAV Réactif</span>
+          </div>
+        </div>
+      </section>
 
       {/* Contact Section */}
       <section className="max-w-7xl mx-auto px-4 py-12 mb-12">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-12 text-white text-center shadow-xl">
+        <div className="bg-gradient-to-r from-rose-600 to-rose-700 rounded-2xl p-12 text-white text-center shadow-xl">
           <h2 className="text-4xl font-bold mb-4">Une Question ? Besoin d'un Conseil ?</h2>
-          <p className="text-blue-100 mb-8 text-lg max-w-2xl mx-auto">Notre équipe d'experts vous accompagne dans votre projet. Devis gratuit et sans engagement.</p>
+          <p className="text-rose-100 mb-8 text-lg max-w-2xl mx-auto">Notre équipe d'experts vous accompagne dans votre projet. Devis gratuit et sans engagement.</p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link href="/contact">
-              <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-blue-50 transition shadow-lg">
+              <button className="bg-white text-rose-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-rose-50 transition shadow-lg">
                 Demander un Devis
               </button>
             </Link>
