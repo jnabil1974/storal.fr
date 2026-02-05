@@ -512,6 +512,62 @@ export default function StoreBanneWizard() {
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               <div className="bg-white rounded-2xl shadow-2xl p-6 border-2 border-gray-100">
+                {/* APERÇU VISUEL - Superposition de calques */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-3">
+                    📸 Aperçu Visuel
+                  </h3>
+                  <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 shadow-inner">
+                    {/* Calque 0 - Fond Terrasse */}
+                    <img
+                      src="https://via.placeholder.com/800x600/E5E7EB/9CA3AF?text=Mur+de+Terrasse"
+                      alt="Fond terrasse"
+                      className="absolute inset-0 w-full h-full object-cover z-0"
+                    />
+                    
+                    {/* Calque 10 - Toile (change selon couleur) */}
+                    <img
+                      src={`https://via.placeholder.com/800x600/${toile === 'gris' ? '6B7280' : toile === 'blanc' ? 'F3F4F6' : toile === 'taupe' ? '9CA3AF' : toile === 'bleu' ? '1E40AF' : 'FFFFFF'}/FFFFFF?text=Toile+${TOILES.find(t => t.id === toile)?.nom || ''}`}
+                      alt={`Toile ${TOILES.find(t => t.id === toile)?.nom}`}
+                      className="absolute inset-0 w-full h-full object-cover z-10 opacity-80"
+                    />
+                    
+                    {/* Calque 20 - Structure (change selon modèle) */}
+                    <img
+                      src={`https://via.placeholder.com/800x600/1F2937/FFFFFF?text=${modele === 'coffre' ? 'Coffre+Intégral' : modele === 'semi-coffre' ? 'Semi-Coffre' : 'Monobloc'}`}
+                      alt={`Structure ${MODELES.find(m => m.id === modele)?.nom}`}
+                      className="absolute inset-0 w-full h-full object-contain z-20"
+                    />
+                    
+                    {/* Badge Dimensions */}
+                    <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-900 z-30 shadow-lg">
+                      {largeur} × {avancee} cm
+                    </div>
+                    
+                    {/* Badge Modèle */}
+                    <div className="absolute top-2 right-2 bg-rose-600/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-white z-30 shadow-lg">
+                      {MODELES.find(m => m.id === modele)?.nom}
+                    </div>
+                    
+                    {/* Indicateur LED si activé */}
+                    {ajouterLED && (
+                      <div className="absolute bottom-2 left-2 bg-yellow-400/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-900 z-30 shadow-lg flex items-center gap-1">
+                        💡 LED
+                      </div>
+                    )}
+                    
+                    {/* Indicateur Capteur si activé */}
+                    {capteurVent && (
+                      <div className="absolute bottom-2 right-2 bg-blue-500/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-white z-30 shadow-lg flex items-center gap-1">
+                        🌪️ Capteur
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 text-center mt-2 italic">
+                    Aperçu indicatif - Les vraies images seront ajoutées prochainement
+                  </p>
+                </div>
+                
                 <h3 className="text-xl font-bold text-gray-900 mb-4 pb-3 border-b">
                   Votre Configuration
                 </h3>
