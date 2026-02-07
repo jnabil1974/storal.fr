@@ -24,9 +24,9 @@ export async function GET() {
     
     const { data, error } = await supabase
       .from('sb_products')
-      .order('display_order', { ascending: true })
       .select('id, name, min_width, max_width, min_projection, max_projection')
       .eq('active', true)
+      .order('display_order', { ascending: true })
       .order('name', { ascending: true })
       .limit(5);
 
