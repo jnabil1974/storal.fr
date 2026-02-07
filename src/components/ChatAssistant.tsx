@@ -24,7 +24,6 @@ export default function ChatAssistant() {
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({ api: '/api/chat' }),
     id: chatId, // ID unique pour éviter la réutilisation de l'historique
-    initialMessages: [], // Démarrer avec un tableau vide
     onError: (err) => {
       console.error('❌ Erreur ChatAssistant useChat:', err);
     },
