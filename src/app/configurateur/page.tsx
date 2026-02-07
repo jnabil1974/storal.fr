@@ -122,7 +122,7 @@ export default function ConfiguratorPage() {
         productType: ProductType.STORE_BANNE,
         productName: modelData.name,
         basePrice: prixResult?.sellingPriceHT || 0,
-        configuration,
+        configuration: configuration as any,
         quantity: 1,
         pricePerUnit: prixResult?.finalPriceTTC || 0,
       });
