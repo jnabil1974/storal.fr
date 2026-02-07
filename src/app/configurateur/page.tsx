@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getStorePrice, STORES_DATA, FRAME_COLORS, FABRICS } from '@/data/storeData';
 import { useCart } from '@/contexts/CartContext';
+import { ProductType } from '@/types/products';
 import Image from 'next/image';
 
 export default function ConfiguratorPage() {
@@ -118,7 +119,7 @@ export default function ConfiguratorPage() {
       // Ajouter au panier avec le système existant
       await addItem({
         productId: `store-${modelKey}`,
-        productType: 'store-banne',
+        productType: ProductType.STORE_BANNE,
         productName: modelData.name,
         basePrice: prixResult?.sellingPriceHT || 0,
         configuration,
