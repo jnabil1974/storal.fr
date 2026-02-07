@@ -112,7 +112,7 @@ export default function ProductPresentation({ product, showCarousel = false }: P
            {parsedTags.map((tag: string, idx: number) => (
               <span
                 key={idx}
-                className="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold uppercase"
+                className="bg-rose-100 text-rose-900 border border-rose-200 px-4 py-1 rounded-full text-sm font-bold uppercase"
               >
                 {tag}
               </span>
@@ -124,11 +124,11 @@ export default function ProductPresentation({ product, showCarousel = false }: P
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <div>
             {product.hero_tagline && (
-              <span className="inline-block bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold uppercase mb-4">
+              <span className="inline-block bg-rose-100 text-rose-900 border border-rose-200 px-4 py-1 rounded-full text-sm font-bold uppercase mb-4">
                 {product.hero_tagline}
               </span>
             )}
-            <h2 className="text-3xl font-bold border-b-4 border-orange-500 inline-block pb-2 mb-6">
+            <h2 className="text-3xl font-bold border-b-4 border-rose-700 inline-block pb-2 mb-6">
               {product.hero_text ? 'La Protection Totale' : (product.product_type === 'HELiOM PLUS' ? 'La Protection Maximale' : 'La Protection Totale')}
             </h2>
             <p className="text-lg text-gray-700 mb-6">
@@ -140,13 +140,13 @@ export default function ProductPresentation({ product, showCarousel = false }: P
               <ul className="space-y-2">
                 <li className="flex justify-between">
                   <span>Largeur :</span>
-                  <span className="font-bold text-orange-600">
+                  <span className="font-bold text-rose-800">
                     {product.min_width} mm à {product.max_width} mm
                   </span>
                 </li>
                 <li className="flex justify-between">
                   <span>Avancée :</span>
-                  <span className="font-bold text-orange-600">
+                  <span className="font-bold text-rose-800">
                     jusqu'à {product.max_projection} mm
                   </span>
                 </li>
@@ -224,7 +224,7 @@ export default function ProductPresentation({ product, showCarousel = false }: P
         {/* Comparison Table (if provided) */}
         {parsedComparison?.rows?.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-3xl font-bold border-b-4 border-orange-500 inline-block pb-2 mb-6">
+            <h2 className="text-3xl font-bold border-b-4 border-rose-700 inline-block pb-2 mb-6">
               {parsedComparison.title || 'Comparatif'}
             </h2>
 
@@ -268,7 +268,7 @@ export default function ProductPresentation({ product, showCarousel = false }: P
         {/* Features Table fallback */}
         {!parsedComparison?.rows?.length && parsedFeatures.arm_type && (
           <section className="mb-12">
-            <h2 className="text-3xl font-bold border-b-4 border-orange-500 inline-block pb-2 mb-6">
+            <h2 className="text-3xl font-bold border-b-4 border-rose-700 inline-block pb-2 mb-6">
               Caractéristiques Techniques
             </h2>
 
@@ -308,7 +308,7 @@ export default function ProductPresentation({ product, showCarousel = false }: P
         {/* Options/Equipment */}
         {(parsedOptionsCards.length > 0 || Object.keys(parsedOptions).length > 0) && (
           <section className="mb-12">
-            <h2 className="text-3xl font-bold border-b-4 border-orange-500 inline-block pb-2 mb-6">
+            <h2 className="text-3xl font-bold border-b-4 border-rose-700 inline-block pb-2 mb-6">
               Équipements et Options Premium
             </h2>
 
@@ -367,23 +367,6 @@ export default function ProductPresentation({ product, showCarousel = false }: P
                   ))}
             </div>
           </section>
-        )}
-
-        {/* Certifications Footer */}
-        {(parsedCertifications.length > 0 || parsedFeatures.certifications) && (
-          <footer className="text-center py-8 border-t-2 border-gray-300">
-            <p className="text-gray-600">
-              Produit certifié{' '}
-              <strong>
-               {parsedCertifications.length > 0
-                 ? parsedCertifications.map((c: any) => `${c}®`).join(' et ')
-                 : (Array.isArray(parsedFeatures.certifications)
-                    ? parsedFeatures.certifications.map((c: any) => `${c}®`).join(' et ')
-                    : parsedFeatures.certifications)}
-              </strong>{' '}
-              pour une résistance maximale à la corrosion.
-            </p>
-          </footer>
         )}
       </div>
 

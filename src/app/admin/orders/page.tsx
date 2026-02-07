@@ -166,7 +166,7 @@ export default function AdminOrdersPage() {
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <p className="text-sm text-gray-600 mb-1">En attente</p>
-            <p className="text-2xl font-bold text-orange-600">{stats.pending}</p>
+            <p className="text-2xl font-bold text-rose-800">{stats.pending}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
             <p className="text-sm text-gray-600 mb-1">Payées</p>

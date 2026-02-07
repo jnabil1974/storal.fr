@@ -369,8 +369,8 @@ export default function AdminHeroSlidesPage() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                       >
                         <option value="from-blue-500 to-blue-600">Bleu</option>
-                        <option value="from-orange-500 to-yellow-500">Orange-Jaune</option>
-                        <option value="from-red-500 to-orange-500">Rouge-Orange</option>
+                        <option value="from-rose-700 to-yellow-500">Bordeaux-Jaune</option>
+                        <option value="from-red-600 to-rose-700">Rouge-Bordeaux</option>
                         <option value="from-gray-700 to-slate-600">Gris foncé</option>
                         <option value="from-green-500 to-teal-500">Vert-Teal</option>
                         <option value="from-purple-500 to-pink-500">Violet-Rose</option>

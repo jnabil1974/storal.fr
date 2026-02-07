@@ -199,13 +199,13 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Commandes en attente</p>
-                <p className="text-3xl font-bold text-orange-600 mt-2">{stats.pendingOrders}</p>
+                <p className="text-3xl font-bold text-rose-800 mt-2">{stats.pendingOrders}</p>
               </div>
-              <div className="bg-orange-100 rounded-full p-4">
+              <div className="bg-rose-100 rounded-full p-4">
                 <span className="text-3xl">⏳</span>
               </div>
             </div>
-            <Link href="/admin/orders" className="text-sm text-orange-600 hover:text-orange-700 mt-4 inline-block">
+            <Link href="/admin/orders" className="text-sm text-rose-800 hover:text-rose-900 mt-4 inline-block">
               Traiter les commandes →
             </Link>
           </div>
@@ -239,6 +239,21 @@ export default function AdminDashboard() {
               Gérer newsletter →
             </Link>
           </div>
+          
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Ordre d'affichage</p>
+                <p className="text-3xl font-bold text-indigo-600 mt-2">🔢</p>
+              </div>
+              <div className="bg-indigo-100 rounded-full p-4">
+                <span className="text-3xl">⬍⬍</span>
+              </div>
+            </div>
+            <Link href="/admin/product-order" className="text-sm text-indigo-600 hover:text-indigo-700 mt-4 inline-block">
+              Réorganiser les stores →
+            </Link>
+          </div>
         </div>
 
       {/* Commandes récentes */}
@@ -260,7 +275,7 @@ export default function AdminDashboard() {
                   <div className="text-right">
                     <p className="font-semibold text-gray-900">{Number(order.total_amount || 0).toFixed(2)}€</p>
                     <span className={`text-xs px-2 py-1 rounded ${
-                      order.status === 'pending' ? 'bg-orange-100 text-orange-700' :
+                      order.status === 'pending' ? 'bg-rose-100 text-rose-900' :
                       order.status === 'paid' ? 'bg-green-100 text-green-700' :
                       order.status === 'processing' ? 'bg-blue-100 text-blue-700' :
                       order.status === 'shipped' ? 'bg-purple-100 text-purple-700' :

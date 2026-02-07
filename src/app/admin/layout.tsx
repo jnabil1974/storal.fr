@@ -36,6 +36,12 @@ export default function AdminLayout({
       description: 'Catalogue des toiles'
     },
     {
+      title: 'Couleurs Matest',
+      href: '/admin/matest-colors',
+      icon: '🎭',
+      description: 'Nuancier RAL Matest'
+    },
+    {
       title: 'Produits Store Banne',
       href: '/admin/store-banne-products',
       icon: '☀️',
@@ -83,8 +89,8 @@ export default function AdminLayout({
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 bg-white min-h-screen shadow-sm">
-          <nav className="p-4 space-y-2">
+        <aside className="w-64 bg-white min-h-screen shadow-sm flex flex-col">
+          <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
             {menuItems.map((item) => {
               const isActive = pathname === item.href || 
                               (item.href !== '/admin' && pathname.startsWith(item.href));
@@ -110,7 +116,7 @@ export default function AdminLayout({
           </nav>
 
           {/* Footer sidebar */}
-          <div className="absolute bottom-0 left-0 w-64 p-4 border-t bg-gray-50">
+          <div className="p-4 border-t bg-gray-50 mt-auto">
             <div className="text-xs text-gray-500 space-y-1">
               <p className="font-semibold">Store Menuiserie Admin</p>
               <p>Version 1.0.0</p>

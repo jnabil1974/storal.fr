@@ -37,7 +37,7 @@ export default async function HomePage() {
         {/* Contenu Hero */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-20 text-center">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl">
-            Votre Store Banne MATEST®<br />Sur-Mesure
+            L'Ombre Parfaite. Fabriquée en France<br />Sur-Mesure
           </h1>
           <h2 className="text-2xl md:text-3xl text-white/95 mb-12 font-medium drop-shadow-lg">
             Fabriqué en 24h. Posé chez vous en 7 jours.<br />
@@ -66,7 +66,7 @@ export default async function HomePage() {
               <div className="text-5xl mb-4">✨</div>
               <h3 className="text-2xl font-bold text-white mb-3">Assistant Intelligent</h3>
               <p className="text-white/90 mb-6">Répondez à quelques questions, on s'occupe du reste !</p>
-              <a href="#assistant">
+              <a href="/assistant">
                 <button className="w-full bg-white text-rose-700 py-4 px-6 rounded-xl font-bold text-lg hover:bg-rose-50 transition shadow-lg">
                   Aidez-moi à choisir →
                 </button>

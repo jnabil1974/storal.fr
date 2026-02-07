@@ -362,7 +362,7 @@ export function StoreBanneKissimyConfigurator({
                         toile.colorFamily === 'Vert' ? 'bg-gradient-to-br from-green-400 to-green-600' :
                         toile.colorFamily === 'Rouge' ? 'bg-gradient-to-br from-red-400 to-red-600' :
                         toile.colorFamily === 'Rose' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
-                        toile.colorFamily === 'Orange' ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                        toile.colorFamily === 'Orange' ? 'bg-gradient-to-br from-rose-400 to-rose-700' :
                         toile.colorFamily === 'Jaune' ? 'bg-gradient-to-br from-yellow-400 to-yellow-500' :
                         toile.colorFamily === 'Violet' ? 'bg-gradient-to-br from-purple-400 to-purple-600' :
                         toile.colorFamily === 'Marron' ? 'bg-gradient-to-br from-amber-600 to-amber-800' :
@@ -396,7 +396,7 @@ export function StoreBanneKissimyConfigurator({
                           options.toiles.find(t => t.ref === config.toile)?.colorFamily === 'Vert' ? 'bg-green-500' :
                           options.toiles.find(t => t.ref === config.toile)?.colorFamily === 'Rouge' ? 'bg-red-500' :
                           options.toiles.find(t => t.ref === config.toile)?.colorFamily === 'Rose' ? 'bg-pink-500' :
-                          options.toiles.find(t => t.ref === config.toile)?.colorFamily === 'Orange' ? 'bg-orange-500' :
+                          options.toiles.find(t => t.ref === config.toile)?.colorFamily === 'Orange' ? 'bg-rose-700' :
                           options.toiles.find(t => t.ref === config.toile)?.colorFamily === 'Jaune' ? 'bg-yellow-400' :
                           options.toiles.find(t => t.ref === config.toile)?.colorFamily === 'Violet' ? 'bg-purple-500' :
                           options.toiles.find(t => t.ref === config.toile)?.colorFamily === 'Marron' ? 'bg-amber-700' :
@@ -472,7 +472,7 @@ export function StoreBanneKissimyConfigurator({
                             toile.colorFamily === 'Vert' ? 'bg-gradient-to-br from-green-400 to-green-600' :
                             toile.colorFamily === 'Rouge' ? 'bg-gradient-to-br from-red-400 to-red-600' :
                             toile.colorFamily === 'Rose' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
-                            toile.colorFamily === 'Orange' ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                            toile.colorFamily === 'Orange' ? 'bg-gradient-to-br from-rose-400 to-rose-700' :
                             toile.colorFamily === 'Jaune' ? 'bg-gradient-to-br from-yellow-400 to-yellow-500' :
                             toile.colorFamily === 'Violet' ? 'bg-gradient-to-br from-purple-400 to-purple-600' :
                             toile.colorFamily === 'Marron' ? 'bg-gradient-to-br from-amber-600 to-amber-800' :

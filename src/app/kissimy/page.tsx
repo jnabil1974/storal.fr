@@ -14,6 +14,7 @@ async function getProductBySlug(slug: string) {
 		.from('sb_products')
 		.select('*')
 		.eq('slug', slug)
+		.order('display_order', { ascending: true })
 		.single();
 
 	if (error || !data) return null;

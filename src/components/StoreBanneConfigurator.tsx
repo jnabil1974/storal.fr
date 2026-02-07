@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useCart } from '@/contexts/CartContext';
+import ToileSelector from '@/components/ToileSelector';
+import MatestColorSelector from '@/components/MatestColorSelector';
 
 type StoreBanneProductData = {
   id?: string | number;
@@ -46,7 +48,13 @@ export default function StoreBanneConfigurator({
   const [inclinaison, setInclinaison] = useState(15);
   const [motorisationId, setMotorisationId] = useState<number | null>(null);
   const [emetteurId, setEmetteurId] = useState<number | null>(null);
-  const [toileId, setToileId] = useState<number | null>(null);
+  const [toileTypeId, setToileTypeId] = useState<number | null>(null);
+  const [toileColorId, setToileColorId] = useState<number | null>(null);
+  const [toilePriceHT, setToilePriceHT] = useState<number>(0);
+  const [matestColorId, setMatestColorId] = useState<number | null>(null);
+  const [matestRalCode, setMatestRalCode] = useState<string>('');
+  const [matestColorName, setMatestColorName] = useState<string>('');
+  const [matestFinish, setMatestFinish] = useState<string>('');
   const [prixHT, setPrixHT] = useState<string | null>(null);
   const [messageTransport, setMessageTransport] = useState('');
   const [loading, setLoading] = useState(false);
@@ -60,9 +68,6 @@ export default function StoreBanneConfigurator({
   const [warningInclinaison, setWarningInclinaison] = useState('');
   const [motorisations, setMotorisations] = useState<any[]>([]);
   const [emetteurs, setEmetteurs] = useState<any[]>([]);
-  const [toiles, setToiles] = useState<any[]>([]);
-  const [toileColors, setToileColors] = useState<any[]>([]);
-  const [selectedToileColorId, setSelectedToileColorId] = useState<number | null>(null);
 
   // Charger les options de motorisation
   useEffect(() => {
@@ -115,63 +120,8 @@ export default function StoreBanneConfigurator({
     fetchEmetteurs();
   }, [numericProductId]);
 
-  // Charger les toiles
-  useEffect(() => {
-    const fetchToiles = async () => {
-      try {
-        const response = await fetch(`/api/calcul-prix/options?category=Toile&productId=${numericProductId}`);
-        if (!response.ok) {
-          console.error('Erreur API toiles:', response.status);
-          return;
-        }
-        const data = await response.json();
-        if (data.options && Array.isArray(data.options)) {
-          setToiles(data.options);
-          // Sélectionner automatiquement la première toile si aucune n'est sélectionnée
-          if (data.options.length > 0) {
-            setToileId(data.options[0].id);
-          }
-        }
-      } catch (err) {
-        console.error('Erreur chargement toiles:', err);
-      }
-    };
-    
-    fetchToiles();
-  }, [numericProductId]);
-
-  // Charger les couleurs de toile quand une toile est sélectionnée
-  useEffect(() => {
-    if (!toileId) {
-      setToileColors([]);
-      setSelectedToileColorId(null);
-      return;
-    }
-
-    const fetchToileColors = async () => {
-      try {
-        const response = await fetch(`/api/calcul-prix/toile-colors?optionId=${toileId}`);
-        if (!response.ok) {
-          console.error('Erreur API couleurs de toile:', response.status);
-          setToileColors([]);
-          return;
-        }
-        const data = await response.json();
-        if (data.colors && Array.isArray(data.colors)) {
-          setToileColors(data.colors);
-          // Sélectionner automatiquement la première couleur
-          if (data.colors.length > 0) {
-            setSelectedToileColorId(data.colors[0].id);
-          }
-        }
-      } catch (err) {
-        console.error('Erreur chargement couleurs de toile:', err);
-        setToileColors([]);
-      }
-    };
-
-    fetchToileColors();
-  }, [toileId]);
+  // Calculer la surface pour la toile
+  const surfaceM2 = (avancee * largeur) / 1000000;
 
   // Récupérer les limites de largeur selon la projection sélectionnée
   useEffect(() => {
@@ -263,14 +213,17 @@ export default function StoreBanneConfigurator({
           inclinaison: parseInt(inclinaison.toString()),
           motorisationId: motorisationId,
           emetteurId: emetteurId,
-          toileId: toileId,
+          toileTypeId: toileTypeId,
         }),
       });
 
       const data = await response.json();
 
       if (data.prixClientHT) {
-        setPrixHT(data.prixClientHT);
+        // Ajouter le prix de la toile au prix calculé
+        const prixBase = parseFloat(data.prixClientHT);
+        const prixTotal = prixBase + toilePriceHT;
+        setPrixHT(prixTotal.toFixed(2));
         setMessageTransport(
           data.message === 'Surtaxe longueur incluse'
             ? '⚠️ Inclus : Forfait transport longueurs > 3.65m'
@@ -293,7 +246,7 @@ export default function StoreBanneConfigurator({
   // Calculer le prix automatiquement quand les valeurs changent
   useEffect(() => {
     calculerPrix();
-  }, [avancee, largeur, inclinaison, motorisationId, emetteurId, toileId, minLargeur, maxLargeur, minInclinaison, maxInclinaison]);
+  }, [avancee, largeur, inclinaison, motorisationId, emetteurId, toileTypeId, toilePriceHT, minLargeur, maxLargeur, minInclinaison, maxInclinaison]);
 
   const ajouterAuPanier = () => {
     if (!prixHT) {
@@ -303,7 +256,10 @@ export default function StoreBanneConfigurator({
 
     const motorisationNom = motorisations.find(m => m.id === motorisationId)?.name || 'Sans motorisation';
     const emetteurNom = emetteurs.find(e => e.id === emetteurId)?.name || 'Sans émetteur';
-    const toileNom = toiles.find(t => t.id === toileId)?.name || 'Sans toile';
+    const toileNom = toileTypeId ? `Toile ID ${toileTypeId}` : 'Sans toile';
+    const couleurCoffreNom = matestColorId 
+      ? `${matestRalCode ? `RAL ${matestRalCode}` : ''} ${matestColorName}`.trim()
+      : 'Non spécifiée';
 
     addItem({
       productId: resolvedSlug,
@@ -317,6 +273,11 @@ export default function StoreBanneConfigurator({
         motorisation: motorisationNom,
         emetteur: emetteurNom,
         toile: toileNom,
+        toileColorId: toileColorId,
+        couleurCoffre: couleurCoffreNom,
+        couleurCoffreId: matestColorId,
+        couleurCoffreRal: matestRalCode,
+        couleurCoffreFinish: matestFinish,
         // Format texte pour affichage
         largeurDisplay: `${largeur}mm`,
         projectionDisplay: `${avancee}mm`,
@@ -333,8 +294,6 @@ export default function StoreBanneConfigurator({
 
   const motorisationNom = motorisations.find(m => m.id === motorisationId)?.name || 'Sans motorisation';
   const emetteurNom = emetteurs.find(e => e.id === emetteurId)?.name || 'Sans émetteur';
-  const toileNom = toiles.find(t => t.id === toileId)?.name || 'Sans toile';
-  const toileColorNom = toileColors.find(c => c.id === selectedToileColorId)?.color_name || 'Couleur standard';
   const carouselImages = (product?.img_store || []).filter(Boolean);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
@@ -353,14 +312,20 @@ export default function StoreBanneConfigurator({
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="bg-white/95 backdrop-blur border border-gray-200 p-6 md:p-8 rounded-2xl shadow-xl pb-28">
-        <div className="mb-6">
-          <div className="flex items-center justify-between gap-4 mb-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{resolvedName}</h1>
-            <p className="text-base md:text-lg font-semibold text-blue-700 whitespace-nowrap">Configurer votre store</p>
+      <div className="p-6 md:p-8 pb-28">
+        <div className="mb-8">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">Configurateur de Prix</h2>
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 border-b-4 border-rose-700 inline-block pb-2">{resolvedName}</h1>
+            </div>
+            <div className="text-right hidden md:block">
+              <p className="text-sm text-slate-600 mb-1">Prix TTC</p>
+              <p className="text-2xl md:text-3xl font-bold text-rose-800">{prixHT ? `${(parseFloat(prixHT) * 1.2).toFixed(2)}€` : '...'}</p>
+            </div>
           </div>
           {resolvedDescription && (
-            <p className="text-sm md:text-base text-gray-600 max-w-2xl">
+            <p className="text-sm md:text-base text-slate-600 max-w-2xl">
               {resolvedDescription}
             </p>
           )}
@@ -368,13 +333,13 @@ export default function StoreBanneConfigurator({
 
         <div className="mt-6 grid gap-6 grid-cols-1 sm:grid-cols-[1.6fr_1fr]">
           {!hideCarousel && (carouselImages.length > 0 || product?.bras || product?.img_dim_coffre || product?.img_bras_led) && (
-            <div className="rounded-xl border border-gray-200 p-5 shadow-sm bg-white">
-              <h2 className="text-sm font-semibold text-gray-900 mb-4">Fiche produit</h2>
+            <div className="rounded-xl border border-slate-200 p-5 shadow-sm bg-white">
+              <h2 className="text-sm font-semibold text-slate-900 mb-4">📋 Fiche produit</h2>
               <div className="space-y-4">
                 {carouselImages.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-gray-600 mb-2">Images</p>
-                    <div className="relative w-full rounded-lg border border-gray-200 bg-gray-50 overflow-hidden" style={{ aspectRatio: '4 / 3' }}>
+                    <p className="text-xs font-medium text-slate-600 mb-2">Images</p>
+                    <div className="relative w-full rounded-lg border border-slate-200 bg-slate-50 overflow-hidden" style={{ aspectRatio: '4 / 3' }}>
                       <button
                         type="button"
                         onClick={() => setZoomImage(carouselImages[carouselIndex])}
@@ -407,7 +372,7 @@ export default function StoreBanneConfigurator({
                             {carouselImages.map((_, idx) => (
                               <span
                                 key={`dot-${idx}`}
-                                className={`h-2 w-2 rounded-full ${idx === carouselIndex ? 'bg-blue-600' : 'bg-white/80'}`}
+                                className={`h-2 w-2 rounded-full ${idx === carouselIndex ? 'bg-rose-700' : 'bg-white/80'}`}
                               />
                             ))}
                           </div>
@@ -419,31 +384,31 @@ export default function StoreBanneConfigurator({
 
                 {(product?.bras || product?.img_dim_coffre || product?.img_bras_led) && (
                   <div className="space-y-3">
-                    <p className="text-xs font-semibold text-gray-700">Infos complémentaires</p>
+                    <p className="text-xs font-semibold text-slate-700">Infos complémentaires</p>
                     {product?.img_dim_coffre && (
                       <div>
-                        <p className="text-xs font-medium text-gray-600 mb-1">Dimensions coffre</p>
+                        <p className="text-xs font-medium text-slate-600 mb-1">Dimensions coffre</p>
                         <img
                           src={product.img_dim_coffre}
                           alt="Schéma coffre"
-                          className="w-full rounded object-contain border border-gray-200 bg-gray-50"
+                          className="w-full rounded object-contain border border-slate-200 bg-slate-50"
                         />
                       </div>
                     )}
                     {product?.img_bras_led && (
                       <div>
-                        <p className="text-xs font-medium text-gray-600 mb-1">Bras LED</p>
+                        <p className="text-xs font-medium text-slate-600 mb-1">Bras LED</p>
                         <img
                           src={product.img_bras_led}
                           alt="Bras LED"
-                          className="w-full rounded object-contain border border-gray-200 bg-gray-50"
+                          className="w-full rounded object-contain border border-slate-200 bg-slate-50"
                         />
                       </div>
                     )}
                     {product?.bras && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <p className="text-xs font-semibold text-blue-700 mb-1">Type de bras</p>
-                        <p className="text-base font-medium text-blue-900">{product.bras}</p>
+                      <div className="bg-rose-50 border border-rose-200 rounded-lg p-3">
+                        <p className="text-xs font-semibold text-rose-900 mb-1">Type de bras</p>
+                        <p className="text-base font-medium text-rose-950">{product.bras}</p>
                       </div>
                     )}
                   </div>
@@ -452,29 +417,32 @@ export default function StoreBanneConfigurator({
             </div>
           )}
 
-          <section className="rounded-xl border border-gray-200 p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">Dimensions</h2>
+<section className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 shadow-sm hover:shadow-md transition-shadow">
+              <h2 className="text-base font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-8 h-8 bg-rose-700 text-white rounded-full text-sm font-bold">📏</span>
+                Dimensions
+              </h2>
               
               {product?.img_larg_ht && (
                 <div className="mb-4">
-                  <p className="text-xs font-medium text-gray-600 mb-2">Schéma Largeur / Hauteur</p>
+                  <p className="text-xs font-medium text-slate-600 mb-2">Schéma Largeur / Hauteur</p>
                   <img
                     src={product.img_larg_ht}
                     alt="Schéma largeur hauteur"
-                    className="h-32 w-full rounded object-contain border border-gray-200 bg-gray-50"
+                    className="h-32 w-full rounded object-contain border border-slate-200 bg-slate-50"
                   />
                 </div>
               )}
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-slate-700">
                     Avancée (Projection)
                   </label>
                   <select
                     value={avancee}
                     onChange={(e) => setAvancee(parseInt(e.target.value))}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 block w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-700"
                   >
                     <option value="1500">1.50 m</option>
                     <option value="2000">2.00 m</option>
@@ -484,18 +452,16 @@ export default function StoreBanneConfigurator({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Largeur (en mm)
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Largeur (en mm)</label>
                   <input
                     type="number"
                     value={largeur}
                     onChange={(e) => handleLargeurChange(e.target.value)}
-                    className={`mt-1 block w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      warningLargeur ? 'border-orange-400 bg-orange-50' : 'border-gray-300'
+                    className={`mt-1 block w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-rose-700 ${
+                      warningLargeur ? 'border-rose-400 bg-rose-50' : 'border-slate-300'
                     }`}
                   />
-                  <p className={`text-xs mt-1 ${warningLargeur ? 'text-orange-600 font-semibold' : 'text-gray-500'}`}>
+                  <p className={`text-xs mt-1 ${warningLargeur ? 'text-rose-800 font-semibold' : 'text-slate-500'}`}>
                     {warningLargeur || `Entre ${minLargeur} et ${maxLargeur} mm`}
                   </p>
                 </div>
@@ -503,28 +469,28 @@ export default function StoreBanneConfigurator({
 
               {product?.img_tol_dim && (
                 <div className="mt-4">
-                  <p className="text-xs font-medium text-gray-600 mb-2">Schéma Dimensions toile</p>
+                  <p className="text-xs font-medium text-slate-600 mb-2">Schéma Dimensions toile</p>
                   <img
                     src={product.img_tol_dim}
                     alt="Schéma toile"
-                    className="h-32 w-full rounded object-contain border border-gray-200 bg-gray-50"
+                    className="h-32 w-full rounded object-contain border border-slate-200 bg-slate-50"
                   />
                 </div>
               )}
 
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-slate-700">
                 Inclinaison (réglage usine)
               </label>
               <input
                 type="number"
                 value={inclinaison}
                 onChange={(e) => handleInclinaisonChange(e.target.value)}
-                className={`mt-1 block w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  warningInclinaison ? 'border-orange-400 bg-orange-50' : 'border-gray-300'
+                className={`mt-1 block w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-rose-700 ${
+                  warningInclinaison ? 'border-rose-400 bg-rose-50' : 'border-slate-300'
                 }`}
               />
-              <p className={`text-xs mt-1 ${warningInclinaison ? 'text-orange-600 font-semibold' : 'text-gray-500'}`}>
+              <p className={`text-xs mt-1 ${warningInclinaison ? 'text-rose-800 font-semibold' : 'text-slate-500'}`}>
                 {warningInclinaison || `Entre ${minInclinaison} et ${maxInclinaison}${inclinaisonUnite}`}
               </p>
             </div>
@@ -534,19 +500,19 @@ export default function StoreBanneConfigurator({
         <div className="mt-8 grid lg:grid-cols-[2fr_1fr] gap-8">
           <div className="space-y-6">
 
-            <section className="rounded-xl border border-gray-200 p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-gray-900 mb-4">Options</h2>
+            <section className="rounded-xl border border-slate-200 p-5 shadow-sm">
+              <h2 className="text-sm font-semibold text-slate-900 mb-4">⚙️ Options</h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-slate-700">
                     Motorisation (optionnelle)
                   </label>
                   <div className="flex gap-3 items-start">
                     <select
                       value={motorisationId || ''}
                       onChange={(e) => setMotorisationId(e.target.value ? parseInt(e.target.value) : null)}
-                      className="flex-1 mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 mt-1 block w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-700"
                     >
                       {motorisations.map((motor) => (
                         <option key={motor.id} value={motor.id}>
@@ -556,7 +522,7 @@ export default function StoreBanneConfigurator({
                       <option value="">Sans motorisation</option>
                     </select>
                     {motorisationId && motorisations.find(m => m.id === motorisationId)?.imageUrl && (
-                      <div className="mt-1 w-20 h-20 border border-gray-200 rounded-md overflow-hidden flex-shrink-0 bg-gray-50">
+                      <div className="mt-1 w-20 h-20 border border-slate-200 rounded-md overflow-hidden flex-shrink-0 bg-slate-50">
                         <img
                           src={motorisations.find(m => m.id === motorisationId)?.imageUrl}
                           alt="Motorisation"
@@ -565,20 +531,20 @@ export default function StoreBanneConfigurator({
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     Choisissez une motorisation pour votre store
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-slate-700">
                     Télécommande (émetteur)
                   </label>
                   <div className="flex gap-3 items-start">
                     <select
                       value={emetteurId || ''}
                       onChange={(e) => setEmetteurId(e.target.value ? parseInt(e.target.value) : null)}
-                      className="flex-1 mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 mt-1 block w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-700"
                     >
                       {emetteurs.map((emetteur) => (
                         <option key={emetteur.id} value={emetteur.id}>
@@ -588,7 +554,7 @@ export default function StoreBanneConfigurator({
                       <option value="">Sans télécommande</option>
                     </select>
                     {emetteurId && emetteurs.find(e => e.id === emetteurId)?.imageUrl && (
-                      <div className="mt-1 w-20 h-20 border border-gray-200 rounded-md overflow-hidden flex-shrink-0 bg-gray-50">
+                      <div className="mt-1 w-20 h-20 border border-slate-200 rounded-md overflow-hidden flex-shrink-0 bg-slate-50">
                         <img
                           src={emetteurs.find(e => e.id === emetteurId)?.imageUrl}
                           alt="Télécommande"
@@ -597,84 +563,49 @@ export default function StoreBanneConfigurator({
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     Choisissez une télécommande pour contrôler votre store
                   </p>
                 </div>
               </div>
             </section>
 
-            <section className="rounded-xl border border-gray-200 p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-gray-900 mb-4">Toile</h2>
-              <div className="flex gap-3 items-start">
-                <select
-                  value={toileId || ''}
-                  onChange={(e) => setToileId(e.target.value ? parseInt(e.target.value) : null)}
-                  className="flex-1 mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {toiles.map((toile) => (
-                    <option key={toile.id} value={toile.id}>
-                      {toile.name} (+{toile.prixVenteHT}€/m² HT)
-                    </option>
-                  ))}
-                </select>
-                {toileId && toiles.find(t => t.id === toileId)?.imageUrl && (
-                  <div className="mt-1 w-20 h-20 border border-gray-200 rounded-md overflow-hidden flex-shrink-0 bg-gray-50">
-                    <img
-                      src={toiles.find(t => t.id === toileId)?.imageUrl}
-                      alt="Toile"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Prix au m² - Surface calculée: {((avancee * largeur) / 1000000).toFixed(2)} m²
-              </p>
+            <section className="rounded-xl border border-slate-200 p-5 shadow-sm">
+              <h2 className="text-sm font-semibold text-slate-900 mb-4">🧵 Toile</h2>
+              <ToileSelector
+                productSlug={resolvedSlug}
+                surfaceM2={surfaceM2}
+                onToileSelect={(typeId, colorId, priceHT) => {
+                  setToileTypeId(typeId);
+                  setToileColorId(colorId);
+                  setToilePriceHT(priceHT);
+                }}
+                selectedToileTypeId={toileTypeId}
+                selectedToileColorId={toileColorId}
+              />
+            </section>
 
-              {toileColors.length > 0 && (
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Couleur de toile
-                  </label>
-                  <div className="mt-2 space-y-2">
-                    {toileColors.map((color) => (
-                      <label key={color.id} className="flex items-center gap-3 p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-blue-50">
-                        <input
-                          type="radio"
-                          name="toileColor"
-                          value={color.id}
-                          checked={selectedToileColorId === color.id}
-                          onChange={(e) => setSelectedToileColorId(parseInt(e.target.value))}
-                          className="w-4 h-4"
-                        />
-                        <div className="flex items-center gap-3 flex-1">
-                          {color.color_hex && (
-                            <div
-                              className="w-6 h-6 rounded border border-gray-300"
-                              style={{ backgroundColor: color.color_hex }}
-                              title={color.color_name}
-                            />
-                          )}
-                          <span className="text-sm">
-                            {color.color_name}
-                            {color.price_adjustment > 0 && (
-                              <span className="text-blue-600 font-semibold"> +{color.price_adjustment.toFixed(2)}€</span>
-                            )}
-                          </span>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <section className="rounded-xl border border-slate-200 p-5 shadow-sm">
+              <h2 className="text-sm font-semibold text-slate-900 mb-4">🎨 Couleur du coffre</h2>
+              <MatestColorSelector
+                productSlug={resolvedSlug}
+                onColorSelect={(colorId, ralCode, name, finish) => {
+                  setMatestColorId(colorId);
+                  setMatestRalCode(ralCode);
+                  setMatestColorName(name);
+                  setMatestFinish(finish);
+                }}
+              />
             </section>
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-24">
-            <div className="rounded-xl border border-gray-200 p-5 shadow-sm bg-gradient-to-br from-blue-50 to-white">
-              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">Résumé</p>
-              <div className="mt-3 space-y-2 text-sm text-gray-700">
+            <div className="rounded-xl border border-slate-200 p-6 shadow-md bg-gradient-to-br from-rose-50 to-white">
+              <h3 className="text-base font-bold uppercase tracking-wide text-rose-900 mb-4 flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-8 h-8 bg-rose-700 text-white rounded-full text-sm font-bold">📋</span>
+                Votre Configuration
+              </h3>
+              <div className="mt-3 space-y-3 text-sm text-slate-700 border-t border-rose-200 pt-4">
                 <div className="flex justify-between">
                   <span>Avancée</span>
                   <span className="font-medium">{(avancee / 1000).toFixed(2)} m</span>
@@ -697,27 +628,37 @@ export default function StoreBanneConfigurator({
                 </div>
                 <div className="flex justify-between">
                   <span>Toile</span>
-                  <span className="font-medium text-right">{toileNom}</span>
+                  <span className="font-medium text-right">
+                    {toileTypeId ? `Type ${toileTypeId}` : 'Non sélectionnée'}
+                  </span>
                 </div>
+                {toilePriceHT > 0 && (
+                  <div className="flex justify-between text-rose-800">
+                    <span>Prix toile</span>
+                    <span className="font-medium">+{toilePriceHT.toFixed(2)}€</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
-                  <span>Couleur</span>
-                  <span className="font-medium text-right">{toileColorNom}</span>
+                  <span>Couleur coffre</span>
+                  <span className="font-medium text-right">
+                    {matestColorId ? `${matestRalCode ? `RAL ${matestRalCode}` : matestColorName}` : 'Non sélectionnée'}
+                  </span>
                 </div>
               </div>
 
-              <div className="mt-4 border-t border-blue-200 pt-4">
-                <p className="text-xs text-gray-600 mb-1">Prix HT estimé</p>
+              <div className="mt-4 border-t border-rose-200 pt-4">
+                <p className="text-xs text-slate-600 mb-1">Prix HT estimé</p>
                 {loading && (
-                  <p className="text-sm text-blue-700">Calcul en cours...</p>
+                  <p className="text-sm text-rose-900">Calcul en cours...</p>
                 )}
                 {prixHT && !error && (
-                  <p className="text-3xl font-bold text-blue-900">{prixHT} €</p>
+                  <p className="text-3xl font-bold text-rose-800">{prixHT} €</p>
                 )}
                 {!prixHT && !loading && !error && (
-                  <p className="text-sm text-gray-500">Configurez votre store pour obtenir le prix.</p>
+                  <p className="text-sm text-slate-500">Configurez votre store pour obtenir le prix.</p>
                 )}
                 {messageTransport && (
-                  <p className="text-xs text-orange-600 font-semibold mt-2">
+                  <p className="text-xs text-rose-800 font-semibold mt-2">
                     {messageTransport}
                   </p>
                 )}
@@ -732,33 +673,33 @@ export default function StoreBanneConfigurator({
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white/95 backdrop-blur shadow-2xl">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
-          <div>
-            <p className="text-xs text-gray-500">Prix HT estimé</p>
-            <div className="flex items-center gap-3">
-              {loading && <span className="text-sm text-blue-700">Calcul en cours...</span>}
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-gradient-to-r from-white to-slate-50/95 backdrop-blur shadow-2xl">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
+          <div className="flex-1">
+            <p className="text-xs text-slate-600 font-medium">Prix HT estimé</p>
+            <div className="flex items-center gap-3 mt-1">
+              {loading && <span className="text-sm text-rose-800 animate-pulse">Calcul en cours...</span>}
               {prixHT && !error && (
-                <span className="text-2xl font-bold text-blue-900">{prixHT} €</span>
+                <span className="text-3xl font-bold text-rose-800">{prixHT} €</span>
               )}
               {!prixHT && !loading && !error && (
-                <span className="text-sm text-gray-500">Configurez votre store</span>
+                <span className="text-sm text-slate-500">Configurez votre store</span>
               )}
             </div>
             {messageTransport && (
-              <p className="text-xs text-orange-600 font-semibold mt-1">
+              <p className="text-xs text-rose-800 font-semibold mt-2">
                 {messageTransport}
               </p>
             )}
             {error && (
-              <p className="text-xs text-red-600 mt-1">{error}</p>
+              <p className="text-xs text-red-600 mt-2 font-medium">{error}</p>
             )}
           </div>
 
           <button
             onClick={ajouterAuPanier}
             disabled={!prixHT || !!error}
-            className="w-full sm:w-auto bg-green-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg"
+            className="w-full sm:w-auto bg-green-600 text-white font-bold py-4 px-6 rounded-xl hover:bg-green-700 transition disabled:bg-slate-400 disabled:cursor-not-allowed shadow-lg"
           >
             {!prixHT || error ? 'Configurer votre store' : `Ajouter au panier - ${prixHT}€ HT`}
           </button>

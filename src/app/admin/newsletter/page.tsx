@@ -205,7 +205,7 @@ export default function AdminNewsletter() {
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-600">En attente</div>
-            <div className="text-3xl font-bold text-orange-600">{pendingCount}</div>
+            <div className="text-3xl font-bold text-rose-800">{pendingCount}</div>
           </div>
         </div>
 

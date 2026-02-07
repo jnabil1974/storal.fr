@@ -1,0 +1,468 @@
+{
+  "summary": {
+    "total": 91,
+    "counts": {
+      "brillant": 52,
+      "sablé": 28,
+      "mat": 6,
+      "spéciale": 5
+    }
+  },
+  "items": [
+    {
+      "finish": "brillant",
+      "ral_code": "1018",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "5003",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "6005",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7006",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "2004",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "5008",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "6009",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7011",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "3002",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "5010",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "6011",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7016",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "3003",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "5015",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "6017",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7021",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "3004",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "5024",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "6021",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7022",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "3018",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "6024",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7024",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "3020",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "6027",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7030",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7035",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7047",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "1001",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "8011",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7036",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "9001",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "1013",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "8014",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7037",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "9002",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "1015",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "8016",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7038",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "9003",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "1019",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "8017",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7039",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "9010",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "8001",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "8019",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7042",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "9016",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "8003",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "9005",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "7044",
+      "name": null
+    },
+    {
+      "finish": "brillant",
+      "ral_code": "8007",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "1015",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "6005",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "7037",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "8019",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "3004",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "7016",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "7042",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "9005",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "5003",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "7022",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "8007",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "9010",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "5010",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "7035",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "8014",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "9016",
+      "name": null
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "2100",
+      "name": "Noir"
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "2200",
+      "name": "Noir"
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "2300",
+      "name": "Noir"
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "2900",
+      "name": "Gris"
+    },
+    {
+      "finish": "sablé",
+      "ral_code": null,
+      "name": "Brisbane"
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "2525",
+      "name": "Yazd"
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "2800",
+      "name": "Gris"
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "2525",
+      "name": "Mars"
+    },
+    {
+      "finish": "sablé",
+      "ral_code": "2650",
+      "name": "Brun"
+    },
+    {
+      "finish": "sablé",
+      "ral_code": null,
+      "name": "Tijuka"
+    },
+    {
+      "finish": "sablé",
+      "ral_code": null,
+      "name": "Sequoia"
+    },
+    {
+      "finish": "sablé",
+      "ral_code": null,
+      "name": "Djibouti"
+    },
+    {
+      "finish": "mat",
+      "ral_code": "7035",
+      "name": null
+    },
+    {
+      "finish": "mat",
+      "ral_code": "7016",
+      "name": null
+    },
+    {
+      "finish": "mat",
+      "ral_code": "9005",
+      "name": null
+    },
+    {
+      "finish": "mat",
+      "ral_code": "9010",
+      "name": null
+    },
+    {
+      "finish": "mat",
+      "ral_code": "9016",
+      "name": null
+    },
+    {
+      "finish": "mat",
+      "ral_code": "9210",
+      "name": "Blanc"
+    },
+    {
+      "finish": "spéciale",
+      "ral_code": "9006",
+      "name": "Silver"
+    },
+    {
+      "finish": "spéciale",
+      "ral_code": null,
+      "name": "Galet"
+    },
+    {
+      "finish": "spéciale",
+      "ral_code": null,
+      "name": "Bronze"
+    },
+    {
+      "finish": "spéciale",
+      "ral_code": "9007",
+      "name": "Pyrite"
+    },
+    {
+      "finish": "spéciale",
+      "ral_code": null,
+      "name": "Gold Pearl"
+    }
+  ]
+}

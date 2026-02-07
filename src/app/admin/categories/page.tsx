@@ -325,7 +325,7 @@ export default function CategoriesPage() {
               <div className="grid grid-cols-3 gap-4">
                 <input
                   type="text"
-                  placeholder="Dégradé de (orange-100)"
+                  placeholder="Dégradé de (rose-100)"
                   value={categoryForm.gradientFrom}
                   onChange={(e) => setCategoryForm({ ...categoryForm, gradientFrom: e.target.value })}
                   className="px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"

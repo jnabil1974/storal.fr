@@ -161,6 +161,19 @@ export default function AdminStoreBanneForm({
             </select>
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ordre d'affichage
+              <span className="text-xs text-gray-500 ml-1">(tri croissant)</span>
+            </label>
+            <input
+              type="number"
+              value={formData.display_order || 0}
+              onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              placeholder="0"
+            />
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
             <div className="flex items-center h-10 border border-gray-300 rounded-md px-3 bg-white">
               <input

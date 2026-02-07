@@ -42,9 +42,9 @@ async function getStoreBanneProducts() {
 
     const { data, error } = await supabase
       .from('sb_products')
-      .select('id, name, slug, description, image_store_small, img_store, type, active, min_width, max_width, min_projection, max_projection')
+      .select('id, name, slug, description, image_store_small, img_store, type, active, min_width, max_width, min_projection, max_projection, display_order')
       .eq('active', true)
-      .order('name', { ascending: true });
+      .order('display_order', { ascending: true });
 
     if (error) {
       console.error('❌ Erreur Supabase complète:', error);
@@ -115,8 +115,8 @@ export default async function StoreBanneCatalogPage() {
                     {product.type && (
                       <div className="absolute top-3 right-3">
                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold text-white ${
-                          product.type === 'Store Coffre' ? 'bg-red-600' :
-                          product.type === 'Semi-coffre' ? 'bg-orange-600' :
+                          product.type === 'Store Coffre' ? 'bg-rose-800' :
+                          product.type === 'Semi-coffre' ? 'bg-rose-800' :
                           product.type === 'Monobloc' ? 'bg-yellow-600' :
                           product.type === 'Traditionnel' ? 'bg-amber-700' :
                           'bg-slate-600'
@@ -129,7 +129,7 @@ export default async function StoreBanneCatalogPage() {
 
                   {/* Contenu */}
                   <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-red-600 transition">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-rose-800 transition">
                       {product.name}
                     </h3>
                     <p className="text-slate-600 line-clamp-2 mb-4">
@@ -159,7 +159,7 @@ export default async function StoreBanneCatalogPage() {
                     {/* Bouton */}
                     <Link
                       href={`/products/store-banne/${product.slug}`}
-                      className="block w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg text-center transition-colors"
+                      className="block w-full bg-rose-800 hover:bg-rose-900 text-white font-bold py-3 px-4 rounded-lg text-center transition-colors"
                     >
                       Voir le modèle →
                     </Link>
@@ -170,9 +170,58 @@ export default async function StoreBanneCatalogPage() {
           </div>
         )}
 
+        {/* Section Comment choisir */}
+        <section className="mt-20 bg-white rounded-xl shadow-lg p-12 border border-slate-100">
+          <h2 className="text-3xl font-bold text-slate-900 mb-12 flex items-center border-l-6 border-rose-800 pl-6">
+            Comment choisir votre store idéal ?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 hover:border-rose-800 hover:shadow-lg hover:-translate-y-1 transition-all">
+              <div className="w-10 h-10 bg-rose-800 text-white rounded-full flex items-center justify-center font-bold text-lg mb-4">1</div>
+              <h3 className="text-rose-800 font-bold text-lg mb-3">L'emplacement</h3>
+              <p className="text-slate-600 text-sm mb-3">
+                Où sera fixé le store ? <strong>Face au mur</strong> ou <strong>sous un plafond</strong> (balcon) ? Cela détermine le type de supports nécessaires.
+              </p>
+              <p className="text-rose-800 text-xs italic">💡 Conseil : Vérifiez la solidité de votre mur.</p>
+            </div>
+
+            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 hover:border-rose-800 hover:shadow-lg hover:-translate-y-1 transition-all">
+              <div className="w-10 h-10 bg-rose-800 text-white rounded-full flex items-center justify-center font-bold text-lg mb-4">2</div>
+              <h3 className="text-rose-800 font-bold text-lg mb-3">Le niveau de protection</h3>
+              <p className="text-slate-600 text-sm">
+                Souhaitez-vous un <strong>Coffre Intégral</strong> (protection totale de la toile et des bras) ou un <strong>Monobloc</strong> (plus flexible, idéal sous un débord de toit) ?
+              </p>
+            </div>
+
+            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 hover:border-rose-800 hover:shadow-lg hover:-translate-y-1 transition-all">
+              <div className="w-10 h-10 bg-rose-800 text-white rounded-full flex items-center justify-center font-bold text-lg mb-4">3</div>
+              <h3 className="text-rose-800 font-bold text-lg mb-3">Les dimensions</h3>
+              <p className="text-slate-600 text-sm">
+                Mesurez votre terrasse. L'avancée (projection) doit être environ <strong>50 cm supérieure</strong> à la surface que vous souhaitez réellement ombrager pour compenser le mouvement du soleil.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 hover:border-rose-800 hover:shadow-lg hover:-translate-y-1 transition-all">
+              <div className="w-10 h-10 bg-rose-800 text-white rounded-full flex items-center justify-center font-bold text-lg mb-4">4</div>
+              <h3 className="text-rose-800 font-bold text-lg mb-3">La toile et le design</h3>
+              <p className="text-slate-600 text-sm">
+                Choisissez parmi nos 256 coloris. Une toile foncée protège mieux de la chaleur qu'une toile claire, qui elle, laisse passer plus de lumière.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 hover:border-rose-800 hover:shadow-lg hover:-translate-y-1 transition-all">
+              <div className="w-10 h-10 bg-rose-800 text-white rounded-full flex items-center justify-center font-bold text-lg mb-4">5</div>
+              <h3 className="text-rose-800 font-bold text-lg mb-3">Le confort (Options)</h3>
+              <p className="text-slate-600 text-sm">
+                Motorisation Somfy® pour un pilotage smartphone, rampes LED pour vos soirées, ou capteur de vent pour une sécurité automatique.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Section informative */}
         <section className="mt-20 bg-white rounded-xl shadow-lg p-12 border border-slate-100">
-          <h2 className="text-3xl font-bold text-slate-900 mb-12 flex items-center border-l-6 border-red-600 pl-6">
+          <h2 className="text-3xl font-bold text-slate-900 mb-12 flex items-center border-l-6 border-rose-800 pl-6">
             Pourquoi choisir un store banne ?
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">

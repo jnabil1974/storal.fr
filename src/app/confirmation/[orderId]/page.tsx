@@ -331,7 +331,7 @@ export default function ConfirmationPage() {
             </div>
             <div>
               <p className="text-gray-600 text-sm font-medium mb-1">Statut</p>
-              <p className={`font-semibold ${order.status === 'paid' ? 'text-green-600' : order.status === 'pending' ? 'text-orange-600' : 'text-blue-600'}`}>
+              <p className={`font-semibold ${order.status === 'paid' ? 'text-green-600' : order.status === 'pending' ? 'text-rose-800' : 'text-blue-600'}`}>
                 {order.status === 'paid' ? 'Payée' :
                  order.status === 'pending' ? 'En attente' :
                  order.status === 'processing' ? 'En préparation' :
@@ -734,7 +734,7 @@ export default function ConfirmationPage() {
           {order.status !== 'cancelled' && (
             <button 
               onClick={() => downloadInvoice(order)}
-              className="flex-1 min-w-[180px] bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition flex items-center justify-center gap-2"
+              className="flex-1 min-w-[180px] bg-rose-800 text-white py-3 rounded-lg font-bold hover:bg-rose-900 transition flex items-center justify-center gap-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

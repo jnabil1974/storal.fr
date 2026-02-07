@@ -39,6 +39,7 @@ interface StoreBanneProduct {
   category?: string;
   type?: string;
   active?: boolean;
+  display_order?: number;
 }
 
 export default function StoreBanneProductsAdmin() {
@@ -67,7 +68,7 @@ export default function StoreBanneProductsAdmin() {
     const { data, error } = await supabase
       .from('sb_products')
       .select('*')
-      .order('id', { ascending: true });
+      .order('display_order', { ascending: true });
 
     if (error) {
       console.error('Erreur:', error);
@@ -110,6 +111,7 @@ export default function StoreBanneProductsAdmin() {
       max_projection: product.max_projection,
       type: product.type || 'Monobloc',
       active: product.active !== false,
+      display_order: product.display_order || 0,
     });
   }
 
@@ -369,6 +371,7 @@ export default function StoreBanneProductsAdmin() {
                     <h2 className="text-xl font-bold text-gray-900">{product.name}</h2>
                     <p className="text-sm text-gray-600">Slug: {product.slug}</p>
                     <p className="text-sm text-gray-600">Coefficient: {product.sales_coefficient}</p>
+                    <p className="text-sm text-gray-600">Ordre d'affichage: {product.display_order || 0}</p>
                   </div>
                   <button
                     onClick={() => startEdit(product)}
