@@ -3,9 +3,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import type { UIMessage } from 'ai';
 import { parseMessage, type Badge } from '@/lib/parseMessage';
+import ColorSelectorModal from '@/components/ColorSelectorModal';
+import ModelSelectorModal from '@/components/ModelSelectorModal';
+import type { ColorOption, StoreModel } from '@/lib/catalog-data';
 
 // Questions rapides prédéfinies
 const quickQuestions = [
@@ -17,13 +20,54 @@ const quickQuestions = [
 export default function ChatAssistant() {
   const router = useRouter();
   const [input, setInput] = useState('');
+  const [isColorModalOpen, setIsColorModalOpen] = useState(false);
+  const [isModelModalOpen, setIsModelModalOpen] = useState(false);
+  const [pendingToolCallId, setPendingToolCallId] = useState<string | null>(null);
+  const [modelFilterShape, setModelFilterShape] = useState<'carre' | 'galbe' | 'all'>('all');
+  const [modelFilterType, setModelFilterType] = useState<'coffre' | 'monobloc' | undefined>(undefined);
   
   // Générer un ID unique à chaque montage pour éviter la persistance
   const [chatId] = useState(() => `chat-${Date.now()}-${Math.random().toString(36).substring(7)}`);
   
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, addToolResult } = useChat({
     transport: new DefaultChatTransport({ api: '/api/chat' }),
     id: chatId, // ID unique pour éviter la réutilisation de l'historique
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+    onToolCall: async ({ toolCall }) => {
+      console.log('🔧 Tool Call Intercepted - Full toolCall:', JSON.stringify(toolCall, null, 2));
+      console.log('🔧 toolCall.toolName:', toolCall.toolName);
+      console.log('🔧 toolCall.dynamic:', toolCall.dynamic);
+      console.log('🔧 toolCall.input:', toolCall.input);
+      
+      if (toolCall.dynamic === true) {
+        console.log('❌ Tool is dynamic, skipping');
+        return;
+      }
+      
+      console.log('🔧 Tool Call Received:', toolCall.toolName, 'Input:', toolCall.input);
+      
+      if (toolCall.toolName === 'open_color_selector') {
+        console.log('🎨 Opening color selector');
+        setPendingToolCallId(toolCall.toolCallId);
+        setIsColorModalOpen(true);
+      }
+      
+      if (toolCall.toolName === 'open_model_selector') {
+        console.log('🏠 Opening model selector with input:', toolCall.input);
+        
+        // Extraction robuste des arguments depuis toolCall.input
+        const input = (toolCall.input as Record<string, unknown>) || {};
+        const filterShape = (input['filter_shape'] || 'all') as 'carre' | 'galbe' | 'all';
+        const filterType = (input['filter_type'] || undefined) as 'coffre' | 'monobloc' | undefined;
+        
+        console.log('✅ Extracted - filterShape:', filterShape, 'filterType:', filterType);
+        
+        setModelFilterShape(filterShape);
+        setModelFilterType(filterType);
+        setPendingToolCallId(toolCall.toolCallId);
+        setIsModelModalOpen(true);
+      }
+    },
     onError: (err) => {
       console.error('❌ Erreur ChatAssistant useChat:', err);
     },
@@ -142,6 +186,28 @@ export default function ChatAssistant() {
     window.location.reload();
   };
 
+  const handleColorSelect = (color: ColorOption) => {
+    if (!pendingToolCallId) return;
+    addToolResult({
+      tool: 'open_color_selector',
+      toolCallId: pendingToolCallId,
+      output: color,
+    });
+    setIsColorModalOpen(false);
+    setPendingToolCallId(null);
+  };
+
+  const handleModelSelect = (model: StoreModel) => {
+    if (!pendingToolCallId) return;
+    addToolResult({
+      tool: 'open_model_selector',
+      toolCallId: pendingToolCallId,
+      output: { id: model.id },
+    });
+    setIsModelModalOpen(false);
+    setPendingToolCallId(null);
+  };
+
   return (
     <div className="flex flex-col h-[600px] border border-gray-200 rounded-2xl shadow-lg bg-white">
       {/* Header */}
@@ -250,6 +316,26 @@ export default function ChatAssistant() {
       </form>
       
       <div ref={messagesEndRef} />
+
+      <ColorSelectorModal
+        isOpen={isColorModalOpen}
+        onClose={() => {
+          setIsColorModalOpen(false);
+          setPendingToolCallId(null);
+        }}
+        onSelect={handleColorSelect}
+      />
+
+      <ModelSelectorModal
+        isOpen={isModelModalOpen}
+        filterShape={modelFilterShape}
+        filterType={modelFilterType}
+        onClose={() => {
+          setIsModelModalOpen(false);
+          setPendingToolCallId(null);
+        }}
+        onSelect={handleModelSelect}
+      />
     </div>
   );
 }

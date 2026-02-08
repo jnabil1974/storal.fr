@@ -1,7 +1,7 @@
 import { openai } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+import { jsonSchema, streamText, tool } from 'ai';
 // Import du catalogue dynamique avec coefficients de marge
-import { PRODUCT_CATALOG, CATALOG_SETTINGS, OPTIONS_PRICING, DESIGN_OPTIONS } from '@/lib/catalog-data';
+import { PRODUCT_CATALOG, CATALOG_SETTINGS, OPTIONS_PRICING, DESIGN_OPTIONS, STANDARD_COLORS } from '@/lib/catalog-data';
 
 // Autoriser des réponses plus longues si besoin (30s)
 export const maxDuration = 30;
@@ -35,12 +35,14 @@ export async function POST(req: Request) {
     return `- ${label}: ${price === 0 ? 'Inclus' : `+${price}€ (prix achat base)`}`;
   }).join('\n');
 
-  const colorsContext = DESIGN_OPTIONS.frameColors.map(color => 
+  const colorsContext = STANDARD_COLORS.map(color => 
     `- ${color.name} (${color.id})`
   ).join('\n');
 
   // 3. PROMPT SYSTÈME (Expert Storal avec données dynamiques du catalogue)
   const SYSTEM_PROMPT = `
+🚨 RÈGLE #1 ABSOLUE : Quand le client mentionne "carré", "galbé", "coffre", ou "monobloc", TU DOIS IMMÉDIATEMENT appeler l'outil open_model_selector AVANT de répondre. N'écris RIEN d'autre.
+
 [OFFRE COMMERCIALE EN COURS]
 
 Code : ${CATALOG_SETTINGS.promoCode}
@@ -76,8 +78,24 @@ Expertise : Tu maîtrises parfaitement tous les modèles du catalogue. Le Heliom
 Processus de vente strict (suit cet ordre) :
 
 ÉTAPE 1 - Découverte du Besoin
-Demande le type d'installation : "Avez-vous une terrasse spacieuse ou un balcon compact ?"
-→ Terrasse = Heliom (premium), Balcon = Kitanguy (économique).
+
+⚠️ RÈGLE ABSOLUE : DÈS QUE TU IDENTIFIES LA FORME OU LE TYPE, TU DOIS APPELER L'OUTIL open_model_selector.
+
+Exemples d'identification :
+- Client dit "carré" → filter_shape = "carre"
+- Client dit "galbé", "arrondi", "classique" → filter_shape = "galbe"
+- Client dit "coffre" → filter_type = "coffre"
+- Client dit "monobloc", "économique" → filter_type = "monobloc"
+
+🚨 ACTION IMMÉDIATE - Si le client mentionne forme OU type :
+→ APPELLE TOUT DE SUITE : open_model_selector(filter_shape=X, filter_type=Y)
+
+Exemples concrets :
+1. Client : "Je veux un coffre carré" → APPELLE : open_model_selector(filter_shape="carre", filter_type="coffre")
+2. Client : "Un store galbé" → APPELLE : open_model_selector(filter_shape="galbe", filter_type="coffre")
+3. Client : "Un monobloc" → APPELLE : open_model_selector(filter_shape="all", filter_type="monobloc")
+
+INTERDIT : N'écris JAMAIS le nom d'un modèle (Heliom, K-Box, etc.). L'outil ouvrira une interface visuelle.
 
 ÉTAPE 2 - Dimensions
 Demande les dimensions : "Quelle largeur et avancée envisagez-vous ?"
@@ -93,6 +111,7 @@ Mets à jour le JSON avec le support.
 Propose les couleurs disponibles du catalogue ci-dessus.
 Recommande : "Pour la couleur, je recommande l'Anthracite RAL 7016 (moderne) ou le Blanc RAL 9016 (classique)."
 Mets à jour le JSON avec le code couleur (ex: ral_7016).
+Si le client hésite ou demande une couleur hors standard, appelle l'outil open_color_selector avec category "standard" ou "all".
 
 ÉTAPE 5 - Motorisation & Options
 Propose systématiquement : "Pour la commande, je recommande le moteur radio Somfy io-homecontrol (inclus). Voulez-vous ajouter le capteur de vent Eolis pour une protection automatique (+90€) ?"
@@ -201,12 +220,78 @@ Les badges peuvent apparaître plusieurs fois dans un même message si tu aborde
 
   console.log('✅ Messages normalisés:', JSON.stringify(normalizedMessages, null, 2));
 
+  // Détection automatique des mots-clés et extraction des paramètres
+  const lastUserMessage = normalizedMessages[normalizedMessages.length - 1]?.content?.toLowerCase() || '';
+  
+  // Détecter shape
+  let detectedShape: 'carre' | 'galbe' | 'all' = 'all';
+  if (/\b(carré|carre)\b/i.test(lastUserMessage)) {
+    detectedShape = 'carre';
+  } else if (/\b(galbé|galbe|arrondi|classique)\b/i.test(lastUserMessage)) {
+    detectedShape = 'galbe';
+  }
+  
+  // Détecter type
+  let detectedType: 'coffre' | 'monobloc' | undefined;
+  if (/\b(coffre)\b/i.test(lastUserMessage)) {
+    detectedType = 'coffre';
+  } else if (/\b(monobloc)\b/i.test(lastUserMessage)) {
+    detectedType = 'monobloc';
+  }
+  
+  const shouldTriggerTool = detectedShape !== 'all' || detectedType !== undefined;
+  
+  console.log('🔎 Détection automatique:', { 
+    lastUserMessage, 
+    detectedShape, 
+    detectedType,
+    shouldTriggerTool 
+  });
+
   console.log('🤖 Appel OpenAI avec gpt-4o...');
   const result = streamText({
     model: openai('gpt-4o'),
     system: SYSTEM_PROMPT,
     messages: normalizedMessages,
     temperature: 0.7,
+    toolChoice: shouldTriggerTool ? { 
+      type: 'tool', 
+      toolName: 'open_model_selector' 
+    } : 'auto',
+    tools: {
+      open_color_selector: tool({
+        description: "Affiche le nuancier de couleurs quand le client hésite ou demande une couleur hors standard.",
+        inputSchema: jsonSchema({
+          type: 'object',
+          properties: {
+            category: {
+              type: 'string',
+              description: "Catégorie de couleurs à afficher (ex: standard, all, reds).",
+            },
+          },
+          required: [],
+        }),
+      }),
+      open_model_selector: tool({
+        description: "Ouvre le comparateur visuel des modèles de stores. APPELLE CET OUTIL dès que le client indique sa préférence de forme (carré/galbé) et/ou de type (coffre/monobloc). N'écris JAMAIS le nom du modèle, laisse le client choisir visuellement.",
+        inputSchema: jsonSchema({
+          type: 'object',
+          properties: {
+            filter_shape: {
+              type: 'string',
+              enum: ['carre', 'galbe', 'all'],
+              description: "Filtre de forme. Utilise 'carre' si le client veut un style moderne/carré, 'galbe' pour un style classique/arrondi, 'all' si indécis.",
+            },
+            filter_type: {
+              type: 'string',
+              enum: ['coffre', 'monobloc'],
+              description: "Filtre de type. Utilise 'coffre' pour une protection maximale, 'monobloc' pour une installation économique.",
+            },
+          },
+          required: [],
+        }),
+      }),
+    },
   });
 
   // 5. Retourner le stream UI attendu par DefaultChatTransport

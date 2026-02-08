@@ -9,6 +9,31 @@ export interface ProductModel {
   prices: Record<number, (number | null)[]>;
 }
 
+export interface ColorOption {
+  id: string;
+  name: string;
+  hex: string;
+  family?: string;
+}
+
+export interface StoreModelCompatibility {
+  lambrequin_enroulable: boolean;
+  led_arms: boolean;
+  led_box: boolean;
+  max_width: number;
+}
+
+export interface StoreModel {
+  id: string;
+  name: string;
+  type: 'coffre' | 'monobloc';
+  shape: 'carre' | 'galbe' | 'na';
+  is_promo: boolean;
+  description: string;
+  compatibility: StoreModelCompatibility;
+  image: string;
+}
+
 // ==========================================
 // 1. PARAMÈTRES GLOBAUX
 // ==========================================
@@ -33,13 +58,227 @@ export const OPTIONS_PRICING = {
 // ==========================================
 // 3. ESTHÉTIQUE
 // ==========================================
+export const STANDARD_COLORS: ColorOption[] = [
+  { id: 'ral_9016', name: 'RAL 9016 Blanc', hex: '#ffffff', family: 'neutral' },
+  { id: 'ral_1015', name: 'RAL 1015 Ivoire', hex: '#e6d9bd', family: 'neutral' },
+  { id: 'ral_7016', name: 'RAL 7016 Anthracite', hex: '#2f3336', family: 'neutral' },
+  { id: 'ral_9006', name: 'RAL 9006 Gris Alu', hex: '#a5a5a5', family: 'neutral' },
+  { id: 'ral_9005', name: 'RAL 9005 Noir', hex: '#0b0b0b', family: 'neutral' },
+  { id: 'ral_8019', name: 'RAL 8019 Brun', hex: '#3b2f2a', family: 'neutral' },
+];
+
+export const CUSTOM_COLORS: ColorOption[] = [
+  ...STANDARD_COLORS,
+  { id: 'ral_3004', name: 'RAL 3004 Rouge Pourpre (Matest)', hex: '#6f1f2a', family: 'reds' },
+  { id: 'ral_6005', name: 'RAL 6005 Vert Mousse (Matest)', hex: '#0f3b2e', family: 'greens' },
+  { id: 'ral_5011', name: 'RAL 5011 Bleu Acier (Matest)', hex: '#1f2e3d', family: 'blues' },
+];
+
+export const STORE_MODELS: StoreModel[] = [
+  // --- LES 2 PROMOS (Toujours Galbés) ---
+  {
+    id: 'promo_smart',
+    name: 'Coffre Promo Smart',
+    type: 'coffre',
+    shape: 'galbe',
+    is_promo: true,
+    description: 'L\'essentiel du store coffre à prix réduit.',
+    compatibility: {
+      lambrequin_enroulable: false,
+      led_arms: true,
+      led_box: false,
+      max_width: 4800,
+    },
+    image: '/images/promo-smart.jpg',
+  },
+  {
+    id: 'promo_design',
+    name: 'Coffre Promo Design',
+    type: 'coffre',
+    shape: 'galbe',
+    is_promo: true,
+    description: 'Design arrondi élégant avec option LED.',
+    compatibility: {
+      lambrequin_enroulable: false,
+      led_arms: true,
+      led_box: false,
+      max_width: 5000,
+    },
+    image: '/images/promo-design.jpg',
+  },
+
+  // --- LES COFFRES STANDARDS (Exemples Carrés et Galbés) ---
+  {
+    id: 'heliom',
+    name: 'Heliom',
+    type: 'coffre',
+    shape: 'carre',
+    is_promo: false,
+    description: 'Le best-seller cubique. Protection totale.',
+    compatibility: {
+      lambrequin_enroulable: true,
+      led_arms: true,
+      led_box: true,
+      max_width: 6000,
+    },
+    image: '/images/heliom.jpg',
+  },
+  {
+    id: 'k_box',
+    name: 'K-Box',
+    type: 'coffre',
+    shape: 'carre',
+    is_promo: false,
+    description: 'Coffre carré compact pour façades modernes.',
+    compatibility: {
+      lambrequin_enroulable: false,
+      led_arms: true,
+      led_box: false,
+      max_width: 5500,
+    },
+    image: '/images/kbox.jpg',
+  },
+  {
+    id: 'prisma',
+    name: 'Prisma',
+    type: 'coffre',
+    shape: 'carre',
+    is_promo: false,
+    description: 'Coffre carré premium à lignes tendues.',
+    compatibility: {
+      lambrequin_enroulable: true,
+      led_arms: true,
+      led_box: true,
+      max_width: 6200,
+    },
+    image: '/images/prisma.jpg',
+  },
+  {
+    id: 'linea',
+    name: 'Linea',
+    type: 'coffre',
+    shape: 'carre',
+    is_promo: false,
+    description: 'Design minimaliste pour architecture contemporaine.',
+    compatibility: {
+      lambrequin_enroulable: false,
+      led_arms: true,
+      led_box: true,
+      max_width: 5800,
+    },
+    image: '/images/linea.jpg',
+  },
+  {
+    id: 'curvea',
+    name: 'Curvea',
+    type: 'coffre',
+    shape: 'galbe',
+    is_promo: false,
+    description: 'Coffre galbé élégant, façade douce.',
+    compatibility: {
+      lambrequin_enroulable: false,
+      led_arms: true,
+      led_box: false,
+      max_width: 5400,
+    },
+    image: '/images/curvea.jpg',
+  },
+  {
+    id: 'ovalis',
+    name: 'Ovalis',
+    type: 'coffre',
+    shape: 'galbe',
+    is_promo: false,
+    description: 'Galbé raffiné pour façades classiques.',
+    compatibility: {
+      lambrequin_enroulable: true,
+      led_arms: true,
+      led_box: false,
+      max_width: 5200,
+    },
+    image: '/images/ovalis.jpg',
+  },
+  {
+    id: 'sfera',
+    name: 'Sfera',
+    type: 'coffre',
+    shape: 'galbe',
+    is_promo: false,
+    description: 'Coffre galbé compact et polyvalent.',
+    compatibility: {
+      lambrequin_enroulable: false,
+      led_arms: true,
+      led_box: false,
+      max_width: 5000,
+    },
+    image: '/images/sfera.jpg',
+  },
+  {
+    id: 'aurora',
+    name: 'Aurora',
+    type: 'coffre',
+    shape: 'galbe',
+    is_promo: false,
+    description: 'Lignes douces, option LED bras.',
+    compatibility: {
+      lambrequin_enroulable: true,
+      led_arms: true,
+      led_box: false,
+      max_width: 5600,
+    },
+    image: '/images/aurora.jpg',
+  },
+
+  // --- LES MONOBLOCS ---
+  {
+    id: 'loggia',
+    name: 'Loggia',
+    type: 'monobloc',
+    shape: 'na',
+    is_promo: false,
+    description: 'Idéal sous toiture.',
+    compatibility: {
+      lambrequin_enroulable: false,
+      led_arms: false,
+      led_box: false,
+      max_width: 5000,
+    },
+    image: '/images/loggia.jpg',
+  },
+  {
+    id: 'tempo',
+    name: 'Tempo',
+    type: 'monobloc',
+    shape: 'na',
+    is_promo: false,
+    description: 'Monobloc robuste pour grandes avancées.',
+    compatibility: {
+      lambrequin_enroulable: false,
+      led_arms: false,
+      led_box: false,
+      max_width: 5200,
+    },
+    image: '/images/tempo.jpg',
+  },
+  {
+    id: 'classic',
+    name: 'Classic',
+    type: 'monobloc',
+    shape: 'na',
+    is_promo: false,
+    description: 'Solution économique et fiable.',
+    compatibility: {
+      lambrequin_enroulable: false,
+      led_arms: false,
+      led_box: false,
+      max_width: 4800,
+    },
+    image: '/images/classic.jpg',
+  },
+];
+
 export const DESIGN_OPTIONS = {
-  frameColors: [
-    { id: 'ral_9016', name: 'Blanc Signalisation (Mat)', hex: '#ffffff' },
-    { id: 'ral_7016', name: 'Gris Anthracite (Texturé)', hex: '#37424a' },
-    { id: 'ral_1015', name: 'Ivoire Clair', hex: '#e6d9bd' },
-    { id: 'ral_9006', name: 'Gris Aluminium', hex: '#a5a5a5' },
-  ],
+  frameColors: STANDARD_COLORS,
   fabrics: {
     category: "Dickson Orchestra",
     price: 0, 

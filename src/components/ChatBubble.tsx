@@ -3,9 +3,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import type { UIMessage } from 'ai';
 import { parseMessage, type Badge } from '@/lib/parseMessage';
+import ColorSelectorModal from '@/components/ColorSelectorModal';
+import type { ColorOption } from '@/lib/catalog-data';
 
 // Questions de démarrage
 const quickQuestions = [
@@ -97,13 +99,23 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
+  const [isColorModalOpen, setIsColorModalOpen] = useState(false);
+  const [pendingToolCallId, setPendingToolCallId] = useState<string | null>(null);
   
   // Générer un ID unique à chaque montage pour éviter la persistance
   const [chatId] = useState(() => `bubble-${Date.now()}-${Math.random().toString(36).substring(7)}`);
   
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, status, error, addToolResult } = useChat({
     transport: new DefaultChatTransport({ api: '/api/chat' }),
     id: chatId, // ID unique pour éviter la réutilisation de l'historique
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+    onToolCall: async ({ toolCall }) => {
+      if (toolCall.dynamic) return;
+      if (toolCall.toolName === 'open_color_selector') {
+        setPendingToolCallId(toolCall.toolCallId);
+        setIsColorModalOpen(true);
+      }
+    },
     onError: (error) => {
       console.error('❌ Erreur ChatBubble useChat:', error);
     },
@@ -158,6 +170,17 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
     console.log('🚀 Envoi message input:', input.trim());
     sendMessage({ text: input.trim() });
     setInput('');
+  };
+
+  const handleColorSelect = (color: ColorOption) => {
+    if (!pendingToolCallId) return;
+    addToolResult({
+      tool: 'open_color_selector',
+      toolCallId: pendingToolCallId,
+      output: color,
+    });
+    setIsColorModalOpen(false);
+    setPendingToolCallId(null);
   };
 
   const visibilityClasses = isVisible
@@ -320,6 +343,12 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
           </form>
         </div>
       )}
+
+      <ColorSelectorModal
+        isOpen={isColorModalOpen}
+        onClose={() => setIsColorModalOpen(false)}
+        onSelect={handleColorSelect}
+      />
     </div>
   );
 }
