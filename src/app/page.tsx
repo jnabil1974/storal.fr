@@ -1,226 +1,254 @@
-import Link from 'next/link';
-import { Metadata } from 'next';
-import { getSEOMetadata } from '@/lib/seo';
-import Image from 'next/image';
+'use client';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const seo = await getSEOMetadata('/');
-  return {
-    title: seo?.title || 'Storal.fr - Store Banne MATEST® Sur-Mesure | TVA 10%',
-    description: seo?.description || 'Store banne sur-mesure fabriqué en 24h, posé en 7 jours. TVA réduite à 10% avec notre forfait pose. Configurateur en ligne.',
-    keywords: seo?.keywords,
-    openGraph: {
-      title: seo?.og_title || seo?.title,
-      description: seo?.og_description || seo?.description,
-      url: seo?.canonical_url || 'https://storal.fr/',
-      images: seo?.og_image ? [{ url: seo.og_image }] : [],
-    },
-    robots: seo?.robots || 'index, follow',
-    alternates: {
-      canonical: seo?.canonical_url || 'https://storal.fr/',
-    },
-  };
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import ChatAssistant from '@/components/ChatAssistant';
+import Image from 'next/image';
+import { STORE_MODELS, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
+
+// --- Types ---
+interface Cart {
+  modelId: string | null;
+  modelName?: string;
+  colorId: string | null;
+  fabricId: string | null;
+  width?: number | null;
+  projection?: number | null;
+  exposure?: string | null;
+  withMotor?: boolean;
+  priceEco?: number;
+  priceStandard?: number;
+  pricePremium?: number;
+  selectedPrice?: number;
+  priceType?: string;
 }
 
-export default async function HomePage() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* SECTION HERO - Nouvelle version vendeuse */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        {/* Pattern de fond (en attendant l'image) */}
-        <div className="absolute inset-0 z-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
-        </div>
+/**
+ * Génère les modèles mis en avant pour la page d'accueil
+ * Basé sur les vraies données du catalogue (STORE_MODELS)
+ */
+function getFeaturedModels() {
+  const featuredList: Array<{
+    id: string;
+    name: string;
+    image: string;
+    features: string[];
+  }> = [];
 
-        {/* Contenu Hero */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-20 text-center">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-2xl">
-            L'Ombre Parfaite. Fabriquée en France<br />Sur-Mesure
-          </h1>
-          <h2 className="text-2xl md:text-3xl text-white/95 mb-12 font-medium drop-shadow-lg">
-            Fabriqué en 24h. Posé chez vous en 7 jours.<br />
-            <span className="text-yellow-400 font-bold">TVA réduite à 10%</span>
-          </h2>
+  // Sélectionner les 3 premiers modèles "coffre" du catalogue
+  const coffreModels = Object.entries(STORE_MODELS)
+    .filter(([_, model]) => model.type === 'coffre' && !model.is_promo)
+    .slice(0, 3)
+    .map(([id, model]) => ({
+      id,
+      name: model.name,
+      image: model.image,
+      features: model.features || []
+    }));
 
-          {/* Deux cartes côte à côte */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-16">
-            {/* Carte Configurateur Expert */}
-            <div className="bg-white/95 backdrop-blur-md rounded-2xl p-8 shadow-2xl hover:shadow-3xl transition-all hover:scale-105">
-              <div className="text-5xl mb-4">🎨</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Configurateur Expert</h3>
-              <p className="text-gray-600 mb-6">Créez votre store avec précision : dimensions, toile, motorisation...</p>
-              <Link href="/products/store-banne">
-                <button className="w-full bg-gray-900 text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-gray-800 transition shadow-lg">
-                  Je crée mon store →
-                </button>
-              </Link>
-            </div>
+  return coffreModels.length > 0
+    ? coffreModels
+    : [
+        // Fallback si pas assez de modèles coffre
+        ...Object.entries(STORE_MODELS)
+          .slice(0, 3)
+          .map(([id, model]) => ({
+            id,
+            name: model.name,
+            image: model.image,
+            features: model.features || []
+          }))
+      ];
+}
 
-            {/* Carte Assistant Intelligent (mise en avant) */}
-            <div className="bg-gradient-to-br from-rose-600 to-rose-700 rounded-2xl p-8 shadow-2xl hover:shadow-3xl transition-all hover:scale-105 relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1 text-xs font-bold rounded-bl-xl">
-                RECOMMANDÉ
-              </div>
-              <div className="text-5xl mb-4">✨</div>
-              <h3 className="text-2xl font-bold text-white mb-3">Assistant Intelligent</h3>
-              <p className="text-white/90 mb-6">Répondez à quelques questions, on s'occupe du reste !</p>
-              <a href="/assistant">
-                <button className="w-full bg-white text-rose-700 py-4 px-6 rounded-xl font-bold text-lg hover:bg-rose-50 transition shadow-lg">
-                  Aidez-moi à choisir →
-                </button>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION OFFRE IRRÉSISTIBLE - Bandeau TVA */}
-      <section className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 py-12">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            💰 Pourquoi payer 20% de TVA ?
-          </h2>
-          <p className="text-xl md:text-2xl text-gray-900 font-medium max-w-4xl mx-auto">
-            Avec notre <span className="font-bold underline">Forfait Pose Sérénité</span>, profitez de la TVA à 10% sur tout votre matériel.
-            <br />
-            <span className="text-lg">Économisez sur votre store en le faisant installer par un pro.</span>
-          </p>
-        </div>
-      </section>
-
-      {/* SECTION PRODUITS - 3 cartes statiques */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Nos Gammes de Stores Bannes</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">Trouvez le store parfait pour votre terrasse</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {/* Carte 1 : Le Coffre Intégral */}
-            <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all overflow-hidden group">
-              <div className="relative h-64 bg-gradient-to-br from-blue-500 to-blue-700 overflow-hidden">
-                <div className="absolute top-4 right-4 bg-yellow-400 text-gray-900 px-3 py-1 text-sm font-bold rounded-lg">
-                  BEST-SELLER
-                </div>
-                <div className="flex items-center justify-center h-full">
-                  <svg className="w-32 h-32 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
-                  </svg>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Le Coffre Intégral</h3>
-                <p className="text-gray-600 mb-4">Protection maximale de la toile et des bras. Le plus durable et esthétique.</p>
-                <ul className="space-y-2 mb-6 text-sm text-gray-700">
-                  <li>✓ Toile protégée 24h/24</li>
-                  <li>✓ Design moderne et épuré</li>
-                  <li>✓ Longévité exceptionnelle</li>
-                </ul>
-                <Link href="/products/store-banne">
-                  <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">
-                    Configurer →
-                  </button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Carte 2 : Le Semi-Coffre */}
-            <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all overflow-hidden group">
-              <div className="relative h-64 bg-gradient-to-br from-green-500 to-green-700 overflow-hidden">
-                <div className="flex items-center justify-center h-full">
-                  <svg className="w-32 h-32 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11" />
-                  </svg>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Le Semi-Coffre</h3>
-                <p className="text-gray-600 mb-4">Le compromis parfait entre protection et budget. Le choix malin.</p>
-                <ul className="space-y-2 mb-6 text-sm text-gray-700">
-                  <li>✓ Toile protégée dans un coffre</li>
-                  <li>✓ Excellent rapport qualité/prix</li>
-                  <li>✓ Installation simplifiée</li>
-                </ul>
-                <Link href="/products/store-banne">
-                  <button className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition">
-                    Configurer →
-                  </button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Carte 3 : Le Monobloc */}
-            <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all overflow-hidden group">
-              <div className="relative h-64 bg-gradient-to-br from-orange-500 to-orange-700 overflow-hidden">
-                <div className="flex items-center justify-center h-full">
-                  <svg className="w-32 h-32 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21h18M3 10h18M4 10v11M20 10v11" />
-                  </svg>
-                </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Le Monobloc</h3>
-                <p className="text-gray-600 mb-4">La solution économique sans compromis sur la qualité. Simple et efficace.</p>
-                <ul className="space-y-2 mb-6 text-sm text-gray-700">
-                  <li>✓ Prix le plus accessible</li>
-                  <li>✓ Robuste et fiable</li>
-                  <li>✓ Idéal pour petit budget</li>
-                </ul>
-                <Link href="/products/store-banne">
-                  <button className="w-full bg-orange-600 text-white py-3 rounded-xl font-bold hover:bg-orange-700 transition">
-                    Configurer →
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Bouton Voir tous les modèles */}
-          <div className="text-center">
-            <Link href="/products/store-banne">
-              <button className="bg-gray-900 text-white px-12 py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition shadow-lg">
-                Voir tous les modèles →
-              </button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Section Confiance */}
-      <section className="bg-gradient-to-r from-slate-900 to-slate-800 py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center text-white">
-          <h2 className="text-3xl font-bold mb-6">L'Excellence du Sur-Mesure, La Sérénité en Plus</h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Fabrication française, garanties étendues, service client dédié.
-          </p>
-          <div className="flex flex-wrap justify-center gap-6 text-sm">
-            <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ Certification QUALICOAT</span>
-            <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ Garantie 10 ans</span>
-            <span className="px-6 py-3 bg-white/10 rounded-lg backdrop-blur-sm font-semibold">✓ SAV Réactif</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className="max-w-7xl mx-auto px-4 py-12 mb-12">
-        <div className="bg-gradient-to-r from-rose-600 to-rose-700 rounded-2xl p-12 text-white text-center shadow-xl">
-          <h2 className="text-4xl font-bold mb-4">Une Question ? Besoin d'un Conseil ?</h2>
-          <p className="text-rose-100 mb-8 text-lg max-w-2xl mx-auto">Notre équipe d'experts vous accompagne dans votre projet. Devis gratuit et sans engagement.</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/contact">
-              <button className="bg-white text-rose-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-rose-50 transition shadow-lg">
-                Demander un Devis
-              </button>
-            </Link>
-            <a href="tel:+33185093446" className="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white/10 transition">
-              Appeler le 01 85 09 34 46
-            </a>
-          </div>
-        </div>
-      </section>
+const ServiceCommitment = ({ icon, title, children }: { icon: React.ReactNode, title: string, children: React.ReactNode }) => (
+  <div className="flex items-start gap-4">
+    <div className="flex-shrink-0 text-blue-600 w-8 h-8">{icon}</div>
+    <div>
+      <h4 className="font-semibold text-gray-900">{title}</h4>
+      <p className="text-sm text-gray-600">{children}</p>
     </div>
+  </div>
+);
+
+export default function HomePage() {
+  const [modelToConfig, setModelToConfig] = useState<string | null>(null);
+  const [cart, setCart] = useState<Cart | null>(null);
+  const [featuredModels] = useState(() => getFeaturedModels());
+
+  // Load cart from localStorage on initial render
+  useEffect(() => {
+    try {
+      const savedCart = localStorage.getItem('storal-cart');
+      if (savedCart) {
+        console.log('📦 Chargement du panier:', savedCart);
+        setCart(JSON.parse(savedCart));
+      }
+    } catch (error) {
+      console.error("❌ Erreur chargement panier", error);
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (cart) {
+      localStorage.setItem('storal-cart', JSON.stringify(cart));
+      console.log('💾 Panier sauvegardé:', cart);
+    }
+  }, [cart]);
+
+  const handleConfigureClick = (modelName: string) => {
+    setModelToConfig(modelName);
+    document.getElementById('configurateur')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const selectedModelData = cart?.modelId ? Object.values(STORE_MODELS).find(m => m.id === cart.modelId) : null;
+
+  return (
+    <>
+      <main>
+        <section className="text-center pt-12 pb-8 bg-white">
+          <div className="max-w-4xl mx-auto px-4"><h1 className="text-4xl md:text-5xl font-bold text-gray-900">Expert en protection solaire</h1><p className="mt-4 text-lg text-gray-600">Configurez votre store banne sur-mesure avec notre assistant intelligent.</p></div>
+        </section>
+
+        <section id="configurateur" className="w-full bg-slate-50 border-y border-slate-200 py-12 md:py-16">
+          <div className="max-w-[1700px] mx-auto w-[95%] flex flex-col lg:flex-row gap-8">
+            <div className="w-full lg:w-[80%]">
+              <div className="h-[750px] bg-white border border-gray-200 rounded-xl shadow-2xl flex flex-col">
+                <ChatAssistant modelToConfig={modelToConfig} cart={cart} setCart={setCart} />
+              </div>
+            </div>
+            <aside className="w-full lg:w-[20%]">
+              <div className="bg-white p-6 rounded-xl border-2 border-gray-300 shadow-lg h-full flex flex-col">
+                <h2 className="text-2xl font-bold mb-6 text-gray-900 border-b-2 border-orange-500 pb-3">
+                  {cart?.modelId ? '📋 Votre Configuration' : '💡 Nos Engagements'}
+                </h2>
+                
+                {cart?.modelId ? (
+                  <div className="space-y-6 flex-1">
+                    {/* Modèle */}
+                    {selectedModelData && (
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <h3 className="text-xs font-semibold text-gray-600 uppercase mb-1">Modèle</h3>
+                        <p className="text-xl font-bold text-gray-900">{selectedModelData.name}</p>
+                      </div>
+                    )}
+                    
+                    {/* Dimensions */}
+                    {cart?.width && cart?.projection && (
+                      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                        <h3 className="text-xs font-semibold text-gray-600 uppercase mb-1">Dimensions</h3>
+                        <p className="text-lg font-bold text-gray-900">
+                          {(cart.width / 100).toFixed(2)}m × {(cart.projection / 100).toFixed(2)}m
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Coloris Armature */}
+                    {cart?.colorId && (
+                      <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                        <h3 className="text-xs font-semibold text-gray-600 uppercase mb-1">Coloris Armature</h3>
+                        <p className="text-lg font-bold text-gray-900">
+                          {FRAME_COLORS.find(c => c.id === cart.colorId)?.name || cart.colorId}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Toile */}
+                    {cart?.fabricId && (
+                      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                        <h3 className="text-xs font-semibold text-gray-600 uppercase mb-1">Toile Sélectionnée</h3>
+                        <p className="text-lg font-bold text-gray-900">
+                          {FABRICS.find(f => f.id === cart.fabricId)?.name || cart.fabricId}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Exposition */}
+                    {cart?.exposure && (
+                      <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                        <h3 className="text-xs font-semibold text-gray-600 uppercase mb-1">Exposition</h3>
+                        <p className="text-lg font-bold text-gray-900 capitalize">{cart.exposure}</p>
+                      </div>
+                    )}
+                    
+                    {/* Motorisation */}
+                    {cart?.withMotor !== undefined && (
+                      <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                        <h3 className="text-xs font-semibold text-gray-600 uppercase mb-1">Motorisation</h3>
+                        <p className="text-lg font-bold text-gray-900">
+                          {cart.withMotor ? '⚡ Radio Somfy' : '🔧 Manuel'}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Prix */}
+                    {cart?.selectedPrice && (
+                      <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                        <h3 className="text-xs font-semibold text-gray-600 uppercase mb-1">Prix sélectionné</h3>
+                        <p className="text-2xl font-bold text-purple-700">
+                          {cart.selectedPrice}€
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1 capitalize">
+                          Formule {cart.priceType || 'standard'}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Engagements */}
+                    <div className="space-y-3 pt-4 border-t">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-green-600">✓</span>
+                        <span className="text-gray-700">Fabrication 24h</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-green-600">✓</span>
+                        <span className="text-gray-700">Livraison sous 7j</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-green-600">✓</span>
+                        <span className="text-gray-700">Pose professionnelle</span>
+                      </div>
+                    </div>
+                    
+                    {/* Bouton ORANGE */}
+                    <div className="mt-auto pt-6">
+                      <Link href="/checkout" className="block w-full text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-lg font-bold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-xl hover:shadow-2xl transform hover:scale-105">
+                        🚀 FINALISER MA COMMANDE
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <ServiceCommitment icon={<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>} title="Fabrication 24h">Votre store fabriqué et expédié en 24 heures.</ServiceCommitment>
+                    <ServiceCommitment icon={<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>} title="Livraison sous 7 jours">Recevez votre commande rapidement chez vous.</ServiceCommitment>
+                    <ServiceCommitment icon={<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>} title="Service de Pose">Nos experts s'occupent de l'installation.</ServiceCommitment>
+                  </div>
+                )}
+              </div>
+            </aside>
+          </div>
+        </section>
+        
+        <section className="pt-4 pb-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <h2 className="text-4xl font-bold text-gray-900">Découvrez notre collection de stores bannes</h2>
+            <p className="mt-4 text-lg text-gray-600">Des solutions pour chaque besoin, alliant design et performance.</p>
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+              {featuredModels.map((model) => (
+                <div key={model.id} className="border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+                  <div className="relative w-full h-64"><Image src={model.image} alt={`Store banne ${model.name}`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" /></div>
+                  <div className="p-6 flex flex-col flex-1">
+                    <h3 className="text-2xl font-bold">{model.name}</h3>
+                    <ul className="mt-4 text-gray-600 space-y-2 text-left flex-1">{model.features.map((feature, i) => (<li key={i} className="flex items-start"><span className="text-blue-600 mr-2">✓</span><span>{feature}</span></li>))}</ul>
+                    <button onClick={() => handleConfigureClick(model.name)} className="mt-6 w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors">Configurer ce modèle</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
