@@ -66,7 +66,13 @@ export async function POST(request: NextRequest) {
         const ok = verifyJson?.success === true;
         const score = Number(verifyJson?.score ?? 0);
         console.log('[Checkout] reCAPTCHA verify', { ok, score });
-        if (!ok || score < 0.5) {
+        
+        // En développement avec clés de test, accepter score 0
+        const isTestKey = recaptchaSecret === '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe';
+        const isDev = process.env.NODE_ENV === 'development';
+        
+        if (!ok || (score < 0.5 && !isTestKey && !isDev)) {
+          console.warn('[Checkout] reCAPTCHA rejection', { ok, score, isTestKey, isDev });
           return NextResponse.json({ error: 'Échec vérification reCAPTCHA' }, { status: 400 });
         }
       } catch (e) {

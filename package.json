@@ -7,9 +7,11 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "icons": "node scripts/generate-icons.js"
+    "icons": "node scripts/generate-icons.js",
+    "export-catalog": "tsx scripts/export-catalog-data.ts"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.24",
     "@ai-sdk/openai": "^3.0.25",
     "@ai-sdk/react": "^3.0.75",
     "@prisma/client": "^5.22.0",

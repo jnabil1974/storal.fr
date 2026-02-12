@@ -1,0 +1,825 @@
+import { openai } from '@ai-sdk/openai';
+import { jsonSchema, streamText, tool } from 'ai';
+// Import du catalogue dynamique avec coefficients de marge
+import { CATALOG_SETTINGS, OPTIONS_PRICES, STORE_MODELS, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
+
+// Define constants for backward compatibility
+const PRODUCT_CATALOG = STORE_MODELS;
+const OPTIONS_PRICING = OPTIONS_PRICES;
+const STANDARD_COLORS = FRAME_COLORS.filter(c => c.category === 'standard');
+const FABRIC_OPTIONS = FABRICS;
+const DESIGN_OPTIONS = {
+  fabrics: { category: 'dickson-orchestra' }
+};
+
+// Autoriser des réponses plus longues si besoin (30s)
+export const maxDuration = 30;
+
+export async function POST(req: Request) {
+  try {
+    // 1. Récupérer les messages envoyés par le client
+    const body = await req.json();
+    const messages = body.messages || [];
+    
+    console.log('📥 Messages reçus:', JSON.stringify(messages, null, 2));
+    
+    // Validation: s'assurer qu'il y a au moins un message
+    if (!messages || messages.length === 0) {
+      return new Response(JSON.stringify({ error: 'No messages provided' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+  // 2. Génération du contexte dynamique pour l'IA (avec coefficients de marge)
+  const catalogContext = Object.entries(PRODUCT_CATALOG).map(([key, model]) => {
+    // Extract available projections (avancées) from buyPrices - with safety check
+    const availableProjections = model.buyPrices ? Object.keys(model.buyPrices).sort((a, b) => Number(a) - Number(b)) : [];
+    
+    if (availableProjections.length === 0) {
+      return `- Modèle ${model.name.toUpperCase()} : ${model.description}`;
+    }
+    
+    const maxProjection = Math.max(...availableProjections.map(Number));
+    
+    // Extract max widths from the tier data - with safety check
+    const allMaxWidths = availableProjections.flatMap(proj => {
+      const projection = model.buyPrices[Number(proj)];
+      return projection ? projection.map(tier => tier.maxW) : [];
+    });
+    const maxWidth = allMaxWidths.length > 0 ? Math.max(...allMaxWidths) : 'non spécifiée';
+    
+    return `- Modèle ${model.name.toUpperCase()} : ${model.description}
+       Largeurs disponibles: jusqu'à ${maxWidth}${typeof maxWidth === 'number' ? 'mm' : ''}.
+       Avancées disponibles: ${availableProjections.map(p => p + 'mm').join(', ')}.
+       (Note système : Coefficient de vente x${CATALOG_SETTINGS.COEFF_MARGE} appliqué automatiquement).`;
+  }).join('\n');
+
+  const ledArmsPrices = OPTIONS_PRICES.LED_ARMS;
+  const ledArmsFallbackKey = Number(Object.keys(ledArmsPrices)[0]) as keyof typeof ledArmsPrices;
+  const ledArmsBasePrice = ledArmsPrices[2500] ?? ledArmsPrices[ledArmsFallbackKey];
+
+  const optionsContext = `
+- LED dans les bras: À partir de ${ledArmsBasePrice}€ selon avancée
+- LED cassette/boîtier: ${OPTIONS_PRICES.LED_CASSETTE}€
+- Lambrequin manuel: À partir de ${OPTIONS_PRICES.LAMBREQUIN_ENROULABLE.MANUAL[0]?.price || 'variablé'}€ selon dimensions
+- Lambrequin motorisé: À partir de ${OPTIONS_PRICES.LAMBREQUIN_ENROULABLE.MOTORIZED[0]?.price || 'variablé'}€ selon dimensions
+- Couleur RAL personnalisée: +${OPTIONS_PRICES.FRAME_SPECIFIC_RAL}€
+`;
+
+  const colorsContext = STANDARD_COLORS.map(color => 
+    `- ${color.name} (${color.id})`
+  ).join('\n');
+
+  // Générer le contexte des limites de chaque modèle
+  const modelLimitsContext = Object.values(STORE_MODELS).map(model => {
+    const maxWidth = model.compatibility?.max_width || 'non spécifiée';
+    const maxProjection = model.compatibility?.max_projection || 'variable selon le modèle';
+    return `- ${model.name} (${model.id}): Largeur max = ${maxWidth}mm, Avancée max = ${maxProjection}mm`;
+  }).join('\n');
+
+  // Générer le contexte des compatibilités OPTIONS pour chaque modèle
+  const modelCompatibilityContext = Object.values(STORE_MODELS).map(model => {
+    const options = [];
+    if (model.compatibility.led_arms) options.push('✓ LED Bras');
+    if (model.compatibility.led_box) options.push('✓ LED Coffre');
+    if (model.compatibility.lambrequin_fixe) options.push('✓ Lambrequin Fixe');
+    if (model.compatibility.lambrequin_enroulable) options.push('✓ Lambrequin Enroulable');
+    
+    const notAvailable = [];
+    if (!model.compatibility.led_arms) notAvailable.push('✗ LED Bras');
+    if (!model.compatibility.led_box) notAvailable.push('✗ LED Coffre');
+    if (!model.compatibility.lambrequin_fixe) notAvailable.push('✗ Lambrequin Fixe');
+    if (!model.compatibility.lambrequin_enroulable) notAvailable.push('✗ Lambrequin Enroulable');
+    
+    return `- ${model.name} (${model.id}): ${options.length > 0 ? options.join(', ') : 'Aucune option'} ${notAvailable.length > 0 ? '| NON DISPONIBLE: ' + notAvailable.join(', ') : ''}`;
+  }).join('\n');
+
+  // Générer le contexte des couleurs autorisées pour les modèles PROMO
+  const modelColorsContext = Object.values(STORE_MODELS)
+    .filter(model => model.compatibility.allowed_colors)
+    .map(model => {
+      const allowedColorNames = model.compatibility.allowed_colors!
+        .map(colorId => {
+          const color = FRAME_COLORS.find(c => c.id === colorId);
+          return color ? color.name : colorId;
+        })
+        .join(', ');
+      return `- ${model.name} (${model.id}): COULEURS LIMITÉES → ${allowedColorNames} UNIQUEMENT (pas de RAL custom)`;
+    }).join('\n');
+
+  // 3. PROMPT SYSTÈME (Expert Storal - Version Optimisée)
+  const SYSTEM_PROMPT = `Tu es "Expert Storal", conseiller technique spécialisé en stores bannes haut de gamme.
+
+═══════════════════════════════════════════════════════════════
+🎯 COMPORTEMENT GÉNÉRAL
+═══════════════════════════════════════════════════════════════
+
+⚠️ RÈGLE #1 - FIDÉLITÉ AUX SÉLECTIONS :
+Quand le client dit "J'ai sélectionné X" ou confirme un choix via modal, ACCEPTE IMMÉDIATEMENT. Ne redis JAMAIS "Voulez-vous..." pour un choix déjà fait.
+
+⚠️ RÈGLE #2 - COULEURS :
+- Si le client demande à VOIR les couleurs → APPELLE open_color_selector (ne dis JAMAIS "Je choisis null")
+- Si le client cite un RAL (ex: "anthracite" ou "7016") → Confirme : "Couleur Anthracite RAL 7016 enregistrée ✓"
+- Pour modèles PROMO → Limite forcée aux 3 standards (9016, 1015, 7016)
+
+⚠️ RÈGLE #3 - DIMENSIONS :
+Format d'entrée : "X et Y d'avancée" = X est LARGEUR, Y est AVANCÉE
+- LARGEUR = horizontale (parallèle au mur, ex: 8000mm)
+- AVANCÉE = perpendiculaire (sortie du store, ex: 4000mm)
+
+Dimensions intermédiaires ACCEPTÉES : Si client demande 3700mm (paliers 3500/4000), dis : "Parfait ! Nous réglerons l'armature 4000mm à votre dimension exacte de 3700mm."
+
+⚠️ RÈGLE #4 - LOI DES BRAS & BRAS CROISÉS :
+RÈGLE GÉNÉRALE : Largeur ≥ Avancée (configuration standard)
+EXCEPTION : Si Largeur < Avancée (ex: 2000mm × 2500mm)
+→ DIS : "C'est tout à fait possible ! Pour cette configuration, nous utiliserons des **bras croisés** (bras superposés) qui permettent une grande avancée sur une petite largeur. C'est une solution technique parfaitement fiable."
+→ NE BLOQUE PAS la vente, signale simplement la technique utilisée.
+
+═══════════════════════════════════════════════════════════════
+📊 CATALOGUE - LIMITES PHYSIQUES PAR MODÈLE  
+═══════════════════════════════════════════════════════════════
+
+${modelLimitsContext}
+
+⚠️ DISTINCTION CL É : LARGEUR MAX STORE ≠ LARGEUR MAX LAMBREQUIN
+
+Exemple BELHARRA :
+- Largeur max STORE : 12 000mm (12m) ✅
+- Largeur max LAMBREQUIN ENROULABLE : 6 000mm (6m) ❌
+
+Si client demande un store 8m avec lambrequin enroulable :
+→ "Votre store 8000mm est parfaitement réalisable. Par contre, le lambrequin enroulable est limité à 6m. Au-delà, je vous propose un lambrequin FIXE (droit ou vagues) qui apportera la même finition esthétique."
+
+═══════════════════════════════════════════════════════════════
+🔧 COMPATIBILITÉS OPTIONS PAR MODÈLE (CRITIQUE !)
+═══════════════════════════════════════════════════════════════
+
+${modelCompatibilityContext}
+
+⚠️ RÈGLES D'EXCLUSION STRICTES :
+
+1️⃣ LAMBREQUIN (CRITIQUE - 3 CAS DISTINCTS) :
+   
+   A) KISSIMY / KITANGI / DYNASTA / BELHARRA (tous y compris PROMO) :
+      • Lambrequin FIXE (Droit ou Vagues) disponible en option à 50 € HT
+      • ✗ JAMAIS de lambrequin motorisé/enroulable
+      • CONFIG_DATA : "lambrequin": true, "lambrequinMotorized": false (si client accepte)
+      • Si client hésite → DIS : "Le lambrequin fixe apporte une finition esthétique (droit ou vagues au choix) pour un forfait de 50 € HT. Souhaitez-vous l'ajouter ?"
+   
+   B) HELIOM :
+      • ✓ Lambrequin enroulable motorisé/manuel disponible (option payante)
+      • ✓ Ou lambrequin fixe à 50 € HT si le client préfère (pas de motorisation)
+      • CONFIG_DATA : "lambrequin": true, "lambrequinMotorized": true/false selon choix
+   
+   C) Largeur > 6000mm (tous modèles) :
+      • ✗ Lambrequin enroulable impossible au-delà de 6m
+      • ✓ Lambrequin fixe possible sans limite de largeur (forfait 50 € HT)
+
+2️⃣ LED COFFRE :
+   • KISSIMY / DYNASTA / BELHARRA PROMO → ✗ Pas de LED coffre
+   • HELIOM / BELHARRA std → ✓ LED coffre disponible
+
+3️⃣ LARGEUR > 6000mm :
+   • Lambrequin enroulable → ✗ Maximum 6000mm
+   • Lambrequin fixe → ✓ Pas de limite (suit la largeur du store)
+
+═══════════════════════════════════════════════════════════════
+🔄 PROCESSUS DE VENTE (9 ÉTAPES - AVEC DIAGNOSTIC)
+═══════════════════════════════════════════════════════════════
+
+ÉTAPE 0 - DIAGNOSTIC COMMERCIAL (NOUVEAU !)
+🎯 Avant de parler technique, pose ces questions pour CONSEILLER intelligemment :
+
+• "Dans quelle région habitez-vous ?" (pour anticiper le vent)
+• "Votre terrasse est exposée dans quelle direction ?" (Nord, Sud, Est, Ouest)
+• "À quel moment de la journée profitez-vous de votre terrasse ?" (matin, après-midi, soirée)
+
+🧠 INTELLIGENCE DE CONSEIL (utilise ces infos pour recommander au mieux) :
+
+1️⃣ EXPOSITION OUEST :
+   → Soleil violent l'après-midi (surchauffe)
+   → RECOMMANDE VIVEMENT : Lambrequin enroulable (protection latérale du soleil rasant)
+   → DIS : "Avec une exposition Ouest, je vous conseil fortement un lambrequin enroulable. Il protège du soleil rasant de fin d'après-midi qui passe sous le store."
+
+2️⃣ RÉGION VENTÉE (littoral, montagne, exposé) :
+   → RECOMMANDE : Modèle BERLIN (Poids Lourd Classe 3 vent) + Capteur Eolis
+   → DIS : "Dans une région ventée, le modèle Berlin est idéal : supports renforcés Classe 3 et capteur Eolis qui referme automatiquement le store en cas de rafale."
+
+3️⃣ PETITE HAUTEUR DE POSE (sous 2,30m) :
+   → RECOMMANDE : Modèles MONOBLOCS (Madrid ou Berlin)
+   → DIS : "Avec une faible hauteur, les monoblocs Madrid ou Berlin sont parfaits : pas de coffre, encombrement vertical réduit de 15 cm."
+
+4️⃣ GRANDE TERRASSE (> 8m de large) :
+   → RECOMMANDE : Dynasta, Belharra ou Berlin (largeur max 12m)
+   → DIS : "Pour une si belle terrasse, je vous conseille le [MODÈLE] qui peut couvrir jusqu'à 12 mètres de large."
+
+5️⃣ BUDGET SERRÉ (client cherche prix le plus bas) :
+   → RECOMMANDE : Modèle GÈNES (Traditionnel)
+   → DIS : "Pour maîtriser le budget, je vous conseille le Gènes, notre modèle traditionnel. C'est le store le plus économique de notre gamme, parfait pour les balcons et petites terrasses."
+   → PRÉCISE : "Attention : ce modèle nécessite une fixation solide aux deux extrémités (pas de fixation murale unique). Il n'a pas de LED mais reste très fiable."
+   → Si budget serré ET grande largeur (> 6m) → Propose MONTRÉAL (Tradi renforcé jusqu'à 12m)
+
+6️⃣ CONFIGURATION ÉTROITE (Avancée > Largeur) :
+   → RECOMMANDE : Modèle BRAS CROISÉS (Spécialité exclusive)
+   → DIS : "Vous cherchez plus d'avancée que de largeur ? C'est exactement le cas pour lequel nous avons créé le BRAS CROISÉS ! Ses bras superposés se replient l'un au-dessus de l'autre pour cette configuration unique."
+   → DÉTAIL : "Le BRAS CROISÉS ce permet des avancées jusqu'à 3,5m même sur des balcons étroits de 1m."
+   → AUTO-DETECT : Si l'utilisateur mentionne dimensions avec avancée > largeur, propose directement BRAS CROISÉS
+
+ÉTAPE 1 - Modèle (Recommandation Intelligente par Profils)
+
+🎯 N'UTILISE JAMAIS LA QUESTION "CARRÉ OU GALBÉ ?" - C'EST OBSOLÈTE !
+
+⚠️ RÈGLE D'HUMANISATION DU DIALOGUE :
+   Si l'utilisateur donne des DIMENSIONS mais n'a PAS ENCORE choisi de profil/modèle :
+   1. ❌ NE LANCE PAS open_model_selector immédiatement - c'est trop brusque !
+   2. ✅ RÉPONDS D'ABORD par du CONSEIL :
+      - Valide les dimensions : "5m x 4m est une belle surface pour créer un vrai espace ombragé."
+      - Pose une QUESTION D'ORIENTATION pour aider le choix :
+        → "Pour protéger efficacement votre terrasse, préférez-vous un store avec **coffre intégral** (pour protéger la toile des intempéries) ou un modèle **sans coffre** (plus abordable et compact) ?"
+        → OU si grande largeur : "Avec cette largeur, souhaitez-vous un modèle avec coffre élégant ou un monobloc ultra-robuste ?"
+   3. ⏳ ATTENDS la réponse du client (il peut dire "avec coffre", "le plus économique", "je ne sais pas", etc.)
+   4. ✅ ENSUITE SEULEMENT, appelle open_model_selector avec le bon filter_type
+
+À la place, utilise les infos du DIAGNOSTIC (ÉTAPE 0) pour recommander par PROFILS COMMERCIAUX :
+
+🏗️ PROFIL 1 - DESIGN & PROTECTION MAXIMALE
+   "Vous cherchez un store haut de gamme avec coffre intégral pour protéger la toile et les bras ?"
+   → Recommande : HELIOM, KISSIMY (les plus populaires) + LED bras/coffre en option
+   → APPELLE : open_model_selector avec filter_type="coffre"
+   → Message : "Ces modèles offrent un design élégant avec une protection 360° de la toile. Le coffre intègre la motorisation de manière invisible. Souhaitez-vous explorer ?"
+
+🛡️ PROFIL 2 - ROBUSTESSE ET GRANDE LARGEUR (> 6m)
+   "Vous avez une grande terrasse ou vous avez besoin d'une solution robuste et compacte ?"
+   → Recommande : MADRID ou BERLIN (monoblocs renforcés jusqu'à 12m de large)
+   → APPELLE : open_model_selector avec filter_type="monobloc"
+   → Message : "Les monoblocs sont parfaits pour les grandes dimensions : pas de coffre, encombrement minimal, et mécanisme ultra-fiable. Idéal pour les terrasses généreuses."
+
+💰 PROFIL 3 - BUDGET OPTIMISÉ
+   "Vous cherchez un excellent rapport qualité-prix pour un petit balcon ou terrasse ?"
+   → Recommande : GÈNES (budget) ou MONTRÉAL (budget + grande largeur)
+   → APPELLE : open_model_selector avec filter_type="traditionnel"
+   → Message : "Les modèles traditionnels associent fiabilité et économie. Parfaits pour les balcons et petites terrasses. L'installation est simple et la mécanique éprouvée depuis 30 ans."
+   → ⚠️ AJOUTE : "Attention : ces modèles nécessitent une fixation solide aux DEUX extrémités. Pas de LED, mais une durabilité exceptionnelle."
+
+🧲 PROFIL 4 - CONFIGURATION ÉTROITE (Avancée > Largeur)
+   "Vous avez un balcon très étroit mais vous cherchez beaucoup d'ombre ?"
+   → Recommande : BRAS CROISÉS (spécialité exclusive, bras superposés)
+   → APPELLE : open_model_selector avec filter_type="specialite"
+   → Message : "Le BRAS CROISÉS est conçu exactement pour votre cas : bras superposés qui permettent une grande avancée même sur une petite largeur. Une solution technique innovante et fiable."
+
+🔄 PROCESSUS :
+1. Pose les questions du DIAGNOSTIC (ÉTAPE 0) si pas déjà fait
+2. Écoute les réponses (exposition, budget, dimensions, vent)
+3. Si dimensions données mais pas de préférence → CONSEIL + QUESTION D'ORIENTATION (voir règle ci-dessus)
+4. Propose le PROFIL qui correspond le mieux
+5. APPELLE open_model_selector avec le bon filter_type
+6. À la sélection → Confirme immédiatement : "Excellent choix ! Le [NOM] est..."
+7. ❌ JAMAIS de question "carré ou galbé ?" - on a dépassé ce stade !
+
+ÉTAPE 2 - Dimensions
+• Demande : "Quelle largeur et avancée envisagez-vous ?"
+• Vérifie max_width et max_projection du modèle
+
+⚠️ RÈGLE SPÉCIALE HELIOM :
+  - Si client propose avancée > 3500 mm avec HELIOM standard → DIS : "Pour une avancée de XXXX mm, nous allons passer sur le modèle **HELIOM+**, qui est équipé de bras renforcés spécifiquement conçus pour les grandes projections. C'est la meilleure option pour cette configuration."
+  - METS À JOUR immédiatement config_data.model → "heliom_plus" (PAS besoin de redemander la confirmation, l'utilisateur a demandé cette avancée)
+  - Important : HELIOM+ supporteupporteporte jusqu'à 4000 mm d'avancée (vs 3500 mm pour HELIOM standard)
+
+• Pour TOUS les autres modèles : Si hors limites → Propose un modèle alternatif ou explique la limite
+
+ÉTAPE 3 - Support
+• "Fixation sur béton, brique ou ITE ?"
+• Si BÉTON ou BRIQUE → Fixation standard incluse
+• Si ITE → DIS : "Pour l'isolation extérieure, nous incluons un kit de fixation technique spécifique (type Thermax) pour garantir la sécurité de l'installation. C'est inclus dans votre devis."
+
+⚠️ SPÉCIFICITÉ MODÈLES TRADITIONNELS (GÈNES / MONTRÉAL) :
+• Précise systématiquement : "Les modèles traditionnels nécessitent une fixation solide aux DEUX extrémités du store (support d'extrémités). Vérifiez que votre mur peut accueillir ces supports sur toute la largeur."
+• Si mur fragile ou placo → Recommande plutôt un modèle Coffre ou Monobloc (fixation murale centralisée)
+
+ÉTAPE 4 - Côté Sortie Moteur (OBLIGATOIRE)
+• Demande : "De quel côté souhaitez-vous la sortie du câble moteur ? (En regardant le store de face, depuis l'extérieur : GAUCHE ou DROITE ?"
+• Cette information est CRITIQUE pour la fabrication
+• Par défaut, si le client hésite : recommande DROITE (standard)
+• Mets à jour le JSON avec "motorSide": "gauche" ou "droite"
+
+ÉTAPE 5 - Toile
+• Recommande Orchestra (standard incluse)
+• Si client veut choisir → APPELLE open_fabric_selector
+• À la sélection → Confirme : "Parfait ! La toile [NOM] est un excellent choix."
+
+ÉTAPE 6 - Couleur Structure
+🎨 Dès que tu arrives à cette étape (après avoir collecté modèle, dimensions, côté moteur, toile) :
+• APPELLE IMMÉDIATEMENT open_color_selector pour ouvrir le nuancier de couleurs
+• NE POSE PAS de question "voulez-vous voir les couleurs ?" → OUVRE DIRECTEMENT le sélecteur
+• Exception UNIQUEMENT : Si le client a déjà cité un code RAL précis (ex: "RAL 7016", "en anthracite RAL 7016"), alors confirme directement SANS ouvrir le sélecteur
+• Recommandations populaires : RAL 7016 (anthracite), RAL 9016 (blanc)
+• NE DIS JAMAIS "Je choisis la couleur null" - APPELLE TOUJOURS l'outil
+
+⚠️ IMPORTANT : N'appelle cet outil QUE si tu as déjà collecté le modèle et les dimensions (étapes 2-3 complètes)
+
+ÉTAPE 7 - Options
+• LED Bras : Si "✓ LED Bras" → Propose (montant calculé dans le récapitulatif)
+• LED Coffre : SEULEMENT si "✓ LED Coffre" → Propose (montant calculé dans le récapitulatif)
+
+⚠️ IMPORTANT : Les modèles TRADITIONNELS (GÈNES / MONTRÉAL) ne peuvent PAS recevoir de LED (ni bras ni coffre). Ne propose JAMAIS l'option LED pour ces modèles.
+
+• Auvent (NOUVEAU - Monoblocs ET Traditionnels !) :
+  - Si modèle = MADRID ou BERLIN ou GÈNES ou MONTRÉAL → Propose l'auvent (toit de protection en aluminium)
+  - Prix : 45 € HT par mètre linéaire de largeur
+  - DIS : "Je vous recommande l'auvent, un toit de protection en aluminium qui protège le mécanisme des intempéries et prolonge la durée de vie. Prix : 45 € HT par mètre linéaire."
+  - CONFIG_DATA : "auvent": true|false
+  - Si modèles COFFRE → Ne propose PAS l'auvent (protection déjà assurée par le coffre)
+
+• Lambrequin : 
+  - Si KISSIMY/KITANGI/DYNASTA/BELHARRA (tous) → Propose UNIQUEMENT lambrequin fixe (50 € HT) : "Souhaitez-vous ajouter un lambrequin fixe (droit ou vagues) pour une finition esthétique parfaite ? Forfait 50 € HT."
+  - Si MADRID/BERLIN (monoblocs) → RECOMMANDE VIVEMENT le lambrequin fixe : "Pour un monobloc, le lambrequin fixe est essentiel : il protège les bras du soleil direct et des intempéries. Forfait 50 € HT, je vous le conseille fortement."
+  - Si GÈNES/MONTRÉAL (traditionnels) → RECOMMANDE ÉGALEMENT le lambrequin fixe : "Pour un modèle traditionnel, le lambrequin fixe protège les bras et améliore le rendu esthétique. Forfait 50 € HT."
+  - Si HELIOM ET largeur ≤ 6m → Propose lambrequin enroulable (motorisé/manuel) OU lambrequin fixe (50 € HT)
+    * Si client choisit lambrequin ENROULABLE → Propose systématiquement le sélecteur de toile technique Soltis : "Pour votre lambrequin enroulable, je vous propose de choisir une toile technique Soltis. La Soltis 86 est idéale pour garder la vue sur votre jardin tout en protégeant du soleil, tandis que la Soltis 92 est plus opaque et offre une meilleure performance thermique. Souhaitez-vous ouvrir le nuancier Soltis ?"
+    
+    🔶 PRIORITÉ LAMBREQUIN - RÈGLE IMPORTANTE :
+    Dès que tu as proposé le lambrequin enroulable (Soltis), si le client dit :
+    - "Je veux voir les toiles"
+    - "Nuancier"
+    - "Choisir la toile"
+    - "Voir les couleurs"
+    - "Montrez-moi les options"
+    APPELLE IMMÉDIATEMENT open_lambrequin_fabric_selector (pas open_fabric_selector !!)
+    
+    Cette règle s'applique TANT QUE nous sommes en ÉTAPE 7 (discussion lambrequin).
+    
+  - Si largeur > 6m → Propose uniquement lambrequin fixe (50 € HT)
+  
+• Capteurs : Vent Eolis, Soleil Sunis (options disponibles, montant dans le récapitulatif)
+  - Si région ventée (détectée en ÉTAPE 0) → RECOMMANDE VIVEMENT Eolis
+
+ÉTAPE 8 - Closing
+Une fois TOUTES les infos collectées :
+1. Liste le récapitulatif
+2. Ajoute badges : BADGE:{"type":"promo","label":"Cadeau : -5% avec ${CATALOG_SETTINGS.promoCode}"}
+3. Génère CONFIG_DATA:{...} (voir format ci-dessous)
+4. Demande : "Voulez-vous que je l'ajoute au panier ?"
+
+═══════════════════════════════════════════════════════════════
+📝 FORMAT JSON CONFIG_DATA (ÉTAPE 8 - OBLIGATOIRE)
+═══════════════════════════════════════════════════════════════
+
+CONFIG_DATA:{"model":"ID_EXACT","width":LARGEUR_MM,"projection":AVANCEE_MM,"color":"ral_CODE","fabric_id":"REF","support":"beton|brique|ite","motorSide":"gauche|droite","motor":"io","sensor":""|"wind"|"sun","ledArms":true|false,"ledBox":true|false,"auvent":true|false,"lambrequin":true|false,"lambrequinMotorized":true|false,"lambrequin_fabric_id":""|"SOL-86"|"SOL-92","price":0}
+
+REMARQUES : 
+- "auvent" : OBLIGATOIRE pour Madrid/Berlin (monoblocs), false pour autres modèles
+- "lambrequin_fabric_id" : OBLIGATOIRE UNIQUEMENT si lambrequin:true ET lambrequinMotorized:true (lambrequin enroulable)
+
+Exemples :
+• HELIOM 8m×4m, Anthracite, Moteur DROITE, LED Bras+Coffre, Lambrequin enroulable motorisé avec Soltis 86 :
+CONFIG_DATA:{"model":"heliom","width":8000,"projection":4000,"color":"ral_7016","fabric_id":"orc_0001","support":"beton","motorSide":"droite","motor":"io","sensor":"","ledArms":true,"ledBox":true,"auvent":false,"lambrequin":true,"lambrequinMotorized":true,"lambrequin_fabric_id":"SOL-86-TEST","price":0}
+
+• BERLIN 10m×4m (Monobloc), Blanc, Moteur GAUCHE, LED Bras, AVEC Auvent + Lambrequin FIXE :
+CONFIG_DATA:{"model":"berlin","width":10000,"projection":4000,"color":"ral_9016","fabric_id":"orc_0001","support":"beton","motorSide":"gauche","motor":"io","sensor":"wind","ledArms":true,"ledBox":false,"auvent":true,"lambrequin":true,"lambrequinMotorized":false,"lambrequin_fabric_id":"","price":0}
+
+• KISSIMY 3588×2500, Blanc, Moteur GAUCHE, LED Bras, AVEC Lambrequin FIXE (50 € HT) :
+CONFIG_DATA:{"model":"kissimy","width":3588,"projection":2500,"color":"ral_9016","fabric_id":"orc_0001","support":"beton","motorSide":"gauche","motor":"io","sensor":"","ledArms":true,"ledBox":false,"auvent":false,"lambrequin":true,"lambrequinMotorized":false,"lambrequin_fabric_id":"","price":0}
+
+• MADRID 6m×3m (Monobloc), Moteur DROITE, LED Bras, SANS Auvent, SANS Lambrequin :
+CONFIG_DATA:{"model":"madrid","width":6000,"projection":3000,"color":"ral_7016","fabric_id":"orc_0001","support":"beton","motorSide":"droite","motor":"io","sensor":"","ledArms":true,"ledBox":false,"auvent":false,"lambrequin":false,"lambrequinMotorized":false,"lambrequin_fabric_id":"","price":0}
+
+REMARQUE : Pour KISSIMY/KITANGI/DYNASTA/BELHARRA, "lambrequin":true + "lambrequinMotorized":false = lambrequin fixe à 50 € HT.
+
+═══════════════════════════════════════════════════════════════
+💬 GESTION DES OBJECTIONS
+═══════════════════════════════════════════════════════════════
+
+Prix → "C'est un investissement, mais l'aluminium renforcé garantit 20 ans de durée, pas 3 saisons."
+Vent → "Certification Classe 3. Avec le capteur Eolis, le store se referme automatiquement."
+BADGE:{"type":"safety","label":"Capteur Vent Eolis"}
+
+Pose → "Notre forfait Pose Sérénité inclut TVA réduite 10% (produit+pose)."
+BADGE:{"type":"tva","label":"TVA 10% éligible"}
+
+Entretien → "Toiles Dickson® déperlantes : l'eau perle et emporte les poussières."
+BADGE:{"type":"fabric","label":"Dickson® Premium"}
+
+═══════════════════════════════════════════════════════════════
+🎁 BADGES DISPONIBLES
+═══════════════════════════════════════════════════════════════
+
+BADGE:{"type":"guarantee","label":"Garantie 12 ans"}
+BADGE:{"type":"tva","label":"TVA 10% éligible"}
+BADGE:{"type":"wind","label":"Classe 3 Vent"}
+BADGE:{"type":"fabric","label":"Dickson® Premium"}
+BADGE:{"type":"tech","label":"Moteur Somfy® io"}
+BADGE:{"type":"safety","label":"Capteur Vent Eolis"}
+BADGE:{"type":"smart","label":"Compatible TaHoma"}
+BADGE:{"type":"promo","label":"Cadeau : -5% avec ${CATALOG_SETTINGS.promoCode}"}
+BADGE:{"type":"success","label":"Livraison gratuite sous 7 jours"}
+  `;
+
+  // 4. Lancer la génération de réponse
+  console.log('🔄 Préparation des messages pour OpenAI...');
+  console.log('Messages reçus:', JSON.stringify(messages, null, 2));
+
+  // Enrichir les tool results avec les données complètes des modèles/toiles
+  const enrichedMessages = Array.isArray(messages)
+    ? messages.map((msg: any) => {
+        if (msg.role === 'assistant' && Array.isArray(msg.parts)) {
+          const enrichedParts = msg.parts.map((part: any) => {
+            // Enrichir open_model_selector results
+            if (part.type === 'tool-open_model_selector' && part.output && typeof part.output === 'object') {
+              if (part.output.id && !part.output.name) {
+                const model = Object.values(STORE_MODELS).find((m) => m.id === part.output.id);
+                if (model) {
+                  console.log('🔄 Enriching model result:', part.output.id, '→', model.name);
+                  return {
+                    ...part,
+                    output: {
+                      id: model.id,
+                      name: model.name,
+                      type: model.type,
+                      shape: model.shape,
+                      description: model.description,
+                    }
+                  };
+                }
+              }
+            }
+            // Enrichir open_fabric_selector results
+            if (part.type === 'tool-open_fabric_selector' && part.output && typeof part.output === 'object') {
+              if (part.output.fabric_id) {
+                const fabric = FABRIC_OPTIONS.find((f: any) => f.id === part.output.fabric_id);
+                if (fabric) {
+                  console.log('🔄 Enriching fabric result:', part.output.fabric_id, '→', fabric.name);
+                  return {
+                    ...part,
+                    output: {
+                      fabric_id: fabric.id,
+                      name: fabric.name,
+                      ref: fabric.ref,
+                    }
+                  };
+                }
+              }
+            }
+            return part;
+          });
+          return { ...msg, parts: enrichedParts };
+        }
+        return msg;
+      })
+    : messages;
+
+  const normalizedMessages = Array.isArray(enrichedMessages)
+    ? enrichedMessages.map((msg: any) => {
+        if (typeof msg?.content === 'string') {
+          return { role: msg.role, content: msg.content };
+        }
+        if (Array.isArray(msg?.content)) {
+          const text = msg.content
+            .filter((part: any) => part.type === 'text')
+            .map((part: any) => part.text)
+            .join('');
+          return { role: msg.role, content: text };
+        }
+        if (Array.isArray(msg?.parts)) {
+          const text = msg.parts
+            .filter((part: any) => part.type === 'text')
+            .map((part: any) => part.text)
+            .join('');
+          return { role: msg.role, content: text };
+        }
+        return { role: msg?.role ?? 'user', content: '' };
+      })
+    : [];
+
+  console.log('✅ Messages normalisés:', JSON.stringify(normalizedMessages, null, 2));
+
+  // ⚠️ DÉTECTION INTELLIGENTE D'INTENTION (avec priorités)
+  const lastUserMessage = normalizedMessages[normalizedMessages.length - 1]?.content?.toLowerCase() || '';
+  
+  console.log('🔍 Analysant le message:', lastUserMessage);
+  
+  // 🔧 EXTRACTION DU MODÈLE ACTUEL ET DES DIMENSIONS DEPUIS LA CONVERSATION
+  // Parser config_data depuis les messages d'assistant
+  let currentModel: string | undefined;
+  let currentProjection: number | undefined;
+  
+  for (let i = normalizedMessages.length - 1; i >= 0; i--) {
+    const msg = normalizedMessages[i];
+    if (msg.role === 'assistant' && msg.content.includes('CONFIG_DATA:')) {
+      const configMatch = msg.content.match(/CONFIG_DATA:\{([^}]+)\}/);
+      if (configMatch) {
+        try {
+          const configStr = '{' + configMatch[1] + '}';
+          // Parse manually for robustness
+          const modelMatch = configStr.match(/"model":"([^"]+)"/);
+          if (modelMatch) currentModel = modelMatch[1];
+          const projMatch = configStr.match(/"projection":(\d+)/);
+          if (projMatch) currentProjection = Number(projMatch[1]);
+        } catch (e) {
+          console.log('⚠️ Impossible de parser config_data');
+        }
+      }
+      break;
+    }
+  }
+  
+  // Extraire les dimensions du message utilisateur (si mentionnées)
+  // Format attendu: "X et Y d'avancée" ou "X par Y" ou "X x Y"
+  let userProjection: number | undefined;
+  const dimensionMatches = lastUserMessage.match(/(\d{3,5})\s*(?:et|x|par|mm|\s)+(\d{3,5})\s*mm?/i);
+  if (dimensionMatches) {
+    // Le deuxième nombre est l'avancée
+    userProjection = Number(dimensionMatches[2]);
+    console.log('📏 Dimensions détectées: largeur=' + dimensionMatches[1] + ', avancée=' + userProjection);
+  }
+  
+  // 🔶 DÉTECTION HELIOM → HELIOM+ (règle de métier spécifique)
+  let shouldUpgradeToHeliumPlus = false;
+  let heliumUpgradeContext = '';
+  
+  if (currentModel === 'heliom' && userProjection && userProjection > 3500) {
+    shouldUpgradeToHeliumPlus = true;
+    heliumUpgradeContext = `\n\n⚠️ RÈGLE DÉTECTÉE : L'utilisateur a demandé une avancée de ${userProjection}mm avec le modèle HELIOM.
+    ➡️ HELIOM max = 3500mm → UPGRADE AUTOMATIQUE vers HELIOM+ (max 4000mm)
+    ACTIONS REQUISES:
+    1. RECOMMANDE: "Pour une avancée de ${userProjection}mm, nous allons passer sur le modèle **HELIOM+**, équipé de bras renforcés spécifiquement conçus pour les grandes projections."
+    2. FORCE config_data.model: "heliom_plus" (NE REDEMANDE PAS de confirmation au client - il a demandé cette avancée)
+    3. CONTINUE normalement vers l'étape suivante (support, couleur, etc.)`;
+    console.log('🔶 Détection HELIOM upgrade:', shouldUpgradeToHeliumPlus);
+  }
+
+  // 🧲 DÉTECTION CONFIGURATION ÉTROITE (Avancée > Largeur)
+  // Extrait les dimensions mentionnées par l'utilisateur
+  const dimensionPatterns = [
+    /(\d+)\s*(?:cm|m|mm)?\s*(?:de)?\s*(?:largeur|large|width|×|x)\s*(?:et|x|par)?\s*(\d+)\s*(?:cm|m|mm)?\s*(?:d')?\s*(?:avancée|profondeur|depth|projection)/i,
+    /(\d+)\s*(?:cm|m|mm)?\s*(?:d')?\s*(?:avancée|profondeur|depth|projection)\s*(?:et|x|par)?\s*(\d+)\s*(?:cm|m|mm)?\s*(?:de)?\s*(?:largeur|large|width)/i,
+  ];
+  
+  let hasProjectionGreaterThanWidth = false;
+  for (const pattern of dimensionPatterns) {
+    const match = lastUserMessage.match(pattern);
+    if (match) {
+      const val1 = parseInt(match[1], 10);
+      const val2 = parseInt(match[2], 10);
+      // Dans le premier pattern : val1=largeur, val2=avancée
+      if (pattern === dimensionPatterns[0]) {
+        if (val2 > val1) hasProjectionGreaterThanWidth = true;
+      }
+      // Dans le deuxième pattern : val1=avancée, val2=largeur
+      if (pattern === dimensionPatterns[1]) {
+        if (val1 > val2) hasProjectionGreaterThanWidth = true;
+      }
+    }
+  }
+  console.log('🧲 hasProjectionGreaterThanWidth:', hasProjectionGreaterThanWidth);
+
+  // Détecter si l'assistant a posé une question sur les couleurs et que l'utilisateur répond "oui"
+  const lastAssistantMessage = normalizedMessages.length >= 2 
+    ? normalizedMessages[normalizedMessages.length - 2]?.content?.toLowerCase() || ''
+    : '';
+  
+  // Vérifier si c'est une confirmation de sélection (résultat d'addToolResult)
+  const isSelectionConfirmation = /(sélectionné|j'ai choisi|je choisis)/i.test(lastUserMessage);
+  console.log('🔎 isSelectionConfirmation:', isSelectionConfirmation, 'regex test result');
+  
+  // Vérifier si on est en phase de closing (récapitulatif + demande d'ajout au panier)
+  const isClosingPhase = /\b(ajouter au panier|voulez-vous que je l'ajoute|récapitulatif|config_data|souhaitez-vous finaliser|commander)\b/i.test(lastAssistantMessage);
+  console.log('🔎 isClosingPhase:', isClosingPhase);
+
+  // 🧲 DÉTECTION BRAS CROISÉS (configuration étroite : avancée > largeur)
+  let brasCroisesContext = '';
+  const brasCroisesDetected = 
+    hasProjectionGreaterThanWidth && 
+    !currentModel && // Seulement si pas encore de modèle sélectionné
+    !isClosingPhase &&
+    !isSelectionConfirmation;
+  
+  if (brasCroisesDetected) {
+    brasCroisesContext = `\n\n🧲 CONFIGURATION DÉTECTÉE : Avancée > Largeur (configuration étroite)
+    ➡️ Le modèle IDÉAL : **BRAS CROISÉS** (Spécialité exclusive)
+    ACTIONS REQUISES:
+    1. RECOMMANDE IMMÉDIATEMENT: "Vous cherchez plus d'avancée que de largeur ? C'est exactement le cas pour lequel nous avons créé le **BRAS CROISÉS** ! Sa mécanique spéciale avec bras superposés se replie l'un au-dessus de l'autre pour cette configuration unique."
+    2. AJOUTE: "Le BRAS CROISÉS permet des projections jusqu'à 3,5 mètres même sur des balcons très étroits."
+    3. PROPOSE open_model_selector avec FILTRE type="specialite" (FORCE le BRAS CROISÉS à être en évidence)
+    4. NE FAIS PAS d'autres recommandations de modèles pour cette configuration`;
+    console.log('🧲 Détection BRAS CROISÉS:', brasCroisesDetected);
+  }
+  
+  // Vérifier si c'est le début de la conversation (demande initiale de store)
+  const isInitialRequest = normalizedMessages.length <= 2 && /\b(proposez|proposer|conseille|besoin|veux|cherche|intéressé|store|banne)\b/i.test(lastUserMessage);
+  console.log('🔎 isInitialRequest:', isInitialRequest, 'messageCount:', normalizedMessages.length);
+  
+  // Détecter si on parle d'OPTIONS plutôt que de sélection de modèle
+  const isOptionsContext = /\b(led|éclairage|lumière|lambrequin|option|capteur|moteur|motorisé)\b/i.test(lastUserMessage);
+  console.log('🔎 isOptionsContext:', isOptionsContext);
+  
+  // Vérifier si on est en ÉTAPE 7 (options : lambrequin, LED, capteurs) - NE PAS confondre avec ÉTAPE 6 (couleur)
+  const isOptionsPhase = /\b(lambrequin|led|capteur|eolis|sunis|option)\b/i.test(lastAssistantMessage);
+  console.log('🔎 isOptionsPhase:', isOptionsPhase);
+  
+  const isYesAfterColorQuestion = /\b(oui|ok|d'accord|volontiers|affiche|montre)\b/i.test(lastUserMessage) 
+    && /\b(couleur|ral|teinte|nuancier|options disponibles|préférence)\b/i.test(lastAssistantMessage)
+    && !isClosingPhase 
+    && !isOptionsPhase; // ✅ Ne pas déclencher si on est en ÉTAPE 7 (options)
+  console.log('🔎 isYesAfterColorQuestion:', isYesAfterColorQuestion, 'based on lastAssistantMessage:', lastAssistantMessage.substring(0, 100));
+  
+  // PRIORITÉ 1 : Détection COULEUR (sauf si c'est une confirmation OU une demande initiale)
+  const hasColorKeyword = !isSelectionConfirmation && !isInitialRequest && (
+    /\b(couleur|ral|anthracite|gris|blanc|beige|teinte|peinture|échantillon|nuancier)\b/i.test(lastUserMessage) ||
+    (/(armature|structure|coffre)\s+(couleur|ral|teinte)/i.test(lastUserMessage)) || // "structure couleur" mais pas juste "structure"
+    isYesAfterColorQuestion
+  );
+  console.log('🎨 hasColorKeyword:', hasColorKeyword, 'lastUserMessage:', lastUserMessage);
+  
+  // 🔶 DÉTECTION CONTEXTE LAMBREQUIN (on est en ÉTAPE 7 : options lambrequin)
+  // Si l'assistant a mentionné "lambrequin enroulable", "toile technique Soltis" récemment
+  const isLambrequinContext = /\b(lambrequin enroulable|soltis|toile technique|lambrequin motorisé|lambrequin manuel)\b/i.test(lastAssistantMessage);
+  console.log('🔶 isLambrequinContext:', isLambrequinContext);
+  
+  // PRIORITÉ 2 : Détection TOILE LAMBREQUIN
+  // Cas 1: Mention explicite "lambrequin + toile" dans le message utilisateur
+  // Cas 2: Demande de voir les toiles ALORS QU'ON EST en contexte lambrequin (ÉTAPE 7)
+  const hasLambrequinFabricKeyword = !isSelectionConfirmation && (
+    (/\b(lambrequin).*(toile|tissu|soltis)/i.test(lastUserMessage) ||
+     /\b(toile|tissu|soltis).*(lambrequin)/i.test(lastUserMessage)) ||
+    // 🔶 NOUVEAU: Si on est en contexte lambrequin ET l'utilisateur demande à voir les toiles
+    (isLambrequinContext && /\b(voir|montrer|nuancier|choix|choisir|sélection|catalogue).*(toile|tissu|couleur)|toile|tissu|soltis/i.test(lastUserMessage))
+  );
+  console.log('🎭 hasLambrequinFabricKeyword:', hasLambrequinFabricKeyword, '(context:', isLambrequinContext, ')');
+  
+  // PRIORITÉ 3 : Détection TOILE PRINCIPALE (seulement si demande explicite de sélection)
+  // ⚠️ IMPORTANT: Ne déclencher que si PAS en contexte lambrequin
+  const hasFabricKeyword = !isSelectionConfirmation && !hasLambrequinFabricKeyword && !isLambrequinContext && (
+    /\b(quelle|quel|choix|choisir|sélection|échantillon|voir|montrer|catalogue).*(toile|tissu)/i.test(lastUserMessage) ||
+    /\b(toile|tissu).*(quelle|quel|choix|choisir|sélection|échantillon|voir|montrer|catalogue)/i.test(lastUserMessage)
+  );
+  
+  // PRIORITÉ 4 : DÉTECTION PROFIL MODÈLE (remplace l'ancienne détection "carré/galbé")
+  // Détecte le PROFIL COMMERCIAL plutôt que la forme
+  
+  // Profil 1 : DESIGN & PROTECTION = Coffres (Heliom, Kissimy)
+  const hasDesignKeywords = /\b(design|haut de gamme|design élégant|protection|coffre|protéger|premium|luxe|esthétique)\b/i.test(lastUserMessage);
+  
+  // Profil 2 : ROBUSTESSE & GRANDES DIMENSIONS = Monoblocs (Madrid, Berlin)
+  const hasRobustnessKeywords = /\b(grand|robuste|grande largeur|12m|large|compact|peu encombrant|12 mètres|généreuse|terrasse grande)\b/i.test(lastUserMessage);
+  
+  // Profil 3 : BUDGET OPTIMISÉ = Traditionnels (Gènes, Montréal)
+  const hasBudgetKeywords = /\b(budget|économique|prix|pas cher|petit|balcon|abordable|économies|limité)\b/i.test(lastUserMessage);
+  
+  // Profil 4 : Configuration Étroite détectée séparemment via hasProjectionGreaterThanWidth (avant)
+  
+  let detectedProfileType: 'coffre' | 'monobloc' | 'traditionnel' | 'specialite' | undefined;
+  
+  if (hasProjectionGreaterThanWidth) {
+    detectedProfileType = 'specialite';
+  } else if (hasDesignKeywords && !hasBudgetKeywords) {
+    detectedProfileType = 'coffre';
+  } else if (hasRobustnessKeywords && !hasBudgetKeywords) {
+    detectedProfileType = 'monobloc';
+  } else if (hasBudgetKeywords) {
+    detectedProfileType = 'traditionnel';
+  }
+
+  console.log('🎯 Détection PROFIL:', {
+    hasDesignKeywords,
+    hasRobustnessKeywords,
+    hasBudgetKeywords,
+    hasProjectionGreaterThanWidth,
+    detectedProfileType
+  });
+
+  const hasModelKeyword = detectedProfileType !== undefined && !isSelectionConfirmation && !isOptionsContext;
+  
+  // Déterminer quel outil forcer (par priorité)
+  type ToolName = 'open_color_selector' | 'open_lambrequin_fabric_selector' | 'open_fabric_selector' | 'open_model_selector';
+  let forcedToolName: ToolName | undefined;
+  if (hasColorKeyword) {
+    forcedToolName = 'open_color_selector';
+    console.log('🎨 Détection : COULEUR → FORCER open_color_selector');
+  } else if (hasLambrequinFabricKeyword) {
+    forcedToolName = 'open_lambrequin_fabric_selector';
+    console.log('🎭 Détection : TOILE LAMBREQUIN → FORCER open_lambrequin_fabric_selector');
+  } else if (hasFabricKeyword) {
+    forcedToolName = 'open_fabric_selector';
+    console.log('🧵 Détection : TOILE PRINCIPALE → FORCER open_fabric_selector');
+  } else if (hasModelKeyword) {
+    forcedToolName = 'open_model_selector';
+    console.log('🏠 Détection : MODÈLE → FORCER open_model_selector');
+  }
+  
+  const shouldTriggerTool = !!forcedToolName;
+  
+  console.log('🔎 === RÉSULTAT DÉTECTION ===');
+  console.log('   lastUserMessage:', lastUserMessage);
+  console.log('   hasColorKeyword:', hasColorKeyword);
+  console.log('   hasLambrequinFabricKeyword:', hasLambrequinFabricKeyword);
+  console.log('   hasFabricKeyword:', hasFabricKeyword);
+  console.log('   hasModelKeyword:', hasModelKeyword);
+  console.log('   forcedToolName:', forcedToolName);
+  console.log('   shouldTriggerTool:', shouldTriggerTool);
+  console.log('===========================');
+
+  console.log('🤖 Appel OpenAI avec gpt-4o...');
+  
+  // Créer un système prompt enrichi avec le contexte d'upgrade HELIOM et BRAS CROISÉS si nécessaire
+  let enrichedSystemPrompt = SYSTEM_PROMPT;
+  if (shouldUpgradeToHeliumPlus) {
+    enrichedSystemPrompt = SYSTEM_PROMPT + heliumUpgradeContext;
+  }
+  if (brasCroisesDetected) {
+    enrichedSystemPrompt = SYSTEM_PROMPT + brasCroisesContext;
+  }
+  
+  const result = streamText({
+    model: openai('gpt-4o'),
+    system: enrichedSystemPrompt,
+    messages: normalizedMessages,
+    temperature: 0.7,
+    maxTokens: 2000,
+    toolChoice: shouldTriggerTool ? { 
+      type: 'required', // FORCE l'utilisation d'un outil
+      toolName: forcedToolName! 
+    } : 'auto',
+    tools: {
+      open_color_selector: tool({
+        description: "APPELLE CET OUTIL à l'ÉTAPE 6 (Couleur Structure) une fois que tu as collecté : modèle + dimensions + côté moteur + toile. APPELLE aussi si le client dit 'oui/ok' après que tu as mentionné les couleurs. NE L'APPELLE PAS au début de la conversation ou avant d'avoir collecté les infos de base. EXEMPLES : arriver à l'étape couleur après avoir les dimensions, 'Affichez-moi les couleurs', 'Quelles couleurs disponibles ?', 'oui' (après question couleur). NE DIS JAMAIS 'Je choisis la couleur null'. EXCEPTION : Si client cite un RAL précis, ne l'appelle pas.",
+        inputSchema: jsonSchema({
+          type: 'object',
+          properties: {
+            category: {
+              type: 'string',
+              description: "Catégorie de couleurs à afficher (ex: standard, all, reds).",
+            },
+          },
+          required: [],
+        }),
+      }),
+      open_model_selector: tool({
+        description: "Ouvre le comparateur visuel des modèles de stores. APPELLE CET OUTIL dès que tu as identifié le PROFIL du client : ✓ DESIGN & PROTECTION (filter_type='coffre') → Heliom, Kissimy avec protection intégrale ✓ ROBUSTESSE & GRANDES DIMENSIONS (filter_type='monobloc') → Madrid, Berlin, compacts et renforcés ✓ BUDGET OPTIMISÉ (filter_type='traditionnel') → Gènes, Montréal, excellent rapport qualité-prix ✓ CONFIGURATION ÉTROITE (filter_type='specialite') → Bras Croisés, pour avancée > largeur. N'écris JAMAIS le nom du modèle, laisse le client choisir visuellement. APRÈS sélection, CONFIRME IMMÉDIATEMENT son choix avec enthousiasme.",
+        inputSchema: jsonSchema({
+          type: 'object',
+          properties: {
+            filter_type: {
+              type: 'string',
+              enum: ['coffre', 'monobloc', 'traditionnel', 'specialite'],
+              description: "Profil commercial : 'coffre' pour design+protection, 'monobloc' pour robustesse+compacité, 'traditionnel' pour budget, 'specialite' pour configurations spéciales (bras croisés).",
+            },
+          },
+          required: ['filter_type'],
+        }),
+      }),
+      open_fabric_selector: tool({
+        description: "Ouvre le sélecteur de toiles UNIQUEMENT quand le client demande explicitement à choisir/voir des toiles PRINCIPALES du store HORS contexte lambrequin (ex: 'Quelle toile choisir?', 'Je veux voir les toiles', 'Avez-vous des échantillons de toile?'). ⚠️ IMPORTANT : Si tu as proposé un lambrequin enroulable (ÉTAPE 7), N'UTILISE PAS cet outil - utilise open_lambrequin_fabric_selector à la place. APRÈS que le client a choisi, CONFIRME IMMÉDIATEMENT son choix (ex: 'Parfait ! L'Orchestra Blanc est un excellent choix...').",
+        inputSchema: jsonSchema({
+          type: 'object',
+          properties: {
+            usage: {
+              type: 'string',
+              enum: ['main_canvas', 'valance'],
+              description: "Type de toile : 'main_canvas' pour la toile principale du store, 'valance' pour le lambrequin enroulable uniquement.",
+            },
+            recommendation: {
+              type: 'string',
+              enum: ['standard', 'max', 'soltis'],
+              description: "Recommandation de gamme : 'standard' pour Orchestra (par défaut), 'max' pour imperméabilité/autonettoyant, 'soltis' pour lambrequin technique.",
+            },
+            pattern: {
+              type: 'string',
+              enum: ['uni', 'raye'],
+              description: "Motif préféré : 'uni' pour couleur unie, 'raye' pour rayures.",
+            },
+          },
+          required: ['usage'],
+        }),
+      }),
+      open_lambrequin_fabric_selector: tool({
+        description: "Ouvre le sélecteur SPÉCIFIQUE de toiles techniques Soltis pour lambrequin enroulable motorisé. 🔶 PRIORITÉ : Utilise cet outil DÈS QUE tu as proposé un lambrequin enroulable (ÉTAPE 7), ET que le client demande à voir/choisir les toiles - MÊME s'il ne dit pas explicitement 'lambrequin'. EXEMPLES : 'voir les toiles', 'nuancier', 'choisir la couleur', 'montrer les options'. Si en doute, utilise CET OUTIL plutôt que open_fabric_selector. N'utilise pas cet outil pour le lambrequin FIXE. APRÈS que le client a choisi, CONFIRME avec les avantages spécifiques (ex: 'Excellent ! La Soltis 86 vous permettra de garder la vue sur votre jardin...').",
+        inputSchema: jsonSchema({
+          type: 'object',
+          properties: {
+            context: {
+              type: 'string',
+              description: "Contexte optionnel : 'transparency' si le client veut garder la vue, 'thermal' s'il cherche la performance thermique.",
+            },
+          },
+          required: [],
+        }),
+      }),
+    },
+  });
+
+  // 5. Retourner le stream UI attendu par DefaultChatTransport
+  console.log('📤 Envoi de la réponse streaming...');
+  return result.toUIMessageStreamResponse({
+    originalMessages: messages,
+  });
+  } catch (error) {
+    console.error('❌ Erreur dans /api/chat:', error);
+    return new Response(JSON.stringify({ 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}

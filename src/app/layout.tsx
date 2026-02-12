@@ -48,7 +48,7 @@ export default function RootLayout({
           <CartProvider>
             {/* Top Info Bar */}
             <div className="bg-slate-900 text-white text-sm py-3 border-b border-slate-700">
-              <div className="max-w-7xl mx-auto px-4 flex flex-wrap justify-center md:justify-between items-center gap-4">
+              <div className="w-full px-4 flex flex-wrap justify-center md:justify-between items-center gap-4">
                 <div className="hidden md:flex space-x-6 text-gray-300">
                   <span className="flex items-center gap-2">🇫🇷 Fabrication Française</span>
                   <span className="flex items-center gap-2">🛡️ Garantie Jusqu'à 12 Ans</span>
@@ -60,7 +60,7 @@ export default function RootLayout({
               </div>
             </div>
             <Header />
-            {children}
+            <main>{children}</main>
             <Footer />
             <ChatVisibilityController />
           </CartProvider>

@@ -54,10 +54,22 @@ export function parseMessage(raw: string): ParsedMessage {
 
   configPart = configPart.slice(firstBrace, lastBrace + 1);
 
+  // Supprimer les commentaires JavaScript avant de parser le JSON
+  configPart = configPart
+    .replace(/\/\/.*$/gm, '')  // Commentaires de ligne
+    .replace(/\/\*[\s\S]*?\*\//g, '');  // Commentaires multi-lignes
+
   try {
     const config = JSON.parse(configPart);
+    
+    // Appliquer des valeurs par défaut si certains champs sont vides
+    if (config && !config.color) {
+      config.color = 'ral_9010'; // Blanc par défaut
+    }
+    
     return { text: textPart, config, badges };
-  } catch {
+  } catch (e) {
+    console.error('Failed to parse config JSON:', configPart, e);
     return { text: cleanedRaw.trim(), config: null, badges };
   }
 }

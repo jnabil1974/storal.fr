@@ -110,6 +110,57 @@ export interface StoreBanneKissimyConfig {
   capteurVent?: boolean; // +90€
   tahoma?: boolean; // +117€
   cablage10m?: boolean; // +48€
+  
+  // Nouvelles options (nouvelles fonctionnalités)
+  ledBras?: boolean; // LED dans les bras
+  ledCoffre?: boolean; // LED sous coffre
+  lambrequin?: boolean; // Lambrequin enroulable
+  lambrequinMotorized?: boolean; // Lambrequin motorisé
+}
+
+// Configuration Store Banne Modern (format configurateur/chat AI)
+export interface StoreBanneModernConfig {
+  modelKey?: string;
+  modelName?: string;
+  largeur?: number; // cm ou mm selon contexte
+  avancee?: number; // cm ou mm selon contexte
+  width?: number; // mm
+  projection?: number; // mm
+  model?: string;
+  
+  // Frame/Color
+  frameColorId?: string;
+  frameColorName?: string;
+  color?: string;
+  
+  // Fabric
+  fabricRef?: string;
+  fabricName?: string;
+  fabric_id?: string;
+  
+  // Motor & Sensors
+  motor?: string;
+  sensor?: string;
+  support?: string;
+  
+  // LED Options
+  ledBras?: boolean;
+  ledCoffre?: boolean;
+  ledArms?: boolean;
+  ledBox?: boolean;
+  
+  // Lambrequin
+  lambrequin?: boolean;
+  lambrequinMotorized?: boolean;
+  
+  // Installation
+  posePro?: boolean;
+  style?: string;
+  description?: string;
+  price?: number;
+  
+  // Anciens champs pour compatibilité
+  [key: string]: any;
 }
 
 // Options disponibles pour KISSIMY (utilisé dans le configurateur)
@@ -161,7 +212,7 @@ export interface StoreBanneKissimyProduct extends BaseProduct {
 export type Product = StoreBanneProduct | PorteBlindeeProduct | StoreAntichaleurProduct | StoreBanneKissimyProduct;
 
 // Configuration de produit (union de toutes les configs)
-export type ProductConfig = StoreBanneConfig | PorteBlindeeConfig | StoreAntichaleurConfig | StoreBanneKissimyConfig;
+export type ProductConfig = StoreBanneConfig | PorteBlindeeConfig | StoreAntichaleurConfig | StoreBanneKissimyConfig | StoreBanneModernConfig;
 
 // Interface pour le devis
 export interface QuoteItem {

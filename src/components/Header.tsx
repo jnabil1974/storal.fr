@@ -6,47 +6,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { getSupabaseClient } from '@/lib/supabase';
 import Logo from './Logo';
-import { ProductCategory } from '@/types/categories';
 
 export default function Header() {
   const { cart } = useCart();
   const { user, signOut } = useAuth();
   const [hasOrders, setHasOrders] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [categories, setCategories] = useState<ProductCategory[]>([]);
-  const [authDebug, setAuthDebug] = useState<{userEmail?: string|null; allowList: string[]}>({ allowList: [] });
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Charger les catégories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const supabase = getSupabaseClient();
-        if (!supabase) return;
-        const { data, error } = await supabase
-          .from('product_categories')
-          .select('*')
-          .order('order_index', { ascending: true });
-        if (!error && data) {
-          setCategories(data.map((row: any) => ({
-            id: row.id,
-            slug: row.slug,
-            name: row.name,
-            displayName: row.display_name,
-            description: row.description,
-            imageUrl: row.image_url,
-            imageAlt: row.image_alt,
-            orderIndex: row.order_index,
-            createdAt: new Date(row.created_at),
-            updatedAt: new Date(row.updated_at),
-          })));
-        }
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
@@ -57,7 +22,6 @@ export default function Header() {
         .map((e) => e.trim().toLowerCase());
       const allowed = adminEmails.includes(user.email.toLowerCase());
       setIsAdmin(allowed);
-      setAuthDebug({ userEmail: user.email, allowList: adminEmails });
 
       // Double check via server (token-based) to avoid ENV mismatches
       (async () => {
@@ -80,9 +44,8 @@ export default function Header() {
       })();
     } else {
       setIsAdmin(false);
-      setAuthDebug({ userEmail: null, allowList: [] });
     }
-  }, [user]);
+  }, [user?.email]);
 
   // Vérifier si l'utilisateur a des commandes
   useEffect(() => {
@@ -107,7 +70,7 @@ export default function Header() {
       }
     };
     checkOrders();
-  }, [user]);
+  }, [user?.email]);
 
   const showMyOrders = (!!user || hasOrders) && !isAdmin;
 
@@ -116,21 +79,6 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            {/* Menu Hamburger (mobile/tablet) */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden flex items-center text-gray-700 hover:text-rose-700"
-              aria-label="Menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {mobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-
             {/* Logo */}
             <Link href="/">
               <div className="cursor-pointer hover:scale-105 transition-transform duration-200">
@@ -178,23 +126,21 @@ export default function Header() {
               </a>
               
               {/* Cart Button */}
-              <Link href="/cart" className="relative">
-                <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all font-semibold shadow-md hover:shadow-lg">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 8m10 0l2 8m0 0H9m8 0a2 2 0 100-4 2 2 0 000 4zm0 0a2 2 0 100-4 2 2 0 000 4z"
-                    />
-                  </svg>
-                  <span className="hidden md:inline">Panier</span>
-                </button>
+              <Link href="/cart" className="relative flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all font-semibold shadow-md hover:shadow-lg">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 8m10 0l2 8m0 0H9m8 0a2 2 0 100-4 2 2 0 000 4zm0 0a2 2 0 100-4 2 2 0 000 4z"
+                  />
+                </svg>
+                <span className="hidden md:inline">Panier</span>
                 {cart.totalItems > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-pulse">
                     {cart.totalItems}
@@ -203,87 +149,6 @@ export default function Header() {
               </Link>
             </div>
           </div>
-
-          {/* Navigation sous le logo - Desktop */}
-          <div className="hidden md:flex flex-wrap items-center gap-2 border-t border-gray-200 pt-3">
-            <Link href="/store-banne" className="px-4 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-all uppercase">
-              Store Banne
-            </Link>
-            <Link href="/store-antichaleur" className="px-4 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-all uppercase">
-              Store Antichaleur
-            </Link>
-            {showMyOrders && (
-              <Link href="/my-orders" className="px-4 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-blue-700 hover:bg-blue-50 transition-all uppercase">
-                Mes commandes
-              </Link>
-            )}
-            {isAdmin && (
-              <Link href="/admin" className="px-4 py-2 rounded-full text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all uppercase">
-                Admin
-              </Link>
-            )}
-          </div>
-
-          {/* Menu Mobile/Tablet */}
-          {mobileMenuOpen && (
-            <div className="md:hidden border-t border-gray-200 pt-3 pb-2">
-              <div className="flex flex-col gap-2">
-                <Link 
-                  href="/store-banne" 
-                  className="px-4 py-3 text-gray-700 hover:bg-rose-50 hover:text-rose-700 font-semibold transition-all rounded-lg uppercase"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Store Banne
-                </Link>
-                <Link 
-                  href="/store-antichaleur" 
-                  className="px-4 py-3 text-gray-700 hover:bg-rose-50 hover:text-rose-700 font-semibold transition-all rounded-lg uppercase"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Store Antichaleur
-                </Link>
-                {showMyOrders && (
-                  <Link 
-                    href="/my-orders" 
-                    className="px-4 py-3 text-gray-700 hover:bg-rose-50 hover:text-rose-700 font-semibold transition-all rounded-lg uppercase"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Mes commandes
-                  </Link>
-                )}
-                {isAdmin && (
-                  <Link 
-                    href="/admin" 
-                    className="px-4 py-3 text-blue-600 hover:bg-blue-50 font-semibold transition-all rounded-lg uppercase"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Admin
-                  </Link>
-                )}
-                {user ? (
-                  <div className="flex flex-col gap-2 border-t border-gray-200 pt-2 mt-2">
-                    <div className="px-4 py-2 text-sm text-gray-600">
-                      {user.email}
-                    </div>
-                    <button 
-                      onClick={() => { signOut(); setMobileMenuOpen(false); }} 
-                      className="px-4 py-3 text-left text-gray-700 hover:bg-gray-100 font-semibold transition-all rounded-lg"
-                    >
-                      Déconnexion
-                    </button>
-                  </div>
-                ) : (
-                  <Link 
-                    href="/login" 
-                    className="px-4 py-3 text-gray-700 hover:bg-gray-100 font-semibold transition-all rounded-lg border-t border-gray-200 mt-2 pt-4"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Connexion
-                  </Link>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </nav>
     </header>

@@ -1,18 +1,66 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Script from 'next/script';
+import { useAuth } from '@/contexts/AuthContext';
+import { getSupabaseClient } from '@/lib/supabase';
 
 export default function Footer() {
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [recaptchaEnabled, setRecaptchaEnabled] = useState(false);
 
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
+  useEffect(() => {
+    if (!siteKey) {
+      setRecaptchaEnabled(false);
+      return;
+    }
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const hostname = window.location.hostname;
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+    setRecaptchaEnabled(!isLocal);
+  }, [siteKey]);
+
+  // Vérifier si l'utilisateur est admin
+  useEffect(() => {
+    if (user?.email) {
+      const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin@storal.fr')
+        .split(',')
+        .map((e) => e.trim().toLowerCase());
+      const allowed = adminEmails.includes(user.email.toLowerCase());
+      setIsAdmin(allowed);
+
+      // Double check via server (token-based) to avoid ENV mismatches
+      (async () => {
+        try {
+          const supabase = getSupabaseClient();
+          if (!supabase) return;
+          const { data: { session } } = await supabase.auth.getSession();
+          const token = session?.access_token;
+          if (!token) return;
+          const res = await fetch('/api/admin/check', { headers: { Authorization: `Bearer ${token}` } });
+          if (res.ok) {
+            setIsAdmin(true);
+          }
+        } catch (e) {
+          console.warn('Admin check (server) error', e);
+        }
+      })();
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user?.email]);
+
   const getRecaptchaToken = async () => {
-    if (!siteKey) return null;
+    if (!siteKey || !recaptchaEnabled) return null;
     if (typeof window === 'undefined' || !(window as any).grecaptcha) return null;
     try {
       // Ensure grecaptcha is fully loaded
@@ -69,7 +117,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-gray-900 text-gray-300">
-      {siteKey && (
+      {siteKey && recaptchaEnabled && (
         <Script
           src={`https://www.google.com/recaptcha/api.js?render=${siteKey}`}
           strategy="afterInteractive"
@@ -128,6 +176,13 @@ export default function Footer() {
                   Espace Client / Connexion
                 </Link>
               </li>
+              {isAdmin && (
+                <li>
+                  <Link href="/admin" className="text-sm hover:text-white transition text-blue-400 font-semibold">
+                    Admin Dashboard
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AdminLayout({
   children,
@@ -9,6 +10,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { user, loading, signOut } = useAuth();
 
   const menuItems = [
     {
@@ -24,12 +26,6 @@ export default function AdminLayout({
       description: 'Gestion des commandes'
     },
     {
-      title: 'Catégories',
-      href: '/admin/categories',
-      icon: '🏷️',
-      description: 'Produits & images'
-    },
-    {
       title: 'Toiles',
       href: '/admin/toiles',
       icon: '🎨',
@@ -42,22 +38,10 @@ export default function AdminLayout({
       description: 'Nuancier RAL Matest'
     },
     {
-      title: 'Produits Store Banne',
-      href: '/admin/store-banne-products',
-      icon: '☀️',
-      description: 'Images & infos stores'
-    },
-    {
       title: 'Newsletter',
       href: '/admin/newsletter',
       icon: '📧',
       description: 'Abonnés newsletter'
-    },
-    {
-      title: 'Carrousel Hero',
-      href: '/admin/hero-slides',
-      icon: '🖼️',
-      description: 'Slides d\'accueil'
     },
     {
       title: 'Gestion SEO',
@@ -80,8 +64,21 @@ export default function AdminLayout({
               <span className="text-gray-300">|</span>
               <h1 className="text-2xl font-bold text-gray-900">Administration</h1>
             </div>
-            <div className="text-sm text-gray-600">
-              👤 Administrateur
+            <div className="flex items-center gap-3 text-sm text-gray-600">
+              <span>👤 {user?.email || 'Administrateur'}</span>
+              {loading ? null : user ? (
+                <button
+                  type="button"
+                  onClick={signOut}
+                  className="text-xs text-red-600 hover:text-red-700 font-medium"
+                >
+                  Se deconnecter
+                </button>
+              ) : (
+                <span className="text-xs text-gray-400 font-medium">
+                  Connexion indisponible
+                </span>
+              )}
             </div>
           </div>
         </div>

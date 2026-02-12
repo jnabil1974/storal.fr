@@ -83,8 +83,8 @@ export default function AdminDashboard() {
       const ordersData = await ordersResponse.json();
       const orders = Array.isArray(ordersData) ? ordersData : [];
       
-      // Charger les toiles
-      const toilesResponse = await fetch('/api/admin/toiles');
+      // Charger les toiles depuis Supabase
+      const toilesResponse = await fetch('/api/admin/toile-colors');
       const toilesData = await toilesResponse.json();
       const toiles = Array.isArray(toilesData) ? toilesData : [];
 

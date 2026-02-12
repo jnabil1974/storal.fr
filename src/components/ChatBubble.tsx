@@ -6,8 +6,11 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from 'ai';
 import type { UIMessage } from 'ai';
 import { parseMessage, type Badge } from '@/lib/parseMessage';
-import ColorSelectorModal from '@/components/ColorSelectorModal';
-import type { ColorOption } from '@/lib/catalog-data';
+import { STORE_MODELS, FRAME_COLORS as CUSTOM_COLORS, FABRICS as FABRIC_OPTIONS } from '@/lib/catalog-data';
+
+// Type definitions
+type ColorOption = typeof CUSTOM_COLORS[0];
+type FabricOption = typeof FABRIC_OPTIONS[0];
 
 // Questions de démarrage
 const quickQuestions = [
@@ -18,14 +21,7 @@ const quickQuestions = [
 
 // Composant pour détecter et transformer les données configurateur en bouton
 const MessageContent = ({ content, onLinkClick }: { content: string; onLinkClick: (url: string) => void }) => {
-  console.log('🚨🚨🚨 MESSAGECOMPONENT APPELÉ 🚨🚨🚨');
-  console.log('Contenu complet reçu:', content);
-  
   const { text: textMessage, config: parsedConfig, badges } = parseMessage(content);
-
-  console.log('🔍 MessageContent - texte:', textMessage);
-  console.log('🔍 MessageContent - JSON:', parsedConfig);
-  console.log('🔍 MessageContent - Badges:', badges);
 
   // Mappage des badges avec styles
   const badgeStyles: Record<Badge['type'], string> = {
@@ -70,13 +66,52 @@ const MessageContent = ({ content, onLinkClick }: { content: string; onLinkClick
 
       {/* Génération du bouton si données JSON présentes */}
       {parsedConfig && (() => {
-        const url = `/panier?model=${parsedConfig.model}&width=${parsedConfig.width}&projection=${parsedConfig.projection}&color=${parsedConfig.color}&motor=${parsedConfig.motor || ''}&sensor=${parsedConfig.sensor || ''}&promo=BIENVENUE2026`;
-
-        console.log('✅ Config extraite:', parsedConfig);
-        console.log('✅ URL générée:', url);
+        const widthMm = parsedConfig.width;
+        const projectionMm = parsedConfig.projection;
+        const widthCm = widthMm / 10;
+        const projectionCm = projectionMm / 10;
+        const url = `/cart?model=${parsedConfig.model}&width=${widthMm}&projection=${projectionMm}&color=${parsedConfig.color || 'ral_9010'}&fabric_id=${parsedConfig.fabric_id || ''}&support=${parsedConfig.support || ''}&motor=${parsedConfig.motor || ''}&sensor=${parsedConfig.sensor || ''}&ledArms=${parsedConfig.ledArms || false}&ledBox=${parsedConfig.ledBox || false}&lambrequin=${parsedConfig.lambrequin || false}&lambrequinMotorized=${parsedConfig.lambrequinMotorized || false}&promo=BIENVENUE2026`;
+        const matchedModel = Object.values(STORE_MODELS).find((model) => model.id === parsedConfig.model);
+        const modelLabel = matchedModel?.name ?? parsedConfig.model;
+        const matchedColor = CUSTOM_COLORS.find((color) => color.id === parsedConfig.color);
+        const colorLabel = matchedColor?.name ?? parsedConfig.color;
+        const matchedFabric = FABRIC_OPTIONS.find((fabric) => fabric.id === (parsedConfig.fabric_id || parsedConfig.fabric));
+        const fabricLabel = matchedFabric?.name ?? (parsedConfig.fabric_id || parsedConfig.fabric);
+        const supportLabel = parsedConfig.support === 'beton'
+          ? 'Béton'
+          : parsedConfig.support === 'brique'
+            ? 'Brique'
+            : parsedConfig.support === 'ite'
+              ? 'ITE'
+              : parsedConfig.support || '';
+        const motorLabel = parsedConfig.motor === 'io'
+          ? 'Moteur Somfy io-homecontrol (inclus)'
+          : parsedConfig.motor === 'csi'
+            ? 'Manivelle secours (CSI)'
+            : parsedConfig.motor || '';
+        const sensorLabel = parsedConfig.sensor === 'wind'
+          ? 'Capteur vent Eolis'
+          : parsedConfig.sensor === 'sun'
+            ? 'Capteur soleil Sunis'
+            : '';
 
         return (
           <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="mb-3 rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">Récapitulatif</p>
+              <ul className="mt-2 space-y-1">
+                <li><strong>Modèle :</strong> {modelLabel}</li>
+                <li><strong>Dimensions :</strong> {widthCm}×{projectionCm}cm</li>
+                {colorLabel && <li><strong>Couleur coffre :</strong> {colorLabel}</li>}
+                {supportLabel && <li><strong>Support :</strong> {supportLabel}</li>}
+                {fabricLabel && <li><strong>Toile :</strong> {fabricLabel}</li>}
+                {motorLabel && <li><strong>Motorisation :</strong> {motorLabel}</li>}
+                {sensorLabel && <li><strong>Capteur :</strong> {sensorLabel}</li>}
+                {parsedConfig.ledArms && <li><strong>Option :</strong> LED Bras</li>}
+                {parsedConfig.ledBox && <li><strong>Option :</strong> LED Coffre</li>}
+                {parsedConfig.lambrequin && <li><strong>Option :</strong> Lambrequin {parsedConfig.lambrequinMotorized ? 'motorisé' : 'fixe'}</li>}
+              </ul>
+            </div>
             <button
               onClick={() => onLinkClick(url)}
               className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 group"
@@ -86,7 +121,7 @@ const MessageContent = ({ content, onLinkClick }: { content: string; onLinkClick
               <span className="group-hover:translate-x-1 transition-transform">→</span>
             </button>
             <p className="text-[10px] text-gray-400 mt-2 text-center uppercase tracking-widest font-semibold">
-              Heliom {parsedConfig.width}×{parsedConfig.projection}cm · {parsedConfig.color}
+              {modelLabel} {widthCm}×{projectionCm}cm · {parsedConfig.color}
             </p>
           </div>
         );
@@ -99,8 +134,6 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [isColorModalOpen, setIsColorModalOpen] = useState(false);
-  const [pendingToolCallId, setPendingToolCallId] = useState<string | null>(null);
   
   // Générer un ID unique à chaque montage pour éviter la persistance
   const [chatId] = useState(() => `bubble-${Date.now()}-${Math.random().toString(36).substring(7)}`);
@@ -109,13 +142,6 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
     transport: new DefaultChatTransport({ api: '/api/chat' }),
     id: chatId, // ID unique pour éviter la réutilisation de l'historique
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
-    onToolCall: async ({ toolCall }) => {
-      if (toolCall.dynamic) return;
-      if (toolCall.toolName === 'open_color_selector') {
-        setPendingToolCallId(toolCall.toolCallId);
-        setIsColorModalOpen(true);
-      }
-    },
     onError: (error) => {
       console.error('❌ Erreur ChatBubble useChat:', error);
     },
@@ -127,6 +153,8 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
     console.log('📊 ChatBubble Status:', status, 'Messages:', messages.length, 'Error:', error);
   }, [status, messages, error]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   // Nettoyer l'ancien localStorage au montage
   useEffect(() => {
@@ -140,7 +168,11 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
   }, []);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Utiliser scroll() directement sur le conteneur au lieu de scrollIntoView()
+    // pour éviter de scroller le document entier
+    if (messagesEndRef.current?.parentElement) {
+      messagesEndRef.current.parentElement.scrollTop = messagesEndRef.current.parentElement.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -164,23 +196,28 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
     sendMessage({ text });
   };
 
+  // Gérer l'ouverture/fermeture de la modale dialog
+  useEffect(() => {
+    if (isOpen && dialogRef.current) {
+      dialogRef.current.showModal();
+    } else if (!isOpen && dialogRef.current) {
+      dialogRef.current.close();
+    }
+  }, [isOpen]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!input.trim() || isLoading) return;
+    
     console.log('🚀 Envoi message input:', input.trim());
     sendMessage({ text: input.trim() });
     setInput('');
-  };
-
-  const handleColorSelect = (color: ColorOption) => {
-    if (!pendingToolCallId) return;
-    addToolResult({
-      tool: 'open_color_selector',
-      toolCallId: pendingToolCallId,
-      output: color,
-    });
-    setIsColorModalOpen(false);
-    setPendingToolCallId(null);
+    
+    // Retirer le focus de l'input
+    if (inputRef.current) {
+      inputRef.current.blur();
+    }
   };
 
   const visibilityClasses = isVisible
@@ -196,7 +233,7 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 right-4 z-50 w-14 h-14 bg-gradient-to-br from-gray-900 to-gray-700 text-white rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center group"
+          className="fixed bottom-4 right-4 z-[9999] w-14 h-14 bg-gradient-to-br from-gray-900 to-gray-700 text-white rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center group"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -207,7 +244,17 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
 
       {/* Fenêtre de chat */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 z-50 w-[350px] h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col border border-gray-200">
+        <dialog
+          ref={dialogRef}
+          className="fixed inset-0 z-[9999] w-screen h-screen p-0 m-0 bg-transparent backdrop:bg-black/40"
+          onClick={(e) => {
+            // Fermer si on clique sur le backdrop
+            if (e.target === dialogRef.current) {
+              setIsOpen(false);
+            }
+          }}
+        >
+          <div className="fixed bottom-4 right-4 w-[350px] h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col border border-gray-200">
           {/* Header */}
           <div className="bg-gradient-to-r from-gray-900 to-gray-700 text-white p-4 rounded-t-2xl flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -255,9 +302,7 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
               </div>
             )}
 
-            {messages.map((msg) => {
-              console.log('💬 Message reçu:', msg.role, msg);
-              return (
+            {messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -283,23 +328,162 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
                     </div>
                   )}
                   <div className="whitespace-pre-wrap">
-                    {(() => {
-                      console.log('🔄 Rendu du message:', msg.role);
-                      const text = getMessageText(msg);
-                      console.log('📝 Texte extrait:', text);
-                      return msg.role === 'assistant' ? (
+                    {msg.role === 'assistant' ? (
+                      <>
                         <MessageContent 
-                          content={text} 
+                          content={getMessageText(msg)} 
                           onLinkClick={handleConfiguratorLink}
                         />
-                      ) : (
-                        text
-                      );
-                    })()}
+                        {/* Rendu des outils en ligne (Cartes) */}
+                        {msg.toolInvocations?.map((toolInvocation) => {
+                          const renderInlineTool = (toolInvocation: ToolInvocation) => {
+                            // ===== SÉLECTEUR DE MODÈLES =====
+                            if (toolInvocation.toolName === 'open_model_selector') {
+                              if ('result' in toolInvocation) {
+                                const result = toolInvocation.result as { modelName?: string };
+                                return (
+                                  <div className="mt-2 text-xs text-green-600 font-semibold">
+                                    ✓ Modèle sélectionné : {result.modelName}
+                                  </div>
+                                );
+                              }
+
+                              const input = (toolInvocation.input as Record<string, unknown>) || {};
+                              const modelsToDisplay = input.models_to_display as string[] || [];
+
+                              const filteredModels = modelsToDisplay
+                                .map(id => Object.values(STORE_MODELS).find(m => m.id === id))
+                                .filter(Boolean) as StoreModel[];
+
+                              if (filteredModels.length === 0) {
+                                return (
+                                  <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                                    ⚠️ Aucun modèle compatible trouvé pour vos dimensions.
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div className="mt-3 grid grid-cols-1 gap-2">
+                                  {filteredModels.map((model) => (
+                                    <button
+                                      key={model.id}
+                                      onClick={async () => {
+                                        const result = {
+                                          modelId: model.id,
+                                          modelName: model.name,
+                                          modelType: model.type,
+                                          modelImage: model.image,
+                                          timestamp: new Date().toISOString(),
+                                          validated: true
+                                        };
+                                        addToolResult({ toolCallId: toolInvocation.toolCallId, result });
+                                        await new Promise(resolve => setTimeout(resolve, 100));
+                                        sendMessage({ text: '' });
+                                      }}
+                                      className="flex flex-col text-left p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                      <span className="font-semibold text-sm">{model.name}</span>
+                                      <span className="text-xs text-gray-500 line-clamp-1">{model.description}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              );
+                            }
+
+                            // ===== SÉLECTEUR DE COULEUR INLINE =====
+                            if (toolInvocation.toolName === 'open_color_selector') {
+                              // Si déjà répondu, on affiche le choix
+                              if ('result' in toolInvocation) {
+                                const result = toolInvocation.result as { colorName?: string };
+                                return <div key={toolInvocation.toolCallId} className="mt-2 text-xs text-green-600 font-semibold">✓ Couleur sélectionnée : {result.colorName}</div>;
+                              }
+                              // Sinon on affiche les boutons
+                              const input = (toolInvocation.input as Record<string, unknown>) || {};
+                              const allowedRalCodes = input.allowedRalCodes as string[] | undefined;
+                              
+                              const filteredColors = allowedRalCodes
+                                ? CUSTOM_COLORS.filter(c => allowedRalCodes.includes(c.id))
+                                : CUSTOM_COLORS.filter(c => c.category === 'standard');
+
+                              return (
+                                <div key={toolInvocation.toolCallId} className="mt-3 grid grid-cols-3 gap-2">
+                                  {filteredColors.map((color) => (
+                                    <button
+                                      key={color.id}
+                                      onClick={async () => {
+                                        addToolResult({ toolCallId: toolInvocation.toolCallId, result: { colorId: color.id, colorName: color.name, timestamp: new Date().toISOString(), validated: true } });
+                                        await new Promise(resolve => setTimeout(resolve, 100));
+                                        sendMessage({ text: '' });
+                                      }}
+                                      className="flex flex-col items-center gap-1 p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                      <div className="w-6 h-6 rounded-full border border-gray-300 shadow-sm" style={{ backgroundColor: color.hex }} />
+                                      <span className="text-[10px] text-center leading-tight">{color.name.replace(' (RAL', '\n(RAL')}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              );
+                            }
+
+                            // ===== SÉLECTEUR DE TOILES =====
+                            if (toolInvocation.toolName === 'open_fabric_selector') {
+                              if ('result' in toolInvocation) {
+                                const result = toolInvocation.result as { fabricName?: string };
+                                return (
+                                  <div className="mt-2 text-xs text-green-600 font-semibold">
+                                    ✓ Toile sélectionnée : {result.fabricName}
+                                  </div>
+                                );
+                              }
+
+                              const input = (toolInvocation.input as Record<string, unknown>) || {};
+                              const pattern = input.pattern as 'uni' | 'raye' | undefined;
+                              
+                              const filteredFabrics = pattern
+                                ? FABRIC_OPTIONS.filter(f => f.category === pattern)
+                                : FABRIC_OPTIONS;
+
+                              return (
+                                <div className="mt-3 grid grid-cols-1 gap-2">
+                                  {filteredFabrics.slice(0, 9).map((fabric) => (
+                                    <button
+                                      key={fabric.id}
+                                      onClick={async () => {
+                                        const result = {
+                                          fabric_id: fabric.id,
+                                          fabricName: fabric.name,
+                                          collection: fabric.collection,
+                                          timestamp: new Date().toISOString(),
+                                          validated: true
+                                        };
+                                        addToolResult({ toolCallId: toolInvocation.toolCallId, result });
+                                        await new Promise(resolve => setTimeout(resolve, 100));
+                                        sendMessage({ text: '' });
+                                      }}
+                                      className="flex flex-col text-left p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                      <span className="font-semibold text-sm">{fabric.name}</span>
+                                      <span className="text-xs text-gray-500 mt-0.5">Réf: {fabric.ref}</span>
+                                      <span className="text-xs text-orange-700 font-medium">{fabric.category}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              );
+                            }
+                            return null;
+                          };
+
+                          return <div key={toolInvocation.toolCallId}>{renderInlineTool(toolInvocation)}</div>;
+                        })}
+                      </>
+                    ) : (
+                      getMessageText(msg)
+                    )}
                   </div>
                 </div>
               </div>
-            )})}
+            ))}
 
 
             {isLoading && (
@@ -325,6 +509,7 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
           <form onSubmit={handleSubmit} className="p-3 border-t border-gray-200 bg-white rounded-b-2xl">
             <div className="flex gap-2">
               <input
+                ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -342,13 +527,9 @@ export default function ChatBubble({ isVisible = true }: { isVisible?: boolean }
             </div>
           </form>
         </div>
+        </dialog>
       )}
 
-      <ColorSelectorModal
-        isOpen={isColorModalOpen}
-        onClose={() => setIsColorModalOpen(false)}
-        onSelect={handleColorSelect}
-      />
     </div>
   );
 }
