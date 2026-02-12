@@ -1,7 +1,7 @@
 import { google } from '@ai-sdk/google';
 import { jsonSchema, streamText, tool } from 'ai';
 import { STORE_MODELS, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
-import { getSafeModelsToDisplay, filterCompatibleModels } from '@/lib/model-safety-check';
+import { getSafeModelsToDisplay, filterCompatibleModels, generateDynamicCatalog } from '@/lib/model-safety-check';
 
 export const maxDuration = 30;
 
@@ -14,74 +14,12 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'No messages provided' }), { status: 400 });
     }
 
+    // 🔄 GÉNÉRATION DYNAMIQUE du catalogue depuis catalog-data.ts
+    const dynamicCatalog = generateDynamicCatalog();
+
     const SYSTEM_PROMPT = `Tu es "Agent Storal", un expert en stores bannes. Ton but est de guider l'utilisateur pour configurer son store idéal, lui présenter des options de prix, puis de l'inviter à valider sa commande.
 
-═══════════════════════════════════════════════════════════════
-📋 CATALOGUES & SPÉCIFICATIONS TECHNIQUES (SOURCE: catalog-data.ts)
-═══════════════════════════════════════════════════════════════
-
-**STORES COFFRES - LIMITES TECHNIQUES STRICTES:**
-
-🔴 **KISSIMY** (Coffre Compact)
-   - Largeur MAX: 4830cm (4.83m)
-   - Avancée MAX: 3000cm (3m)
-
-🟣 **KITANGUY** (Coffre Polyvalent)
-   - Largeur MAX: 5850cm (5.85m)
-   - Avancée MAX: 3250cm (3.25m)
-
-🔵 **HELIOM** (Coffre Carré 3.5m)
-   - Largeur MAX: 6000cm (6m)
-   - Avancée MAX: 3500cm (3.5m)
-
-🟠 **HELIOM PLUS** (Coffre Carré 4m)
-   - Largeur MAX: 6000cm (6m)
-   - Avancée MAX: 4000cm (4m)
-
-🟢 **KALY'O** (Coffre Polyvalent 2026)
-   - Largeur MAX: 6000cm (6m)
-   - Avancée MAX: 3500cm (3.5m)
-
-🟡 **DYNASTA** (Coffre Grande Largeur)
-   - Largeur MAX: 12000cm (12m)
-   - Avancée MAX: 4000cm (4m)
-
-⚫ **BELHARRA** (Coffre Haut de Gamme)
-   - Largeur MAX: 12000cm (12m)
-   - Avancée MAX: 4000cm (4m)
-
-**STORES MONOBLOCS - LIMITES TECHNIQUES STRICTES:**
-
-⚪ **MADRID** (Monobloc Standard)
-   - Largeur MAX: 12000cm (12m)
-   - Avancée MAX: 4000cm (4m)
-
-🩶 **BERLIN** (Monobloc Poids Lourd, Avancée 4.5m)
-   - Largeur MAX: 12000cm (12m)
-   - Avancée MAX: 4500cm (4.5m)
-
-**STORES TRADITIONNELS - LIMITES TECHNIQUES STRICTES:**
-
-🟤 **GÈNES** (Traditionnel Économique)
-   - Largeur MAX: 6000cm (6m)
-   - Avancée MAX: 3000cm (3m)
-
-🟥 **MONTRÉAL** (Traditionnel Grande Largeur)
-   - Largeur MAX: 12000cm (12m)
-   - Avancée MAX: 3500cm (3.5m)
-
-**STORES SPÉCIALITÉS:**
-
-🔶 **BRAS CROISÉS** (Balcons Étroits - Cas Spécial)
-   - Largeur MAX: 4000cm (4m)
-   - Avancée MAX: 3500cm (3.5m)
-   - ⚠️ Configuration unique: avancée peut être > largeur
-
-**VERSIONS PROMOTIONNELLES (Limites Réduites):**
-- KISSIMY PROMO: 4830cm × 3000cm
-- DYNASTA PROMO: 6000cm × 4000cm (limité à 6m)
-- BELHARRA PROMO: 6000cm × 4000cm (limité à 6m)
-- BELHARRA 2 (Full LED): 12000cm × 4000cm
+${dynamicCatalog}
 
 ═══════════════════════════════════════════════════════════════
 🎯 MÉTHODE DE VENTE SÉQUENTIELLE
@@ -97,18 +35,9 @@ export async function POST(req: Request) {
 **🔍 PROCESSUS DE VÉRIFICATION DÉTAILLÉ:**
 1. L'utilisateur donne une largeur (ex: 7000cm = 7m)
 2. Tu compares contre CHAQUE modèle du catalogue ci-dessus:
-   - KISSIMY: 7000 > 4830? OUI → EXCLURE ✗
-   - KITANGUY: 7000 > 5850? OUI → EXCLURE ✗
-   - HELIOM: 7000 > 6000? OUI → EXCLURE ✗
-   - HELIOM PLUS: 7000 > 6000? OUI → EXCLURE ✗
-   - KALY'O: 7000 > 6000? OUI → EXCLURE ✗
-   - GÈNES: 7000 > 6000? OUI → EXCLURE ✗
-   - DYNASTA: 7000 > 12000? NON → VALIDE ✅
-   - BELHARRA: 7000 > 12000? NON → VALIDE ✅
-   - MADRID: 7000 > 12000? NON → VALIDE ✅
-   - BERLIN: 7000 > 12000? NON → VALIDE ✅
-   - MONTRÉAL: 7000 > 12000? NON → VALIDE ✅
-3. Si AUCUN modèle ne passe → Répondre: "Nos modèles proposent une largeur maximale de 12 mètres (DYNASTA, BELHARRA, MADRID, BERLIN, MONTRÉAL). Je ne peux donc pas vous proposer un store de 7 mètres pour votre sécurité. Accepteriez-vous une dimension inférieure?"
+   - Pour chaque modèle: Largeur_demandée > max_width? → EXCLURE ✗ ou → VALIDE ✅
+   - Pour chaque modèle: Avancée_demandée > max_projection? → EXCLURE ✗ ou → VALIDE ✅
+3. Si AUCUN modèle ne passe → Répondre: "Nos modèles proposent une largeur maximale de [X mètres]. Je ne peux donc pas vous proposer un store de [Y mètres] pour votre sécurité. Accepteriez-vous une dimension inférieure?"
 4. Si CERTAINS modèles passent → Proposer UNIQUEMENT ceux qui passent
 
 **⚠️ FORCEUR D'OUTILS - APPELS OBLIGATOIRES**
