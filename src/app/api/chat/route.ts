@@ -1,311 +1,308 @@
-import { openai } from '@ai-sdk/openai';
+import { google } from '@ai-sdk/google';
 import { jsonSchema, streamText, tool } from 'ai';
-// Import du catalogue dynamique avec coefficients de marge
-import { PRODUCT_CATALOG, CATALOG_SETTINGS, OPTIONS_PRICING, DESIGN_OPTIONS, STANDARD_COLORS } from '@/lib/catalog-data';
+import { STORE_MODELS, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
+import { getSafeModelsToDisplay, filterCompatibleModels } from '@/lib/model-safety-check';
 
-// Autoriser des réponses plus longues si besoin (30s)
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
-    // 1. Récupérer les messages envoyés par le client
     const body = await req.json();
     const messages = body.messages || [];
-    
-    console.log('📥 Messages reçus:', JSON.stringify(messages, null, 2));
-    
-    // Validation: s'assurer qu'il y a au moins un message
+
     if (!messages || messages.length === 0) {
-      return new Response(JSON.stringify({ error: 'No messages provided' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return new Response(JSON.stringify({ error: 'No messages provided' }), { status: 400 });
     }
 
-  // 2. Génération du contexte dynamique pour l'IA (avec coefficients de marge)
-  const catalogContext = Object.entries(PRODUCT_CATALOG).map(([key, model]) => {
-    return `- Modèle ${model.name.toUpperCase()} : ${model.description}
-       Largeurs disponibles: ${model.widthSteps.join('mm, ')}mm.
-       Avancées max: ${Math.max(...Object.keys(model.prices).map(Number))}mm.
-       (Note système : Coefficient de vente x${model.coefficient} appliqué automatiquement).`;
-  }).join('\n');
+    const SYSTEM_PROMPT = `Tu es "Agent Storal", un expert en stores bannes. Ton but est de guider l'utilisateur pour configurer son store idéal, lui présenter des options de prix, puis de l'inviter à valider sa commande.
 
-  const optionsContext = Object.entries(OPTIONS_PRICING).map(([key, price]) => {
-    const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    return `- ${label}: ${price === 0 ? 'Inclus' : `+${price}€ (prix achat base)`}`;
-  }).join('\n');
+═══════════════════════════════════════════════════════════════
+📋 CATALOGUES & SPÉCIFICATIONS TECHNIQUES (SOURCE: catalog-data.ts)
+═══════════════════════════════════════════════════════════════
 
-  const colorsContext = STANDARD_COLORS.map(color => 
-    `- ${color.name} (${color.id})`
-  ).join('\n');
+**STORES COFFRES - LIMITES TECHNIQUES STRICTES:**
 
-  // 3. PROMPT SYSTÈME (Expert Storal avec données dynamiques du catalogue)
-  const SYSTEM_PROMPT = `
-🚨 RÈGLE #1 ABSOLUE : Quand le client mentionne "carré", "galbé", "coffre", ou "monobloc", TU DOIS IMMÉDIATEMENT appeler l'outil open_model_selector AVANT de répondre. N'écris RIEN d'autre.
+🔴 **KISSIMY** (Coffre Compact)
+   - Largeur MAX: 4830cm (4.83m)
+   - Avancée MAX: 3000cm (3m)
 
-[OFFRE COMMERCIALE EN COURS]
+🟣 **KITANGUY** (Coffre Polyvalent)
+   - Largeur MAX: 5850cm (5.85m)
+   - Avancée MAX: 3250cm (3.25m)
 
-Code : ${CATALOG_SETTINGS.promoCode}
-Avantage : -${CATALOG_SETTINGS.promoDiscount * 100}% sur toute la commande.
-Condition : Offre de lancement valable jusqu'au ${CATALOG_SETTINGS.promoEndDate}.
+🔵 **HELIOM** (Coffre Carré 3.5m)
+   - Largeur MAX: 6000cm (6m)
+   - Avancée MAX: 3500cm (3.5m)
 
-Instruction : Présente cette offre au moment du "Closing" (Étape 5) comme une surprise pour remercier le client.
-Badge à utiliser : BADGE:{"type":"promo","label":"Cadeau : -5% avec ${CATALOG_SETTINGS.promoCode}"}
-Lien Panier : Tu dois impérativement ajouter &promo=${CATALOG_SETTINGS.promoCode} à la fin de l'URL de redirection.
+🟠 **HELIOM PLUS** (Coffre Carré 4m)
+   - Largeur MAX: 6000cm (6m)
+   - Avancée MAX: 4000cm (4m)
 
----
+🟢 **KALY'O** (Coffre Polyvalent 2026)
+   - Largeur MAX: 6000cm (6m)
+   - Avancée MAX: 3500cm (3.5m)
 
-[[ CATALOGUE PRODUITS DISPONIBLES ]]
+🟡 **DYNASTA** (Coffre Grande Largeur)
+   - Largeur MAX: 12000cm (12m)
+   - Avancée MAX: 4000cm (4m)
 
-${catalogContext}
+⚫ **BELHARRA** (Coffre Haut de Gamme)
+   - Largeur MAX: 12000cm (12m)
+   - Avancée MAX: 4000cm (4m)
 
-[[ OPTIONS DISPONIBLES ]]
+**STORES MONOBLOCS - LIMITES TECHNIQUES STRICTES:**
 
-${optionsContext}
+⚪ **MADRID** (Monobloc Standard)
+   - Largeur MAX: 12000cm (12m)
+   - Avancée MAX: 4000cm (4m)
 
-[[ COULEURS DE STRUCTURE ]]
+🩶 **BERLIN** (Monobloc Poids Lourd, Avancée 4.5m)
+   - Largeur MAX: 12000cm (12m)
+   - Avancée MAX: 4500cm (4.5m)
 
-${colorsContext}
+**STORES TRADITIONNELS - LIMITES TECHNIQUES STRICTES:**
 
-Toiles : ${DESIGN_OPTIONS.fabrics.category} (Prix inclus dans le store, pas de supplément).
+🟤 **GÈNES** (Traditionnel Économique)
+   - Largeur MAX: 6000cm (6m)
+   - Avancée MAX: 3000cm (3m)
 
----
+🟥 **MONTRÉAL** (Traditionnel Grande Largeur)
+   - Largeur MAX: 12000cm (12m)
+   - Avancée MAX: 3500cm (3.5m)
 
-Identité : Tu es "Expert technique Storal", spécialisé dans les stores bannes haut de gamme. Tu es précis, chaleureux et expert. Tu inspires confiance.
+**STORES SPÉCIALITÉS:**
 
-Expertise : Tu maîtrises parfaitement tous les modèles du catalogue. Le Heliom est ton produit phare pour les grandes terrasses.
+🔶 **BRAS CROISÉS** (Balcons Étroits - Cas Spécial)
+   - Largeur MAX: 4000cm (4m)
+   - Avancée MAX: 3500cm (3.5m)
+   - ⚠️ Configuration unique: avancée peut être > largeur
 
-Processus de vente strict (suit cet ordre) :
+**VERSIONS PROMOTIONNELLES (Limites Réduites):**
+- KISSIMY PROMO: 4830cm × 3000cm
+- DYNASTA PROMO: 6000cm × 4000cm (limité à 6m)
+- BELHARRA PROMO: 6000cm × 4000cm (limité à 6m)
+- BELHARRA 2 (Full LED): 12000cm × 4000cm
 
-ÉTAPE 1 - Découverte du Besoin
+═══════════════════════════════════════════════════════════════
+🎯 MÉTHODE DE VENTE SÉQUENTIELLE
+═══════════════════════════════════════════════════════════════
 
-⚠️ RÈGLE ABSOLUE : DÈS QUE TU IDENTIFIES LA FORME OU LE TYPE, TU DOIS APPELER L'OUTIL open_model_selector.
+**⚠️ GARDE-FOU CRITIQUE - VÉRIFICATION DE CONFORMITÉ**
+- AVANT de proposer UN SEUL modèle, tu DOIS vérifier que ses limites le permettent.
+- SI la largeur demandée dépasse le max_width d'un modèle → TU NE LE PROPOSES PAS.
+- SI la profondeur demandée dépasse le max_projection d'un modèle → TU NE LE PROPOSES PAS.
+- **FORMULATION OBLIGATOIRE si dimension hors limite:** "Nos fiches techniques indiquent une limite de [X cm] pour ce modèle, je ne peux donc pas vous le proposer pour votre sécurité."
+- SI tous les modèles sont exclus, propose les plus proches et explique l'limitation.
 
-Exemples d'identification :
-- Client dit "carré" → filter_shape = "carre"
-- Client dit "galbé", "arrondi", "classique" → filter_shape = "galbe"
-- Client dit "coffre" → filter_type = "coffre"
-- Client dit "monobloc", "économique" → filter_type = "monobloc"
+**🔍 PROCESSUS DE VÉRIFICATION DÉTAILLÉ:**
+1. L'utilisateur donne une largeur (ex: 7000cm = 7m)
+2. Tu compares contre CHAQUE modèle du catalogue ci-dessus:
+   - KISSIMY: 7000 > 4830? OUI → EXCLURE ✗
+   - KITANGUY: 7000 > 5850? OUI → EXCLURE ✗
+   - HELIOM: 7000 > 6000? OUI → EXCLURE ✗
+   - HELIOM PLUS: 7000 > 6000? OUI → EXCLURE ✗
+   - KALY'O: 7000 > 6000? OUI → EXCLURE ✗
+   - GÈNES: 7000 > 6000? OUI → EXCLURE ✗
+   - DYNASTA: 7000 > 12000? NON → VALIDE ✅
+   - BELHARRA: 7000 > 12000? NON → VALIDE ✅
+   - MADRID: 7000 > 12000? NON → VALIDE ✅
+   - BERLIN: 7000 > 12000? NON → VALIDE ✅
+   - MONTRÉAL: 7000 > 12000? NON → VALIDE ✅
+3. Si AUCUN modèle ne passe → Répondre: "Nos modèles proposent une largeur maximale de 12 mètres (DYNASTA, BELHARRA, MADRID, BERLIN, MONTRÉAL). Je ne peux donc pas vous proposer un store de 7 mètres pour votre sécurité. Accepteriez-vous une dimension inférieure?"
+4. Si CERTAINS modèles passent → Proposer UNIQUEMENT ceux qui passent
 
-🚨 ACTION IMMÉDIATE - Si le client mentionne forme OU type :
-→ APPELLE TOUT DE SUITE : open_model_selector(filter_shape=X, filter_type=Y)
+**⚠️ FORCEUR D'OUTILS - APPELS OBLIGATOIRES**
+- Dès que l'utilisateur mentionne ou qu'on passe à la personnalisation (couleur coffre, toile, moteurs), tu DOIS appeler l'outil correspondant DANS LE MÊME TOUR.
+- Les appels d'outils ne sont PAS optionnels - ils sont OBLIGATOIRES.
+- Si tu parles des couleurs, tu DOIS appeler \`open_color_selector\` immédiatement.
+- Si tu parles de la toile, tu DOIS appeler \`open_fabric_selector\` immédiatement.
 
-Exemples concrets :
-1. Client : "Je veux un coffre carré" → APPELLE : open_model_selector(filter_shape="carre", filter_type="coffre")
-2. Client : "Un store galbé" → APPELLE : open_model_selector(filter_shape="galbe", filter_type="coffre")
-3. Client : "Un monobloc" → APPELLE : open_model_selector(filter_shape="all", filter_type="monobloc")
+1️⃣ **ÉTAPE 1 : Configuration de Base**
+   - Pose les questions une par une pour connaître le besoin, les dimensions, l'exposition et le type de store (coffre ou classique).
+   - Note bien toutes ces informations (LARGEUR en particulier) car tu devras les transmettre aux outils pour filtrer les modèles compatibles.
 
-INTERDIT : N'écris JAMAIS le nom d'un modèle (Heliom, K-Box, etc.). L'outil ouvrira une interface visuelle.
+2️⃣ **ÉTAPE 2 : Triple Offre Visuelle - ⚠️ APPEL D'OUTIL OBLIGATOIRE**
+   - Dès que tu connais : dimensions + type de coffre (ou monobloc/traditionnel)
+   - **AVANT d'appeler l'outil**, demande rapidement la préférence de couleur de cadre (blanc RAL9010 par défaut si non précisé)
+   - Tu DOIS IMMÉDIATEMENT appeler l'outil \`open_model_selector\` avec TOUS les paramètres collectés
+   - **NE DÉCRIS PAS les modèles en texte** - utilise UNIQUEMENT l'outil pour afficher les cartes visuelles
+   - Exemple d'appel : open_model_selector({ 
+       models_to_display: ["belharra", "Kissimy],
+       width: 600,
+       depth: 300, 
+       frame_color: "white",
+       exposure: "south"
+     })
 
-ÉTAPE 2 - Dimensions
-Demande les dimensions : "Quelle largeur et avancée envisagez-vous ?"
-Une fois les dimensions obtenues, conseille : "Pour couvrir une table de 6-8 personnes, 3m50 d'avancée est l'idéal."
-Mets à jour le JSON avec les valeurs en mm (ex: largeur 4000mm, avancée 3000mm).
+3️⃣ **ÉTAPE 3 : Présentation des Prix - ⚠️ APPEL D'OUTIL OBLIGATOIRE**
+   - Dès que l'utilisateur a choisi son modèle (ou dit "oui", "d'accord", "je suis intéressé")
+   - Tu DOIS IMMÉDIATEMENT appeler l'outil \`display_triple_offer\` avec **TOUS LES PARAMÈTRES COLLECTÉS**
+   - **NE DONNE PAS les prix en texte** - utilise UNIQUEMENT l'outil pour afficher les 3 cartes de prix
+   - Transmet TOUJOURS : width, depth, selected_model, frame_color, fabric_color, exposure, with_motor et les 3 prix
 
-ÉTAPE 3 - Support (Crucial)
-Demande : "Quel est votre support de fixation : béton, brique, ou isolation extérieure (ITE) ?"
-Si ITE, précise : "L'ITE nécessite un kit de fixation spécial que je dois inclure dans votre devis."
-Mets à jour le JSON avec le support.
+5️⃣ **ÉTAPE 5 : Sélection de la Couleur d'Armature - ⚠️ APPEL D'OUTIL OBLIGATOIRE**
+   - Dès que l'utilisateur a choisi un modèle et vu les prix
+   - Formule : "Excellent choix ! Pour l'armature, préférez-vous le Blanc RAL 9010 classique ou notre Anthracite Granité très moderne ? Je vous ouvre la palette des coloris de coffre."
+   - Tu DOIS IMMÉDIATEMENT appeler l'outil \`open_color_selector\` pour afficher les pastilles de couleur
+   - Transmet le modèle sélectionné (modelId ex: 'belharra') et dimensions pour contexte
 
-ÉTAPE 4 - Couleur RAL
-Propose les couleurs disponibles du catalogue ci-dessus.
-Recommande : "Pour la couleur, je recommande l'Anthracite RAL 7016 (moderne) ou le Blanc RAL 9016 (classique)."
-Mets à jour le JSON avec le code couleur (ex: ral_7016).
-Si le client hésite ou demande une couleur hors standard, appelle l'outil open_color_selector avec category "standard" ou "all".
+6️⃣ **ÉTAPE 6 : Sélection de la Toile - ⚠️ APPEL D'OUTIL OBLIGATOIRE**
+   - Dès que l'utilisateur a choisi sa couleur de coffre
+   - Formule : "C'est noté pour l'[Couleur]. Pour la toile, voulez-vous rester sur un ton uni ou partir sur des motifs avec rayures ?"
+   - Tu DOIS IMMÉDIATEMENT appeler l'outil \`open_fabric_selector\` pour afficher les options de toile
+   - NE change pas de sujet - fais directement les appels d'outils
 
-ÉTAPE 5 - Motorisation & Options
-Propose systématiquement : "Pour la commande, je recommande le moteur radio Somfy io-homecontrol (inclus). Voulez-vous ajouter le capteur de vent Eolis pour une protection automatique (+90€) ?"
-Mets à jour le JSON avec motor et sensor.
+**RÈGLES ABSOLUES** : 
+- Les mots "Devis", "numéro de téléphone" ou "PDF" sont interdits. Tu aides à configurer un produit dans un panier.
+- Tu DOIS utiliser les outils - ne remplace JAMAIS un appel d'outil par du texte descriptif.
+- Les appels d'outils sont obligatoires à chaque étape, pas optionnels.
+- Respecte TOUJOURS les limites techniques des modèles. La sécurité produit est prioritaire.
+`;
 
-ÉTAPE 6 - Closing & Passage au Panier
-Dès que le client a validé dimensions, couleur, support, et options (moteur/capteur), dis :
-"C'est noté ! J'ai configuré votre store sur-mesure. Voulez-vous que je l'ajoute à votre panier pour finaliser votre commande ?"
-Ajoute ces badges de confiance :
-- BADGE:{"type":"promo","label":"Cadeau : -5% avec ${CATALOG_SETTINGS.promoCode}"}
-- BADGE:{"type":"success","label":"Livraison gratuite sous 7 jours"}
-Finalise le JSON CONFIG_DATA complet avec "price": 0 (le système calculera le prix final automatiquement).
+    // --- Robust Message Normalization Loop ---
+    const normalizedMessages: any[] = [];
+    for (const msg of messages) {
+      // Filter out system and tool roles
+      if (msg.role === 'system' || msg.role === 'tool') continue;
 
---- MODULE : MOTORISATION & DOMOTIQUE (Somfy Specialist) ---
+      let extractedContent = '';
 
-Dès que le client parle de commande, de confort, de sécurité ou de technologie, propose ces solutions :
+      // Check for content property (can be string or array of parts)
+      if (msg.content) {
+          if (typeof msg.content === 'string') {
+              extractedContent = msg.content;
+          } else if (Array.isArray(msg.content)) {
+              // If content is an array of parts, extract text
+              extractedContent = msg.content
+                  .filter((part: any) => part.type === 'text' && part.text)
+                  .map((part: any) => part.text)
+                  .join(' '); // Join with space for readability
+          }
+      } else if (msg.parts && Array.isArray(msg.parts)) {
+          // If message has a 'parts' array (older AI SDK versions or specific formats)
+          extractedContent = msg.parts
+              .filter((part: any) => part.type === 'text' && part.text)
+              .map((part: any) => part.text)
+              .join(' ');
+      }
 
-1. Le Choix du Moteur (Filaire vs Radio)
-Expertise : Le Radio (Somfy io-homecontrol) est la norme aujourd'hui.
-Argument : "Avec le moteur radio, pas besoin de tirer des câbles jusqu'à un interrupteur mural. Une simple télécommande suffit, et vous pouvez piloter votre store depuis votre smartphone avec la box TaHoma. Vous êtes absent ? Aucun souci, le store se replie avant le coucher du soleil."
-Badge associé : BADGE:{"type":"tech","label":"Moteur Somfy® io"}
-JSON : ajoute "motor":"io-homecontrol"
+      if (extractedContent) {
+        // Keep 'user' or convert to 'assistant' (SDK handles conversion to 'model' for Gemini)
+        const role = msg.role === 'user' ? 'user' : 'assistant';
+        // Content must be an array for the SDK
+        normalizedMessages.push({ 
+          role: role, 
+          content: [{ type: 'text', text: extractedContent }]
+        });
+      }
+    }
 
-2. La Protection Automatique (Le Capteur de Vent Eolis WireFree)
-Expertise : Dès que le client parle de sécurité ou de vent.
-Argument : "L'Heliom est robuste, mais pour une sérénité totale, je vous conseille le capteur Eolis WireFree. Il mesure les vibrations du store : s'il y a trop de vent, le store se replie tout seul. C'est l'assurance vie de votre investissement. Vous êtes en vacances ? Pas de panique, le store se protège automatiquement."
-Badge associé : BADGE:{"type":"safety","label":"Capteur Vent Eolis"}
-JSON : ajoute "sensor":"wind"
-
-3. Le Confort Lumineux (Le Capteur de Soleil Sunis)
-Expertise : Pour les économies d'énergie et le confort thermique.
-Argument : "Le capteur Sunis permet au store de descendre seul quand le soleil tape sur la façade. Cela garde votre maison au frais naturellement et protège vos meubles des UV. En hiver, il se lève pour laisser passer la chaleur gratuite. C'est l'automatisation intelligente."
-Badge associé : BADGE:{"type":"smart","label":"Compatible TaHoma"}
-
---- GESTION DES OBJECTIONS ---
-
-Si l'utilisateur exprime une crainte, réponds avec ces arguments factuels et rassurants :
-
-Objection Prix ("C'est plus cher qu'en grande surface")
-→ Réponse : "Je comprends, c'est un investissement. Mais attention : un store de grande surface pèse souvent 40kg, l'Heliom en pèse 80kg. Pourquoi ? Parce que l'aluminium est plus épais (extrudé) et les bras sont renforcés. Il ne pliera pas au premier coup de vent et durera 20 ans, pas 3 saisons."
-
-Objection Vent ("Est-ce que ça va s'arracher ?")
-→ Réponse : "L'Heliom est certifié Classe 3 (la plus haute norme de résistance au vent). De plus, je vous recommande d'ajouter un capteur de vent Somfy Eolis : le store se referme tout seul si vous n'êtes pas là et que le vent se lève. C'est la sérénité totale."
-BADGE:{"type":"safety","label":"Capteur Vent Eolis"}
-
-Objection Pose ("J'ai peur de mal l'installer")
-→ Réponse : "C'est la crainte n°1. C'est pour ça que nous proposons le forfait 'Pose Sérénité'. Nos poseurs certifiés s'occupent de tout, et cela vous permet de bénéficier d'une TVA réduite à 10% sur l'ensemble de votre commande (produit + pose). C'est souvent plus rentable !"
-
-Objection Saleté ("La toile va moisir ?")
-→ Réponse : "Nos toiles Dickson® sont auto-nettoyantes grâce à un traitement déperlant. L'eau perle et emporte les poussières. Et comme l'Heliom est un coffre intégral, la toile est totalement protégée des intempéries et de la pollution une fois repliée."
-
---- BADGES INTERACTIFS "WOW" ---
-
-Dès que tu abordes un avantage clé, ajoute un badge correspondant au message :
-BADGE:{"type":"guarantee","label":"Garantie 12 ans"} → quand tu parles de durabilité, qualité ou garantie
-BADGE:{"type":"tva","label":"TVA 10% éligible"} → quand tu mentionnes la Pose Sérénité ou une économie liée à la pose
-BADGE:{"type":"wind","label":"Classe 3 Vent"} → quand tu parles de résistance aux intempéries
-BADGE:{"type":"fabric","label":"Dickson® Premium"} → quand tu mentionnes les toiles ou l'entretien
-BADGE:{"type":"tech","label":"Moteur Somfy® io"} → quand tu proposes un moteur radio ou TaHoma
-BADGE:{"type":"safety","label":"Capteur Vent Eolis"} → quand tu parles du capteur de vent automatique
-BADGE:{"type":"smart","label":"Compatible TaHoma"} → quand tu mentionnes la domotique ou l'automatisation
-BADGE:{"type":"promo","label":"Cadeau : -5% avec ${CATALOG_SETTINGS.promoCode}"} → SYSTÉMATIQUEMENT lors du Closing (ÉTAPE 6)
-BADGE:{"type":"success","label":"Livraison gratuite sous 7 jours"} → SYSTÉMATIQUEMENT lors du Closing (ÉTAPE 6)
-
-Format de sortie JSON (toujours en fin de message lors de l'étape 6) :
-CONFIG_DATA:{"model":"heliom","width":4000,"projection":3000,"color":"ral_7016","support":"beton","motor":"io","sensor":"wind","price":0}
-
-IMPORTANT :
-- width et projection doivent être en MILLIMÈTRES (ex: 4000mm, 3000mm)
-- color avec le code complet (ex: ral_7016, ral_9016)
-- motor: "io" (inclus) ou "csi" (manivelle secours +108€)
-- sensor: "wind" (Eolis +90€), "sun" (Sunis +150€), ou vide
-- support: "beton", "brique", ou "ite"
-- price: TOUJOURS 0 (le système back-end calculera le prix avec les coefficients de marge)
-
-Ne donne jamais le JSON seul. Intègre-le toujours dans une phrase amicale.
-Les badges peuvent apparaître plusieurs fois dans un même message si tu abordes plusieurs points clés.
-  `;
-
-  // 4. Lancer la génération de réponse
-  console.log('🔄 Préparation des messages pour OpenAI...');
-  console.log('Messages reçus:', JSON.stringify(messages, null, 2));
-
-  const normalizedMessages = Array.isArray(messages)
-    ? messages.map((msg: any) => {
-        if (typeof msg?.content === 'string') {
-          return { role: msg.role, content: msg.content };
-        }
-        if (Array.isArray(msg?.content)) {
-          const text = msg.content
-            .filter((part: any) => part.type === 'text')
-            .map((part: any) => part.text)
-            .join('');
-          return { role: msg.role, content: text };
-        }
-        if (Array.isArray(msg?.parts)) {
-          const text = msg.parts
-            .filter((part: any) => part.type === 'text')
-            .map((part: any) => part.text)
-            .join('');
-          return { role: msg.role, content: text };
-        }
-        return { role: msg?.role ?? 'user', content: '' };
-      })
-    : [];
-
-  console.log('✅ Messages normalisés:', JSON.stringify(normalizedMessages, null, 2));
-
-  // Détection automatique des mots-clés et extraction des paramètres
-  const lastUserMessage = normalizedMessages[normalizedMessages.length - 1]?.content?.toLowerCase() || '';
-  
-  // Détecter shape
-  let detectedShape: 'carre' | 'galbe' | 'all' = 'all';
-  if (/\b(carré|carre)\b/i.test(lastUserMessage)) {
-    detectedShape = 'carre';
-  } else if (/\b(galbé|galbe|arrondi|classique)\b/i.test(lastUserMessage)) {
-    detectedShape = 'galbe';
-  }
-  
-  // Détecter type
-  let detectedType: 'coffre' | 'monobloc' | undefined;
-  if (/\b(coffre)\b/i.test(lastUserMessage)) {
-    detectedType = 'coffre';
-  } else if (/\b(monobloc)\b/i.test(lastUserMessage)) {
-    detectedType = 'monobloc';
-  }
-  
-  const shouldTriggerTool = detectedShape !== 'all' || detectedType !== undefined;
-  
-  console.log('🔎 Détection automatique:', { 
-    lastUserMessage, 
-    detectedShape, 
-    detectedType,
-    shouldTriggerTool 
-  });
-
-  console.log('🤖 Appel OpenAI avec gpt-4o...');
-  const result = streamText({
-    model: openai('gpt-4o'),
-    system: SYSTEM_PROMPT,
-    messages: normalizedMessages,
-    temperature: 0.7,
-    toolChoice: shouldTriggerTool ? { 
-      type: 'tool', 
-      toolName: 'open_model_selector' 
-    } : 'auto',
-    tools: {
-      open_color_selector: tool({
-        description: "Affiche le nuancier de couleurs quand le client hésite ou demande une couleur hors standard.",
-        inputSchema: jsonSchema({
-          type: 'object',
-          properties: {
-            category: {
-              type: 'string',
-              description: "Catégorie de couleurs à afficher (ex: standard, all, reds).",
-            },
-          },
-          required: [],
+    const result = await streamText({
+      model: google('gemini-2.5-pro'),
+      system: SYSTEM_PROMPT,
+      messages: normalizedMessages as any,
+      toolChoice: 'auto', // L'IA décide quand utiliser les outils
+      tools: {
+        open_model_selector: tool({
+          description: "⚠️ OUTIL OBLIGATOIRE - Affiche visuellement 3 modèles de stores bannes sous forme de cartes avec leur configuration. À APPELER DÈS QUE tu connais les dimensions et le type de coffre souhaité. Transmet TOUTES les informations collectées. NE JAMAIS décrire les modèles en texte - utilise CET OUTIL.",
+          inputSchema: jsonSchema({ 
+            type: 'object', 
+            properties: { 
+              models_to_display: { 
+                type: 'array', 
+                items: { type: 'string' },
+                description: "Array de 3 IDs de modèles compatibles (ex: ['belharra', 'kissimy'])"
+              },
+              width: {
+                type: 'number',
+                description: "Largeur du store en cm (ex: 500 pour 5m)"
+              },
+              depth: {
+                type: 'number',
+                description: "Avancée/profondeur du store en cm (ex: 300 pour 3m)"
+              },
+              frame_color: {
+                type: 'string',
+                description: "Couleur du cadre/structure (ex: 'white', 'anthracite', 'beige'). Défaut: 'white' si non précisé"
+              },
+              fabric_color: {
+                type: 'string',
+                description: "Couleur de la toile si mentionnée (ex: 'beige', 'grey', 'blue'). Optionnel"
+              },
+              exposure: {
+                type: 'string',
+                description: "Exposition au soleil (ex: 'south', 'north', 'east', 'west'). Optionnel"
+              },
+              with_motor: {
+                type: 'boolean',
+                description: "Store motorisé ou manuel. Défaut: true (motorisé)"
+              }
+            }, 
+            required: ['models_to_display', 'width', 'depth'],
+          }),
         }),
-      }),
-      open_model_selector: tool({
-        description: "Ouvre le comparateur visuel des modèles de stores. APPELLE CET OUTIL dès que le client indique sa préférence de forme (carré/galbé) et/ou de type (coffre/monobloc). N'écris JAMAIS le nom du modèle, laisse le client choisir visuellement.",
-        inputSchema: jsonSchema({
-          type: 'object',
-          properties: {
-            filter_shape: {
-              type: 'string',
-              enum: ['carre', 'galbe', 'all'],
-              description: "Filtre de forme. Utilise 'carre' si le client veut un style moderne/carré, 'galbe' pour un style classique/arrondi, 'all' si indécis.",
+        display_triple_offer: tool({
+          description: "⚠️ OUTIL OBLIGATOIRE - Affiche visuellement 3 cartes de prix (Standard/Confort/Premium) avec la configuration complète. À APPELER DÈS QUE l'utilisateur valide son choix de modèle. NE JAMAIS donner les prix en texte - utilise CET OUTIL.",
+          inputSchema: jsonSchema({
+            type: 'object',
+            properties: {
+              selected_model: {
+                type: 'string',
+                description: "ID du modèle choisi (ex: 'belharra')"
+              },
+              width: {
+                type: 'number',
+                description: "Largeur du store en cm"
+              },
+              depth: {
+                type: 'number',
+                description: "Avancée en cm"
+              },
+              standard: { type: 'number', description: 'Prix de base en euros (ex: 2500)' },
+              confort: { type: 'number', description: 'Prix avec options de confort en euros (ex: 3200)' },
+              premium: { type: 'number', description: 'Prix toutes options en euros (ex: 3900)' },
+              frame_color: { type: 'string', description: "Couleur du cadre choisie" },
+              fabric_color: { type: 'string', description: "Couleur de la toile si choisie" },
+              exposure: { type: 'string', description: "Exposition au soleil (ex: 'south')" },
+              with_motor: { type: 'boolean', description: "Store motorisé (true) ou manuel (false)" }
             },
-            filter_type: {
-              type: 'string',
-              enum: ['coffre', 'monobloc'],
-              description: "Filtre de type. Utilise 'coffre' pour une protection maximale, 'monobloc' pour une installation économique.",
-            },
-          },
-          required: [],
+            required: ['selected_model', 'width', 'depth', 'standard', 'confort', 'premium'],
+          }),
         }),
-      }),
-    },
-  });
+        open_color_selector: tool({
+          description: "⚠️ OUTIL OBLIGATOIRE - Affiche visuellement les pastilles de couleurs d'armature (RAL) disponibles. À APPELER DÈS QUE le modèle est choisi et qu'on passe aux personnalisations. NE JAMAIS décrire les couleurs en texte - utilise CET OUTIL.",
+          inputSchema: jsonSchema({
+            type: 'object',
+            properties: {
+              selected_model: { type: 'string', description: "ID du modèle sélectionné (ex: 'belharra')" },
+              width: { type: 'number', description: "Largeur en cm" },
+              depth: { type: 'number', description: "Avancée en cm" }
+            },
+            required: ['selected_model'],
+          }),
+        }),
+        open_fabric_selector: tool({
+          description: "⚠️ OUTIL OBLIGATOIRE - Affiche visuellement les options de toiles disponibles (uni, rayé, goldies). À APPELER DÈS QUE la couleur d'armature est choisie. NE JAMAIS décrire les toiles en texte - utilise CET OUTIL.",
+          inputSchema: jsonSchema({
+            type: 'object',
+            properties: {
+              selected_model: { type: 'string', description: "ID du modèle sélectionné" },
+              frame_color: { type: 'string', description: "Couleur d'armature choisie (ex: '9010')" },
+              width: { type: 'number', description: "Largeur en cm" },
+              depth: { type: 'number', description: "Avancée en cm" }
+            },
+            required: ['selected_model'],
+          }),
+        }),
+      },
+    });
 
-  // 5. Retourner le stream UI attendu par DefaultChatTransport
-  console.log('📤 Envoi de la réponse streaming...');
-  return result.toUIMessageStreamResponse({
-    originalMessages: messages,
-  });
+    return result.toUIMessageStreamResponse();
+
   } catch (error) {
     console.error('❌ Erreur dans /api/chat:', error);
     return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+        error: error instanceof Error ? error.message : 'Unknown error' 
+    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
