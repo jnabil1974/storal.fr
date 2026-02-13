@@ -5,6 +5,44 @@ import Image from 'next/image';
 import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
 import { STORE_MODELS, type StoreModel, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
+import VisualShowroom from './VisualShowroom';
+
+// --- Composant Typewriter Text ---
+const TypewriterText = ({ text, isWelcomeMessage }: { text: string; isWelcomeMessage: boolean }) => {
+  const [displayedText, setDisplayedText] = useState('');
+
+  useEffect(() => {
+    if (!isWelcomeMessage) {
+      setDisplayedText(text);
+      return;
+    }
+
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index <= text.length) {
+        setDisplayedText(text.slice(0, index));
+        index++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 20); // 20ms par caractère = animation fluide
+
+    return () => clearInterval(interval);
+  }, [text, isWelcomeMessage]);
+
+  // Parser le texte pour extraire les **gras**
+  const parseText = (str: string) => {
+    const parts = str.split(/(\*\*[^*]+\*\*)/);
+    return parts.map((part, idx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={idx} className="font-bold text-blue-700">{part.slice(2, -2)}</strong>;
+      }
+      return <span key={idx}>{part}</span>;
+    });
+  };
+
+  return <span className="whitespace-pre-wrap text-sm leading-relaxed">{parseText(displayedText)}</span>;
+};
 
 // --- Types ---
 interface CustomToolCall {
@@ -27,6 +65,13 @@ interface Cart {
   pricePremium?: number;
   selectedPrice?: number;
   priceType?: string;
+  // Détails des options
+  storeHT?: number;
+  ledArmsPrice?: number;
+  ledBoxPrice?: number;
+  lambrequinPrice?: number;
+  poseHT?: number;
+  tvaAmount?: number;
 }
 
 interface ChatAssistantProps {
@@ -66,13 +111,18 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   });
   
   const [activeTool, setActiveTool] = useState<CustomToolCall | null>(null);
-  const [toolHistory, setToolHistory] = useState<CustomToolCall[]>([]);  // 🔥 Historique des outils
-  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);  // 🔥 Modèle sélectionné
-  const [selectedColorId, setSelectedColorId] = useState<string | null>(null);  // 🔥 Couleur sélectionnée
-  const [selectedFabricId, setSelectedFabricId] = useState<string | null>(null);  // 🔥 Toile sélectionnée
+  const [toolHistory, setToolHistory] = useState<CustomToolCall[]>([]);
+  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
+  const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
+  const [selectedFabricId, setSelectedFabricId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedModelForModal, setSelectedModelForModal] = useState<StoreModel | null>(null);
+  const [terraceState, setTerraceState] = useState({ m1: 4, m2: 3, m3: 4, m4: 3 });
   const [initialMessageSent, setInitialMessageSent] = useState(false);
+  const [isExpertMode, setIsExpertMode] = useState(false);
+  const [expertModeActivated, setExpertModeActivated] = useState(false);
+  const [tripleOfferTimeoutId, setTripleOfferTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [tripleOfferDisplayed, setTripleOfferDisplayed] = useState(false);
 
   // Fonction pour sauvegarder dans localStorage
   const saveToCart = (updates: Partial<Cart>) => {
@@ -141,6 +191,42 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   });
   
   const isLoading = status !== 'ready';
+
+  // ⏰ RELANCE AUTOMATIQUE - Timer 20 secondes si offres affichées sans clic
+  // ❌ DÉSACTIVÉ sur demande - Timer supprimé
+  // useEffect(() => {
+  //   if (activeTool?.toolName === 'display_triple_offer' && !tripleOfferDisplayed) {
+  //     console.log('🎯 Offres affichées - démarrage du timer 20 secondes');
+  //     setTripleOfferDisplayed(true);
+  //     
+  //     // Clearance du timeout précédent s'il existe
+  //     if (tripleOfferTimeoutId) {
+  //       clearTimeout(tripleOfferTimeoutId);
+  //     }
+  //     
+  //     // Démarrer le timer de 20 secondes
+  //     const timeoutId = setTimeout(() => {
+  //       console.log('⏰ 20 secondes écoulées - Envoi du message de relance');
+  //       
+  //       // Envoyer automatiquement un message de relance
+  //       sendMessage({ 
+  //         text: "Qu'est-ce qui ne va pas avec cette configuration ? Est-ce le budget ou un détail technique ? Je peux vous proposer des solutions : optimiser le budget en changeant le type de store ou en retirant des options non essentielles, ou ajuster les dimensions et options techniques." 
+  //       });
+  //       
+  //       // Réinitialiser pour la prochaine offre potentielle
+  //       setTripleOfferDisplayed(false);
+  //     }, 20000); // 20 secondes
+  //     
+  //     setTripleOfferTimeoutId(timeoutId);
+  //   }
+  //   
+  //   // Cleanup function
+  //   return () => {
+  //     if (tripleOfferTimeoutId) {
+  //       clearTimeout(tripleOfferTimeoutId);
+  //     }
+  //   };
+  // }, [activeTool, tripleOfferDisplayed, tripleOfferTimeoutId, sendMessage]);
   
   // Debug
   useEffect(() => {
@@ -160,7 +246,10 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  useEffect(() => { 
+    // Scroll minimal vers le new message (sans dérouler toute la page)
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); 
+  }, [messages]);
 
   const getMessageText = (msg: UIMessage): string => msg.parts.filter((part) => part.type === 'text').map((part) => part.text).join('');
 
@@ -171,7 +260,15 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
     if (!trimmed || isLoading) return;
     
     console.log('🚀 Envoi:', trimmed);
-    setActiveTool(null);
+    
+    // Détect expert mode trigger
+    if (trimmed.toLowerCase().includes('me laisser guider') || 
+        trimmed.toLowerCase().includes('aide') || 
+        trimmed.toLowerCase().includes('conseil')) {
+      setIsExpertMode(true);
+      setExpertModeActivated(true);
+    }
+    
     sendMessage({ text: trimmed });
     setInput('');
   };
@@ -179,10 +276,29 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   const handleQuickClick = (text: string) => {
     if (isLoading) return;
     console.log('⚡ Quick:', text);
-    setActiveTool(null);
+    
+    // Detect expert mode trigger
+    if (text.toLowerCase().includes('me laisser guider') || 
+        text.toLowerCase().includes('aide') || 
+        text.toLowerCase().includes('conseil')) {
+      setIsExpertMode(true);
+      setExpertModeActivated(true);
+    }
+    
     sendMessage({ text });
   };
   
+  // 🔥 Calcul dynamique de la pose selon la largeur en cm
+  const calculateInstallationCost = (widthCm: number): number => {
+    if (widthCm <= 6000) {
+      return 500;  // 500€ HT forfait jusqu'à 6m
+    } else {
+      const surpassCm = widthCm - 6000;
+      const surpassMeters = surpassCm / 1000;
+      return 500 + (Math.ceil(surpassMeters) * 100);  // 500€ + 100€/m supplémentaire
+    }
+  };
+
   const renderActiveTool = () => {
     // 🔥 Afficher tous les outils de l'historique (tools passés)
     const allToolsToRender = [...toolHistory];
@@ -196,6 +312,13 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
       <div className="space-y-6">
         {allToolsToRender.map((tool, idx) => {
           const isCurrent = tool === activeTool;
+          
+          // ⚠️ Les sélecteurs de couleur et toile doivent disparaître une fois complétés
+          const isColorOrFabricSelector = tool.toolName === 'open_color_selector' || tool.toolName === 'open_fabric_selector';
+          if (isColorOrFabricSelector && !isCurrent) {
+            return null; // Ne pas afficher les anciens sélecteurs
+          }
+          
           return (
             <div key={`${tool.toolCallId}-${idx}`} className={`transition-all ${!isCurrent ? 'opacity-70 scale-95 mb-4' : ''}`}>
               {tool.toolName === 'display_triple_offer' && renderTripleOfferTool(tool, isCurrent)}
@@ -212,9 +335,77 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   // 🔥 Extraire display_triple_offer en fonction séparée
   const renderTripleOfferTool = (tool: CustomToolCall, isCurrent: boolean) => {
     const input = tool.input as any;
-    const { standard, confort, premium, selected_model, width, depth, frame_color, fabric_color } = input;
+    const { 
+      eco_price_ht, 
+      standard_price_ht, 
+      premium_price_ht, 
+      selected_model, 
+      width, 
+      depth, 
+      frame_color, 
+      fabric_color,
+      taux_tva = 20,
+      montant_pose_ht = 0,
+      avec_pose = false,
+      // Backward compatibility with old parameter names
+      eco_price, standard_price, premium_price
+    } = input;
     
-    console.log('💰 Prix reçus de l\'IA:', { standard, confort, premium, selected_model, width, depth });
+    // Use new HT prices or fall back to old prices
+    const ecoHT = eco_price_ht || eco_price || input.standard || 0;
+    const standardHT = standard_price_ht || standard_price || input.confort || 0;
+    const premiumHT = premium_price_ht || premium_price || input.premium || 0;
+    
+    // 💰 Recalculer la pose avec la nouvelle formule (500€ + 100€/m > 6m)
+    const poseActuelle = width && avec_pose ? calculateInstallationCost(width) : 0;
+    
+    // Calculate TTC for each tier
+    const calculateTTC = (priceHT: number, tauxTVA: number, montantPose: number, inclure: boolean) => {
+      const storeWithPose = inclure ? priceHT + montantPose : priceHT;
+      const tvaMontant = storeWithPose * (tauxTVA / 100);
+      const priceTTC = storeWithPose + tvaMontant;
+      return {
+        storeHT: priceHT,
+        poseHT: inclure ? montantPose : 0,
+        totalHT: storeWithPose,
+        tvaMontant: Math.round(tvaMontant),
+        totalTTC: Math.round(priceTTC),
+        tauxTVA
+      };
+    };
+    
+    const ecoCalc = calculateTTC(ecoHT, taux_tva, poseActuelle, avec_pose);
+    const standardCalc = calculateTTC(standardHT, taux_tva, poseActuelle, avec_pose);
+    const premiumCalc = calculateTTC(premiumHT, taux_tva, poseActuelle, avec_pose);
+    
+    // 💡 Calcul comparatif TVA (afficher si store >= 3500€ HT)
+    const shouldShowComparison = standardHT >= 3500 && avec_pose && taux_tva === 10;
+    let comparisonData = null;
+    
+    if (shouldShowComparison) {
+      // Prix sans pose + TVA 20% (comparatif)
+      const sansPoseTTC = Math.round(standardHT * 1.20);
+      const avecPoseTTC = standardCalc.totalTTC;
+      const surCoutReel = avecPoseTTC - sansPoseTTC;
+      const economieTV = Math.round((standardHT * 0.10) + (poseActuelle * 0.10));
+      
+      comparisonData = {
+        sansPoseTTC,
+        avecPoseTTC,
+        surCoutReel,
+        economieTV,
+        poseHT: poseActuelle
+      };
+    }
+    
+    console.log('💰 Calcul TTC:', { 
+      ecoCalc, standardCalc, premiumCalc, 
+      tauxTVA: taux_tva, 
+      montantPoseHT: poseActuelle,
+      avecPose: avec_pose,
+      shouldShowComparison,
+      comparisonData
+    });
     
     return (
         <div className={`p-6 rounded-xl border-2 ${isCurrent ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
@@ -227,23 +418,163 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
               </p>
             )}
             <div className={`grid gap-4 ${isCurrent ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-3'}`}>
-                <button onClick={() => saveToCart({ priceEco: standard, selectedPrice: standard, priceType: 'eco' })} className={`p-6 rounded-xl text-center transition-all ${isCurrent ? 'bg-white border-2 border-gray-200 hover:border-blue-500 hover:shadow-lg' : 'bg-gray-100 border border-gray-300'}`} disabled={!isCurrent}>
+                {/* 💚 ECO OFFER */}
+                <button 
+                  onClick={() => {
+                    // ❌ Arrêter le timer de relance si l'utilisateur clique sur une offre
+                    if (tripleOfferTimeoutId) {
+                      clearTimeout(tripleOfferTimeoutId);
+                      setTripleOfferTimeoutId(null);
+                    }
+                    setTripleOfferDisplayed(false);
+                    saveToCart({ priceEco: ecoCalc.totalTTC, selectedPrice: ecoCalc.totalTTC, priceType: 'eco', storeHT: ecoCalc.storeHT, poseHT: ecoCalc.poseHT, tvaAmount: ecoCalc.tvaMontant });
+                  }} 
+                  className={`p-6 rounded-xl text-center transition-all ${isCurrent ? 'bg-white border-2 border-gray-200 hover:border-blue-500 hover:shadow-lg' : 'bg-gray-100 border border-gray-300'}`} 
+                  disabled={!isCurrent}
+                >
                     <h4 className={`font-bold mb-2 ${isCurrent ? 'text-lg' : 'text-sm'}`}>💚 Eco</h4>
-                    <p className={`font-bold text-gray-900 ${isCurrent ? 'text-3xl' : 'text-lg'}`}>{standard}€</p>
+                    <p className={`font-bold text-gray-900 ${isCurrent ? 'text-3xl' : 'text-lg'}`}>{ecoCalc.totalTTC}€ TTC</p>
+                    {isCurrent && avec_pose && <p className="text-xs text-green-600 font-semibold mt-1">🎁 Pose incluse</p>}
+                    {isCurrent && (
+                      <div className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-200 space-y-1">
+                        <p>Store: {ecoCalc.storeHT}€ HT</p>
+                        {avec_pose && <p>Pose: {ecoCalc.poseHT}€ HT</p>}
+                        <p>TVA {ecoCalc.tauxTVA}%: +{ecoCalc.tvaMontant}€</p>
+                      </div>
+                    )}
                     {isCurrent && <p className="text-sm text-gray-600 mt-2">Configuration de base</p>}
                 </button>
-                <button onClick={() => saveToCart({ priceStandard: confort, selectedPrice: confort, priceType: 'standard' })} className={`p-6 rounded-xl text-center transition-all relative ${isCurrent ? 'bg-white border-4 border-blue-600 shadow-xl hover:shadow-2xl' : 'bg-gray-100 border border-gray-300'}`} disabled={!isCurrent}>
+                
+                {/* ⭐ STANDARD OFFER */}
+                <button 
+                  onClick={() => {
+                    // ❌ Arrêter le timer de relance si l'utilisateur clique sur une offre
+                    if (tripleOfferTimeoutId) {
+                      clearTimeout(tripleOfferTimeoutId);
+                      setTripleOfferTimeoutId(null);
+                    }
+                    setTripleOfferDisplayed(false);
+                    saveToCart({ priceStandard: standardCalc.totalTTC, selectedPrice: standardCalc.totalTTC, priceType: 'standard', storeHT: standardCalc.storeHT, poseHT: standardCalc.poseHT, tvaAmount: standardCalc.tvaMontant, lambrequinPrice: (standardCalc.storeHT || 0) > (ecoCalc?.storeHT || 0) ? (standardCalc.storeHT || 0) - (ecoCalc?.storeHT || 0) : 0 });
+                  }} 
+                  className={`p-6 rounded-xl text-center transition-all relative ${isCurrent ? 'bg-white border-4 border-blue-600 shadow-xl hover:shadow-2xl' : 'bg-gray-100 border border-gray-300'}`} 
+                  disabled={!isCurrent}
+                >
                     {isCurrent && <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">RECOMMANDÉ</div>}
                     <h4 className={`font-bold mb-2 ${isCurrent ? 'text-xl text-blue-600' : 'text-sm text-gray-700'}`}>⭐ Standard</h4>
-                    <p className={`font-bold text-gray-900 ${isCurrent ? 'text-4xl text-blue-600' : 'text-lg'}`}>{confort}€</p>
+                    <p className={`font-bold text-gray-900 ${isCurrent ? 'text-4xl text-blue-600' : 'text-lg'}`}>{standardCalc.totalTTC}€ TTC</p>
+                    {isCurrent && avec_pose && <p className="text-xs text-blue-600 font-semibold mt-1">🎁 Pose incluse</p>}
+                    {isCurrent && (
+                      <div className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-200 space-y-1">
+                        <p>Store: {standardCalc.storeHT}€ HT</p>
+                        {avec_pose && <p>Pose: {standardCalc.poseHT}€ HT</p>}
+                        <p>TVA {standardCalc.tauxTVA}%: +{standardCalc.tvaMontant}€</p>
+                      </div>
+                    )}
                     {isCurrent && <p className="text-sm text-gray-600 mt-2">Options confort</p>}
                 </button>
-                <button onClick={() => saveToCart({ pricePremium: premium, selectedPrice: premium, priceType: 'premium' })} className={`p-6 rounded-xl text-center transition-all ${isCurrent ? 'bg-white border-2 border-gray-200 hover:border-purple-500 hover:shadow-lg' : 'bg-gray-100 border border-gray-300'}`} disabled={!isCurrent}>
+                
+                {/* 👑 PREMIUM OFFER */}
+                <button 
+                  onClick={() => {
+                    // ❌ Arrêter le timer de relance si l'utilisateur clique sur une offre
+                    if (tripleOfferTimeoutId) {
+                      clearTimeout(tripleOfferTimeoutId);
+                      setTripleOfferTimeoutId(null);
+                    }
+                    setTripleOfferDisplayed(false);
+                    saveToCart({ pricePremium: premiumCalc.totalTTC, selectedPrice: premiumCalc.totalTTC, priceType: 'premium', storeHT: premiumCalc.storeHT, poseHT: premiumCalc.poseHT, tvaAmount: premiumCalc.tvaMontant });
+                  }} 
+                  className={`p-6 rounded-xl text-center transition-all ${isCurrent ? 'bg-white border-2 border-gray-200 hover:border-purple-500 hover:shadow-lg' : 'bg-gray-100 border border-gray-300'}`} 
+                  disabled={!isCurrent}
+                >
                     <h4 className={`font-bold mb-2 ${isCurrent ? 'text-lg' : 'text-sm'}`}>👑 Premium</h4>
-                    <p className={`font-bold text-gray-900 ${isCurrent ? 'text-3xl' : 'text-lg'}`}>{premium}€</p>
+                    <p className={`font-bold text-gray-900 ${isCurrent ? 'text-3xl' : 'text-lg'}`}>{premiumCalc.totalTTC}€ TTC</p>
+                    {isCurrent && avec_pose && <p className="text-xs text-purple-600 font-semibold mt-1">🎁 Pose incluse</p>}
+                    {isCurrent && (
+                      <div className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-200 space-y-1">
+                        <p>Store: {premiumCalc.storeHT}€ HT</p>
+                        {avec_pose && <p>Pose: {premiumCalc.poseHT}€ HT</p>}
+                        <p>TVA {premiumCalc.tauxTVA}%: +{premiumCalc.tvaMontant}€</p>
+                      </div>
+                    )}
                     {isCurrent && <p className="text-sm text-gray-600 mt-2">Tout équipé</p>}
                 </button>
             </div>
+            
+            {/* 💡 SECTION COMPARATIF TVA - Affichée si store >= 3500€ + TVA 10% */}
+            {isCurrent && comparisonData && (
+              <div className="mt-8 pt-6 border-t-2 border-blue-200">
+                <h4 className="text-center text-lg font-bold text-gray-900 mb-4">💭 COMPARAISON PARITÉ</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Colonne 1: Avec Pose */}
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <h5 className="font-semibold text-gray-900 mb-3 text-center">Votre offre (Pose + TVA 10%)</h5>
+                    <div className="text-sm text-gray-700 space-y-2">
+                      <div className="flex justify-between">
+                        <span>Store HT</span>
+                        <span className="font-semibold">{standardHT}€</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Pose HT</span>
+                        <span className="font-semibold">+{comparisonData.poseHT}€</span>
+                      </div>
+                      <div className="border-t border-blue-200 pt-2 flex justify-between font-semibold text-gray-900">
+                        <span>Total HT</span>
+                        <span>{standardHT + comparisonData.poseHT}€</span>
+                      </div>
+                      <div className="flex justify-between text-blue-600">
+                        <span>TVA 10%</span>
+                        <span>+{Math.round((standardHT + comparisonData.poseHT) * 0.10)}€</span>
+                      </div>
+                      <div className="bg-blue-100 rounded p-2 flex justify-between font-bold text-blue-900">
+                        <span>✅ PRIX FINAL TTC</span>
+                        <span>{comparisonData.avecPoseTTC}€</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Colonne 2: Sans Pose (TVA 20%) */}
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-300">
+                    <h5 className="font-semibold text-gray-900 mb-3 text-center">Si store seul (TVA 20% normal)</h5>
+                    <div className="text-sm text-gray-700 space-y-2">
+                      <div className="flex justify-between">
+                        <span>Store HT</span>
+                        <span className="font-semibold">{standardHT}€</span>
+                      </div>
+                      <div className="flex justify-between text-gray-400 line-through">
+                        <span>Pose HT</span>
+                        <span>—</span>
+                      </div>
+                      <div className="border-t border-gray-300 pt-2 flex justify-between font-semibold text-gray-900">
+                        <span>Total HT</span>
+                        <span>{standardHT}€</span>
+                      </div>
+                      <div className="flex justify-between text-red-600">
+                        <span>TVA 20%</span>
+                        <span>+{Math.round(standardHT * 0.20)}€</span>
+                      </div>
+                      <div className="bg-gray-200 rounded p-2 flex justify-between font-bold text-gray-900">
+                        <span>PRIX COMPARÉ TTC</span>
+                        <span>{comparisonData.sansPoseTTC}€</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Résumé et Message Clé */}
+                <div className="mt-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-l-4 border-green-500">
+                  <p className="text-center font-bold text-green-900 mb-2">🎁 AVANTAGE TVA RÉNOVATION</p>
+                  <p className="text-sm text-gray-700 text-center mb-3">
+                    Grâce à la TVA réduite, la pose vous revient à seulement <span className="font-bold text-green-700">+{comparisonData.surCoutReel}€</span> 
+                    <br />
+                    <span className="text-xs text-green-600">(au lieu de +{Math.round(comparisonData.poseHT)}€ en TVA normale)</span>
+                  </p>
+                  <p className="text-sm font-semibold text-center text-green-800">
+                    ✨ Économie TVA réalisée: <span className="text-lg">{comparisonData.economieTV}€</span> 💚
+                  </p>
+                </div>
+              </div>
+            )}
         </div>
     );
   };
@@ -276,9 +607,12 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
                 ✅ SÉLECTIONNÉ
               </div>
             )}
-            <div className={`relative w-full bg-gray-100 ${isCurrent ? 'h-60' : 'h-40'}`}>
-              <Image src={`/images/models/${model.id.toUpperCase()}.png`} alt={model.name} fill className="object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/models/placeholder.png'; }} />
-            </div>
+            {/* Image: affichée UNIQUEMENT quand le sélecteur est actif (isCurrent) */}
+            {isCurrent && (
+              <div className={`relative w-full bg-gray-100 h-60`}>
+                <Image src={model.image} alt={model.name} fill className="object-cover" />
+              </div>
+            )}
             <div className={`p-${isCurrent ? '6' : '3'} flex flex-col flex-1`}>
               <h4 className={`font-bold text-gray-900 mb-1 ${isCurrent ? 'text-lg' : 'text-sm'}`}>{model.name}</h4>
               {width && depth && (
@@ -291,9 +625,14 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
               {isCurrent && (
                 <div className="mt-auto space-y-2">
                   <button onClick={() => { 
-                    saveToCart({ modelId: model.id, modelName: model.name }); 
+                    // 🔄 Réinitialiser les anciens prix quand on change de store
+                    saveToCart({ modelId: model.id, modelName: model.name, priceEco: undefined, priceStandard: undefined, pricePremium: undefined, selectedPrice: undefined, storeHT: undefined, poseHT: undefined, tvaAmount: undefined, lambrequinPrice: undefined, ledArmsPrice: undefined, ledBoxPrice: undefined }); 
                     setSelectedModelId(model.id);
-                    addToolResult({ toolCallId: tool.toolCallId, tool: tool.toolName, output: { modelId: model.id, modelName: model.name, validated: true } }); 
+                    addToolResult({ toolCallId: tool.toolCallId, result: { modelId: model.id, modelName: model.name, validated: true } }); 
+                    // 🔥 Envoyer un message utilisateur pour déclencher l'enchaînement automatique
+                    setTimeout(() => {
+                      sendMessage({ text: `J'ai choisi le modèle ${model.name}` });
+                    }, 300);
                   }} className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg">Configurer ce store</button>
                   <button onClick={() => { setSelectedModelForModal(model); setIsModalOpen(true); }} className="w-full py-2 text-blue-600 font-semibold hover:bg-blue-50 transition-colors rounded-lg">Voir la fiche produit</button>
                 </div>
@@ -326,7 +665,9 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
                   setSelectedColorId(color.id);
                   saveToCart({ colorId: color.id });
                   if (isCurrent) {
-                    addToolResult({ toolCallId: tool.toolCallId, tool: tool.toolName, output: { color_id: color.id, color_name: color.name, validated: true } });
+                    addToolResult({ toolCallId: tool.toolCallId, result: { color_id: color.id, color_name: color.name, validated: true } });
+                    // 🔥 Envoyer immédiatement (sans délai) pour disparition instantanée
+                    sendMessage({ text: `J'ai choisi la couleur ${color.name}` });
                   }
                 }}
                 disabled={!isCurrent}
@@ -372,7 +713,9 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
                   setSelectedFabricId(fabric.id);
                   saveToCart({ fabricId: fabric.id });
                   if (isCurrent) {
-                    addToolResult({ toolCallId: tool.toolCallId, tool: tool.toolName, output: { fabric_id: fabric.id, fabric_name: fabric.name, validated: true } });
+                    addToolResult({ toolCallId: tool.toolCallId, result: { fabric_id: fabric.id, fabric_name: fabric.name, validated: true } });
+                    // 🔥 Envoyer immédiatement (sans délai) pour disparition instantanée
+                    sendMessage({ text: `J'ai choisi la toile ${fabric.name}` });
                   }
                 }}
                 disabled={!isCurrent}
@@ -401,67 +744,212 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   };
 
   const quickQuestions = [
+    { label: "🚀 Je veux me laisser guider", text: "Je veux me laisser guider" },
     { label: "Quel store choisir ?", text: "J'aimerais trouver le store parfait pour ma terrasse." },
-    { label: "TVA à 10%", text: "Comment bénéficier de la TVA à 10% ?" },
-    { label: "Prix des couleurs", text: "Les couleurs hors-blanc sont-elles plus chères ?" }
+    { label: "TVA à 10%", text: "Comment bénéficier de la TVA à 10% ?" }
   ];
 
+  // Helper functions to calculate offers
+  const calculateEcoOffer = (input: any) => {
+    const { eco_price_ht, eco_price, standard, with_motor, avec_pose = false, taux_tva = 20, width = 3000 } = input;
+    const ecoHT = eco_price_ht || eco_price || standard || 0;
+    const poseActuelle = width && avec_pose ? calculateInstallationCost(width) : 0;
+    const totalHT = avec_pose ? ecoHT + poseActuelle : ecoHT;
+    const tvaMontant = Math.round(totalHT * (taux_tva / 100));
+    const totalTTC = totalHT + tvaMontant;
+    return { storeHT: ecoHT, poseHT: avec_pose ? poseActuelle : 0, totalHT, tvaMontant, totalTTC, tauxTVA: taux_tva };
+  };
+
+  const calculateStandardOffer = (input: any) => {
+    const { standard_price_ht, standard_price, confort, with_motor, avec_pose = false, taux_tva = 20, width = 3000 } = input;
+    const standardHT = standard_price_ht || standard_price || confort || 0;
+    const poseActuelle = width && avec_pose ? calculateInstallationCost(width) : 0;
+    const totalHT = avec_pose ? standardHT + poseActuelle : standardHT;
+    const tvaMontant = Math.round(totalHT * (taux_tva / 100));
+    const totalTTC = totalHT + tvaMontant;
+    return { storeHT: standardHT, poseHT: avec_pose ? poseActuelle : 0, totalHT, tvaMontant, totalTTC, tauxTVA: taux_tva };
+  };
+
+  const calculatePremiumOffer = (input: any) => {
+    const { premium_price_ht, premium_price, premium, with_motor, avec_pose = false, taux_tva = 20, width = 3000 } = input;
+    const premiumHT = premium_price_ht || premium_price || premium || 0;
+    const poseActuelle = width && avec_pose ? calculateInstallationCost(width) : 0;
+    const totalHT = avec_pose ? premiumHT + poseActuelle : premiumHT;
+    const tvaMontant = Math.round(totalHT * (taux_tva / 100));
+    const totalTTC = totalHT + tvaMontant;
+    return { storeHT: premiumHT, poseHT: avec_pose ? poseActuelle : 0, totalHT, tvaMontant, totalTTC, tauxTVA: taux_tva };
+  };
+
+  const handleTerraceChange = (dims: { m1: number; m2: number; m3: number; m4: number }) => {
+    setTerraceState(dims);
+    const msg = `Ma terrasse a comme dimensions: M1=${dims.m1.toFixed(2)}m, M2=${dims.m2.toFixed(2)}m, M3=${dims.m3.toFixed(2)}m, M4=${dims.m4.toFixed(2)}m`;
+    sendMessage({ text: msg });
+  };
+
   return (
-    <div className="w-full h-full bg-white flex flex-col">
-       {isModalOpen && <ProductModal model={selectedModelForModal} onClose={() => setIsModalOpen(false)} />}
-       <header className="bg-gray-900 text-white p-4 sticky top-0 z-10 rounded-t-xl"><h2 className="text-xl font-bold">Expert Storal - Assistant Personnalisé</h2><p className="text-sm text-gray-300">Configurez votre produit idéal</p></header>
-       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-         {messages.length === 0 && (
-          <div className="text-center py-8">
-             <h3 className="text-2xl font-bold text-gray-900 mb-4">Bienvenue !</h3>
-             <p className="text-base text-gray-600 mb-6">Posez une question ou utilisez nos suggestions pour démarrer.</p>
-             <div className="flex justify-center flex-wrap gap-3">
-               {quickQuestions.map((q, idx) => (<button key={idx} onClick={() => handleQuickClick(q.text)} disabled={isLoading} className="px-4 py-2 bg-white border border-gray-300 hover:border-gray-500 hover:bg-gray-50 text-sm font-medium text-gray-700 rounded-full transition-all">{q.label}</button>))}
+    <div className="flex h-screen bg-white gap-0">
+      {/* 🔵 COLONNE GAUCHE (50%) - CHAT UNIQUEMENT */}
+      <div className="w-full lg:w-1/2 flex flex-col h-screen bg-white border-r border-gray-200">
+        {isModalOpen && <ProductModal model={selectedModelForModal} onClose={() => setIsModalOpen(false)} />}
+        
+        <header className="bg-gray-900 text-white p-4 sticky top-0 z-10">
+          <h2 className="text-xl font-bold">Expert Storal - Assistant Personnalisé</h2>
+          <p className="text-sm text-gray-300">Configurez votre produit idéal</p>
+        </header>
+        
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {messages.length === 0 && (
+            <div className="text-center py-8 space-y-6">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl px-6 py-6 border border-blue-200 shadow-md max-w-2xl mx-auto">
+                <TypewriterText 
+                  text="Bonjour ! Je suis l'Agent Storal. Bienvenue dans une **expérience passionnante** : ici, nous ne nous contentons pas de choisir un store, nous allons créer ensemble **votre ombre idéale**. Mon objectif est de répondre avec précision à vos attentes techniques tout en transformant votre extérieur. Prêt à commencer l'aventure ?" 
+                  isWelcomeMessage={true} 
+                />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Nous sommes ici pour vous aider !</h3>
+                <p className="text-sm text-gray-600 mb-4">Choisissez ci-dessous pour commencer votre configuration.</p>
+              </div>
+
+              <div className="flex justify-center flex-wrap gap-3">
+                {quickQuestions.map((q, idx) => (
+                  <button 
+                    key={idx} 
+                    onClick={() => handleQuickClick(q.text)} 
+                    disabled={isLoading} 
+                    className={`transition-all ${
+                      idx === 0 
+                        ? 'px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-full hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl text-base'
+                        : 'px-4 py-2 bg-white border border-gray-300 hover:border-gray-500 hover:bg-gray-50 text-sm font-medium text-gray-700 rounded-full'
+                    }`}
+                  >
+                    {q.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-         {messages.map((message) => (
-          <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-4xl rounded-2xl px-4 py-3 ${message.role === 'user' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
-              {message.role === 'assistant' && <div className="text-xs font-semibold text-gray-500 mb-2">Expert Storal</div>}
-              <span className="whitespace-pre-wrap text-sm leading-relaxed">{getMessageText(message)}</span>
+          )}
+          
+          {messages.map((message, idx) => {
+            const messageText = getMessageText(message);
+            const isWelcomeMessage = messageText.includes('Bonjour ! Je suis l\'Agent Storal');
+            
+            return (
+              <div key={`${message.id}-${idx}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`rounded-2xl px-4 py-3 max-w-xs ${message.role === 'user' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+                  {message.role === 'assistant' && <div className="text-xs font-semibold text-gray-500 mb-2">Expert Storal</div>}
+                  {isWelcomeMessage ? (
+                    <TypewriterText text={messageText} isWelcomeMessage={true} />
+                  ) : (
+                    <span className="whitespace-pre-wrap text-sm leading-relaxed">{messageText}</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          
+          {isLoading && !activeTool && (
+            <div className="flex justify-start p-4">
+              <div className="bg-gray-100 rounded-2xl px-4 py-3">
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+              </div>
             </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200 bg-white">
+          <div className="flex space-x-2">
+            <input 
+              type="text" 
+              value={input} 
+              onChange={(e) => setInput(e.target.value)} 
+              placeholder="Ex: Je veux un store de 5x3m" 
+              disabled={isLoading} 
+              className="flex-1 px-4 py-3 text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600" 
+            />
+            <button 
+              type="submit" 
+              disabled={isLoading || !input.trim()} 
+              className="px-6 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:bg-gray-300"
+            >
+              {isLoading ? '⏳' : '📤'}
+            </button>
           </div>
-        ))}
-        {renderActiveTool()}
-        <div ref={messagesEndRef} />
+        </form>
+      </div>
       
-       </div>
-       {isLoading && !activeTool && (
-         <div className="flex justify-start p-4">
-           <div className="bg-gray-100 rounded-2xl px-4 py-3">
-             <div className="flex space-x-2">
-               <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-               <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-               <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-             </div>
-           </div>
-         </div>
-       )}
-       <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200 bg-white sticky bottom-0 rounded-b-xl">
-         <div className="flex space-x-2">
-           <input 
-             type="text" 
-             value={input} 
-             onChange={(e) => setInput(e.target.value)} 
-             placeholder="Ex: Je veux un store de 5x3m" 
-             disabled={isLoading} 
-             className="flex-1 px-4 py-3 text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600" 
-           />
-           <button 
-             type="submit" 
-             disabled={isLoading || !input.trim()} 
-             className="px-6 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors disabled:bg-gray-300"
-           >
-             {isLoading ? '⏳' : '📤'}
-           </button>
-         </div>
-       </form>
-     </div>
+      {/* 🔴 COLONNE DROITE (50%) - VISUAL SHOWROOM UNIQUEMENT */}
+      <div className="hidden lg:flex w-1/2 flex-col h-screen bg-gradient-to-br from-gray-50 to-white border-l border-gray-200 overflow-hidden">
+        <VisualShowroom
+          activeTool={activeTool}
+          onTerraceChange={handleTerraceChange}
+          onSelectColor={(colorId, colorName) => {
+            setSelectedColorId(colorId);
+            saveToCart({ colorId });
+            if (activeTool?.toolName === 'open_color_selector') {
+              addToolResult({ toolCallId: activeTool.toolCallId, result: { frame_color_id: colorId, frame_color_name: colorName, validated: true } });
+              sendMessage({ text: `J'ai choisi l'armature ${colorName}` });
+            }
+          }}
+          onSelectFabric={(fabricId, fabricName) => {
+            setSelectedFabricId(fabricId);
+            saveToCart({ fabricId });
+            if (activeTool?.toolName === 'open_fabric_selector') {
+              addToolResult({ toolCallId: activeTool.toolCallId, result: { fabric_id: fabricId, fabric_name: fabricName, validated: true } });
+              sendMessage({ text: `J'ai choisi la toile ${fabricName}` });
+            }
+          }}
+          onSelectModel={(modelId, modelName) => {
+            setSelectedModelId(modelId);
+            saveToCart({ modelId, modelName, priceEco: undefined, priceStandard: undefined, pricePremium: undefined, selectedPrice: undefined, priceType: undefined, storeHT: undefined, ledArmsPrice: undefined, ledBoxPrice: undefined, lambrequinPrice: undefined, poseHT: undefined, tvaAmount: undefined });
+            if (activeTool?.toolName === 'open_model_selector') {
+              addToolResult({ toolCallId: activeTool.toolCallId, result: { model_id: modelId, model_name: modelName, validated: true } });
+              sendMessage({ text: `Je veux configurer le ${modelName}` });
+            }
+          }}
+          onSelectEco={(priceHT) => {
+            saveToCart({ priceEco: priceHT, selectedPrice: priceHT, priceType: 'eco' });
+            if (activeTool?.toolName === 'display_triple_offer') {
+              addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'eco', price_ttc: priceHT, validated: true } });
+              sendMessage({ text: `Je sélectionne l'offre Eco à ${priceHT}€ TTC` });
+            }
+          }}
+          onSelectStandard={(priceHT) => {
+            saveToCart({ priceStandard: priceHT, selectedPrice: priceHT, priceType: 'standard' });
+            if (activeTool?.toolName === 'display_triple_offer') {
+              addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'standard', price_ttc: priceHT, validated: true } });
+              sendMessage({ text: `Je sélectionne l'offre Standard à ${priceHT}€ TTC` });
+            }
+          }}
+          onSelectPremium={(priceHT) => {
+            saveToCart({ pricePremium: priceHT, selectedPrice: priceHT, priceType: 'premium' });
+            if (activeTool?.toolName === 'display_triple_offer') {
+              addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'premium', price_ttc: priceHT, validated: true } });
+              sendMessage({ text: `Je sélectionne l'offre Premium à ${priceHT}€ TTC` });
+            }
+          }}
+          selectedColorId={selectedColorId}
+          selectedFabricId={selectedFabricId}
+          selectedModelId={selectedModelId}
+          hasStartedConversation={messages.length > 0}
+          ecoCalc={activeTool?.toolName === 'display_triple_offer' ? calculateEcoOffer(activeTool.input) : undefined}
+          standardCalc={activeTool?.toolName === 'display_triple_offer' ? calculateStandardOffer(activeTool.input) : undefined}
+          premiumCalc={activeTool?.toolName === 'display_triple_offer' ? calculatePremiumOffer(activeTool.input) : undefined}
+          avec_pose={activeTool?.toolName === 'display_triple_offer' ? (activeTool.input as any)?.avec_pose : false}
+        />
+        
+        <div className="border-t border-gray-200 bg-white p-4">
+          <p className="text-xs text-gray-600 text-center">
+            ✅ Un technicien validera avec vous l'ensemble des cotes avant toute mise en fabrication.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
