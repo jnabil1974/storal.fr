@@ -35,17 +35,26 @@ interface VisualShowroomProps {
   standardCalc?: any;
   premiumCalc?: any;
   avec_pose?: boolean;
+  // Proposition du store
+  proposedStoreWidth?: number;
+  proposedStoreHeight?: number;
+  // Hint vidéo
+  showVideoHint?: boolean;
 }
 
 const TerraceVisualizer: React.FC<{ 
-  onDimensionsChange?: (dims: TerraceState) => void 
-}> = ({ onDimensionsChange }) => {
+  onDimensionsChange?: (dims: TerraceState) => void;
+  proposedWidth?: number; // Largeur du store proposé par Gemini
+  proposedHeight?: number; // Profondeur du store proposée par Gemini
+  showVideoHint?: boolean; // Clignoter le bouton d'aide si Gemini le demande
+}> = ({ onDimensionsChange, proposedWidth, proposedHeight, showVideoHint = false }) => {
   const [terrace, setTerrace] = useState<TerraceState>({
     m1: 4,
     m2: 3,
     m3: 4,
     m4: 3,
   });
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   const handleDimensionChange = (side: keyof TerraceState, value: string) => {
     const num = parseFloat(value) || 0;
@@ -94,9 +103,21 @@ const TerraceVisualizer: React.FC<{
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Titre - Même style que le header du chat */}
-      <header className="bg-gray-900 text-white p-4 flex-shrink-0">
+      <header className="bg-gray-900 text-white p-4 flex-shrink-0 relative">
         <h3 className="text-xl font-bold">Vue de Votre Terrasse</h3>
         <p className="text-sm text-gray-300">Entrez les dimensions de vos murs (en mètres)</p>
+        
+        {/* Bouton d'aide vidéo - Haut droit */}
+        <button
+          onClick={() => setIsVideoOpen(true)}
+          className={`absolute top-4 right-4 px-3 py-2 rounded-lg border border-white/40 bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-all flex items-center gap-2 backdrop-blur-sm ${
+            showVideoHint ? 'animate-pulse ring-2 ring-yellow-400' : ''
+          }`}
+          title="Ouvrir le tutoriel vidéo"
+        >
+          <span className="text-lg">▶️</span>
+          <span className="hidden sm:inline">Comment mesurer ?</span>
+        </button>
       </header>
 
       {/* Contenu scrollable */}
@@ -206,6 +227,34 @@ const TerraceVisualizer: React.FC<{
             fill="url(#hatch)"
           />
 
+          {/* Rectangle du STORE PROPOSÉ (si dimensions fournies) */}
+          {proposedWidth && proposedHeight && (
+            <>
+              <rect
+                x={centerX - (proposedWidth * scale) / 2}
+                y={padding}
+                width={proposedWidth * scale}
+                height={proposedHeight * scale}
+                fill="#3b82f6"
+                fillOpacity="0.25"
+                stroke="#3b82f6"
+                strokeWidth="2"
+                strokeDasharray="4,4"
+              />
+              <text
+                x={centerX}
+                y={padding + (proposedHeight * scale) / 2}
+                textAnchor="middle"
+                className="font-bold fill-blue-700"
+                fontSize="12"
+                fontWeight="bold"
+                dy="0.3em"
+              >
+                Store: {proposedWidth.toFixed(1)}m × {proposedHeight.toFixed(1)}m
+              </text>
+            </>
+          )}
+
           {/* M1 - Haut */}
           <text
             x={centerX}
@@ -301,6 +350,76 @@ const TerraceVisualizer: React.FC<{
           </span>
         </div>
       </div>
+
+      {/* MODALE VIDÉO - Tutoriel de mesure */}
+      {isVideoOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden animate-scale-in">
+            {/* En-tête de la modale */}
+            <div className="flex justify-between items-center p-5 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                <span>▶️</span>
+                Tutoriel : Comment mesurer votre terrasse
+              </h3>
+              <button
+                onClick={() => setIsVideoOpen(false)}
+                className="text-white hover:bg-white/20 p-2 rounded-lg transition-all"
+                title="Fermer"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Lecteur vidéo */}
+            <div className="bg-black flex items-center justify-center aspect-video">
+              <video
+                controls
+                className="w-full h-full"
+                controlsList="nodownload"
+              >
+                <source 
+                  src="/videos/tutoriel-mesure.mp4" 
+                  type="video/mp4"
+                />
+                <p className="text-white p-4">
+                  Votre navigateur ne supporte pas la lecture de vidéo. 
+                  <a href="/videos/tutoriel-mesure.mp4" className="text-blue-400 underline ml-2">
+                    Télécharger la vidéo
+                  </a>
+                </p>
+              </video>
+            </div>
+
+            {/* Légende et instructions */}
+            <div className="p-6 bg-gradient-to-b from-white to-gray-50 border-t border-gray-200">
+              <p className="text-sm text-gray-700 italic text-center mb-4">
+                Visualisez comment vos mesures M1 à M4 définissent la structure de votre futur store Storal.
+              </p>
+              
+              {/* Points clés */}
+              <div className="space-y-2 text-xs text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <p className="font-semibold text-gray-700 mb-2">📏 Points clés à retenir :</p>
+                <ul className="space-y-1 ml-4">
+                  <li>• <strong>M1</strong> : Largeur du mur du haut (en mètres)</li>
+                  <li>• <strong>M2</strong> : Hauteur du mur de gauche (en mètres)</li>
+                  <li>• <strong>M3</strong> : Largeur du mur du bas (en mètres)</li>
+                  <li>• <strong>M4</strong> : Hauteur du mur de droite (en mètres)</li>
+                </ul>
+              </div>
+
+              {/* Bouton de fermeture */}
+              <button
+                onClick={() => setIsVideoOpen(false)}
+                className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-green-700 transition-all"
+              >
+                ✅ Compris, fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );
@@ -323,6 +442,8 @@ export default function VisualShowroom({
   premiumCalc,
   avec_pose = false,
   hasStartedConversation = false,
+  proposedStoreWidth,
+  proposedStoreHeight,
 }: VisualShowroomProps) {
   const [selectedModelForModal, setSelectedModelForModal] = useState<any>(null);
 
@@ -332,7 +453,11 @@ export default function VisualShowroom({
     if (hasStartedConversation) {
       return (
         <div className="w-full h-full flex flex-col overflow-y-auto">
-          <TerraceVisualizer onDimensionsChange={onTerraceChange} />
+          <TerraceVisualizer 
+            onDimensionsChange={onTerraceChange}
+            proposedWidth={proposedStoreWidth}
+            proposedHeight={proposedStoreHeight}
+          />
         </div>
       );
     }

@@ -118,6 +118,9 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedModelForModal, setSelectedModelForModal] = useState<StoreModel | null>(null);
   const [terraceState, setTerraceState] = useState({ m1: 4, m2: 3, m3: 4, m4: 3 });
+  const [proposedStoreWidth, setProposedStoreWidth] = useState<number | undefined>();
+  const [proposedStoreHeight, setProposedStoreHeight] = useState<number | undefined>();
+  const [showVideoHint, setShowVideoHint] = useState(false);
   const [initialMessageSent, setInitialMessageSent] = useState(false);
   const [isExpertMode, setIsExpertMode] = useState(false);
   const [expertModeActivated, setExpertModeActivated] = useState(false);
@@ -252,6 +255,71 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   }, [messages]);
 
   const getMessageText = (msg: UIMessage): string => msg.parts.filter((part) => part.type === 'text').map((part) => part.text).join('');
+
+  // Extraire les dimensions du store proposé du texte
+  const extractProposedDimensions = (text: string): { width?: number; height?: number } => {
+    // Pattern: "X.XXm × Y.XXm" ou "Xm x Ym" ou "largeur (X)m" "profondeur (Y)m"
+    const patterns = [
+      /(\d+(?:[.,]\d+)?)\s*m\s*×\s*(\d+(?:[.,]\d+)?)\s*m/i,
+      /(\d+(?:[.,]\d+)?)\s*m\s*x\s*(\d+(?:[.,]\d+)?)\s*m/i,
+      /Largeur.*?(\d+(?:[.,]\d+)?)\s*m.*?[Pp]rofondeur.*?(\d+(?:[.,]\d+)?)\s*m/s,
+      /Profondeur.*?(\d+(?:[.,]\d+)?)\s*m.*?[Ll]argeur.*?(\d+(?:[.,]\d+)?)\s*m/s,
+    ];
+
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const width = parseFloat(match[1].replace(',', '.'));
+        const height = parseFloat(match[2].replace(',', '.'));
+        return { width, height };
+      }
+    }
+    return {};
+  };
+
+  // Mettre à jour les dimensions proposées quand les messages changent
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      const messageText = getMessageText(lastMessage);
+      const { width, height } = extractProposedDimensions(messageText);
+      if (width) setProposedStoreWidth(width);
+      if (height) setProposedStoreHeight(height);
+    }
+  }, [messages]);
+
+  // Détecter la confusion et afficher le hint vidéo
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      const messageText = getMessageText(lastMessage).toLowerCase();
+      
+      // Mots-clés indiquant la confusion
+      const confusionKeywords = [
+        'ne comprends pas',
+        'ne comprenne pas',
+        'ne sais pas',
+        'c\'est quoi',
+        'ça signifie quoi',
+        'explication',
+        'clarifier',
+        'comment',
+        'cotes',
+        'mesure',
+        'm1',
+        'm2',
+        'm3',
+        'm4',
+        'dimensions'
+      ];
+      
+      const hasConfusion = confusionKeywords.some(keyword => messageText.includes(keyword));
+      
+      if (hasConfusion && !showVideoHint) {
+        setShowVideoHint(true);
+      }
+    }
+  }, [messages]);
 
   // HandleSubmit simple et robuste
   const handleSubmit = (e: React.FormEvent) => {
@@ -889,6 +957,9 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
         <VisualShowroom
           activeTool={activeTool}
           onTerraceChange={handleTerraceChange}
+          proposedStoreWidth={proposedStoreWidth}
+          proposedStoreHeight={proposedStoreHeight}
+          showVideoHint={showVideoHint}
           onSelectColor={(colorId, colorName) => {
             setSelectedColorId(colorId);
             saveToCart({ colorId });
