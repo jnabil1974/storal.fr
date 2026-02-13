@@ -5,6 +5,13 @@ import { getSafeModelsToDisplay, filterCompatibleModels, generateDynamicCatalog 
 
 export const maxDuration = 30;
 
+// Récupérer la clé API Gemini depuis les variables d'environnement
+const GOOGLE_API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
+if (!GOOGLE_API_KEY) {
+  console.error('❌ ERREUR: GOOGLE_GENERATIVE_AI_API_KEY não configurée');
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -267,7 +274,9 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
     }
 
     const result = await streamText({
-      model: google('gemini-2.5-pro'),
+      model: google('gemini-2.5-pro', {
+        apiKey: GOOGLE_API_KEY,
+      }),
       system: SYSTEM_PROMPT,
       messages: normalizedMessages as any,
       toolChoice: 'auto',
