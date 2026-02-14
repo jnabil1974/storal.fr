@@ -130,6 +130,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   const [expertModeActivated, setExpertModeActivated] = useState(false);
   const [tripleOfferTimeoutId, setTripleOfferTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [tripleOfferDisplayed, setTripleOfferDisplayed] = useState(false);
+  const [honeypot, setHoneypot] = useState(''); // 🍯 Honeypot anti-bot
 
   // Fonction pour sauvegarder dans localStorage
   const saveToCart = (updates: Partial<Cart>) => {
@@ -327,6 +328,9 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   // UTILISATION NATIVE DU SDK - Méthode la plus stable avec sendMessage
   const { messages, sendMessage, status, addToolResult } = useChat({
     id: chatId,
+    body: {
+      honeypot: honeypot, // 🍯 Envoyer le honeypot au backend
+    },
     onToolCall: ({ toolCall }: any) => {
       console.log('🔧 Tool appelé:', toolCall);
       setActiveTool(toolCall);
@@ -336,7 +340,19 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
     onFinish: (data: any) => {
       console.log('✅ Réponse terminée, messages:', data.messages?.length || 0);
     },
-    onError: (err) => console.error('❌ Erreur:', err),
+    onError: (err: any) => {
+      console.error('❌ Erreur:', err);
+      // Afficher un message d'erreur convivial selon le type d'erreur
+      if (err.message?.includes('Session limit')) {
+        alert('Vous avez atteint la limite de 15 échanges. Pour finaliser votre projet, contactez-nous au 01 85 09 34 46 ou réservez une visio gratuite.');
+      } else if (err.message?.includes('Spam detected')) {
+        alert('Une erreur s\'est produite. Veuillez réessayer.');
+      } else if (err.message?.includes('Message too long')) {
+        alert('Votre message est trop long. Merci de le raccourcir.');
+      } else if (err.message?.includes('Invalid content')) {
+        alert('Votre message contient des caractères non autorisés.');
+      }
+    },
   });
   
   const isLoading = status !== 'ready';
@@ -1067,9 +1083,29 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
         </div>
         
         <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200 bg-white">
+          {/* 🍯 HONEYPOT - Champ invisible pour bloquer les bots */}
+          <input
+            type="text"
+            name="website"
+            value={honeypot}
+            onChange={(e) => setHoneypot(e.target.value)}
+            autoComplete="off"
+            tabIndex={-1}
+            style={{
+              position: 'absolute',
+              left: '-9999px',
+              width: '1px',
+              height: '1px',
+              opacity: 0,
+              pointerEvents: 'none'
+            }}
+            aria-hidden="true"
+          />
+          
           <div className="flex space-x-2">
             <input 
-              type="text" 
+              type="text"
+              name="message"
               value={input} 
               onChange={(e) => setInput(e.target.value)} 
               placeholder="Ex: Je veux un store de 5x3m" 
