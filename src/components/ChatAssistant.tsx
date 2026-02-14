@@ -1011,9 +1011,9 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
       <div className="flex-1 flex flex-col h-full bg-white">
         {isModalOpen && <ProductModal model={selectedModelForModal} onClose={() => setIsModalOpen(false)} />}
         
-        <header className="bg-gray-900 text-white p-4 sticky top-0 z-10 text-center">
-          <h2 className="text-xl font-bold">Expert Storal - Assistant Personnalisé</h2>
-          <p className="text-sm text-gray-300">Configurez votre produit idéal</p>
+        <header className="bg-gray-900 text-white py-3 px-4 sticky top-0 z-10 text-center">
+          <h2 className="text-lg font-bold leading-tight">Expert Storal - Assistant Personnalisé</h2>
+          <p className="text-xs text-gray-300 mt-1">Configurez votre produit idéal</p>
         </header>
         
         <div className="flex-1 overflow-y-auto p-6 space-y-6">

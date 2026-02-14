@@ -220,14 +220,24 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     Argument: Si maison > 2 ans et pose par nos soins, la TVA passe de 20% à 10% sur tout le projet.
 
 PHASE 2 : VALIDATION DU PROJET (Le Verrouillage)
-Fais un résumé technique de l'environnement.
+Fais un résumé technique de l'environnement (dimensions, orientation, obstacles, hauteur, éclairage, pose).
+⚠️ IMPORTANT : NE MENTIONNE AUCUN MODÈLE SPÉCIFIQUE dans ce résumé. Le modèle sera choisi en PHASE 3 après les questions esthétiques.
 Question cruciale : 'Ce diagnostic technique vous semble-t-il complet pour passer à la personnalisation de votre store ?'
 Si non : Repose les questions nécessaires.
 
 PHASE 3 : ESTHÉTIQUE (Le Style)
+⚠️ DÉTECTION PRÉALABLE : Avant de poser des questions, vérifie si le client a DÉJÀ mentionné un nom de modèle spécifique dans l'historique (ex: "DYNASTA", "KISSIMY", "BELHARRA", "HELIOM", "BERLINO", etc.).
+- Si OUI → SKIP les questions Type et Design, passe directement à l'affichage des modèles avec open_model_selector (propose ce modèle + 2 alternatives compatibles).
+- Si NON → Pose les questions ci-dessous dans l'ordre :
+
 Type de store : Coffre, Monobloc ou Traditionnel ? (Présente les avantages).
 Design : Pour un store coffre, préfère-t-il un design Carré (moderne) ou Galbé (classique) ?
-Couleurs : Fais choisir la couleur de l'armature, puis la couleur de la toile.
+
+⚠️ MODÈLES - UTILISATION OBLIGATOIRE DE L'OUTIL VISUEL :
+APPELLE L'OUTIL open_model_selector pour afficher 3 modèles compatibles en cartes visuelles (ex: KISSIMY, BELHARRA, BERLIN). NE JAMAIS décrire les modèles en texte - utilise CET OUTIL.
+⚠️ COULEURS - UTILISATION OBLIGATOIRE DES OUTILS VISUELS :
+1. APPELLE L'OUTIL open_color_selector pour afficher les couleurs d'armature disponibles (ne jamais les décrire en texte)
+2. Après sélection de la couleur d'armature, APPELLE L'OUTIL open_fabric_selector pour afficher les toiles disponibles (ne jamais les décrire en texte)
 
 PHASE 4 : RÉCAPITULATIF & OFFRE (La Conclusion)
 Affiche le récapitulatif complet (Dimensions, Orientation, Hauteur, Options LED, Type de store, Design, Couleurs, Pose).
@@ -353,7 +363,7 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
       toolChoice: 'auto',
       tools: {
         open_model_selector: tool({
-          description: "⚠️ A APPELER APRÈS: dimensions + type + couleur + toile. Affiche 3 stores adaptés (KISSIMY, BELHARRA, BERLIN, etc.) en cartes visuelles. Client clique → enchaîne sur couleur/toile. NE JAMAIS montrer avant phase esthétique.",
+          description: "⚠️ OUTIL OBLIGATOIRE - Affiche visuellement 3 modèles de stores adaptés (KISSIMY, BELHARRA, BERLIN, etc.) en cartes visuelles. À APPELER DÈS QUE le type de store (Coffre/Monobloc/Traditionnel) et le design sont choisis, AVANT les couleurs. NE JAMAIS décrire les modèles en texte - utilise CET OUTIL.",
           inputSchema: jsonSchema({ 
             type: 'object', 
             properties: { 

@@ -49,7 +49,7 @@ function AssistantContent() {
         }}
       >
         {/* Gradient Overlay - Style AstroTalky */}
-        <div className="absolute inset-0 bg-[#2c3e50]/40 mix-blend-multiply pointer-events-none" />
+        <div className="absolute inset-0 bg-[#2c3e50]/20 mix-blend-multiply pointer-events-none" />
         <div className="absolute inset-0 hero-gradient pointer-events-none" />
         
         {/* Main Content - Interface Application avec Split View */}
@@ -65,7 +65,7 @@ function AssistantContent() {
             </div>
 
             {/* COLONNE DROITE : Dashboard Bento Dynamique (40%) */}
-            <div className="w-[40%] rounded-3xl overflow-hidden">
+            <div className="w-[40%] bg-white/95 backdrop-blur-xl rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
               <DashboardBento />
             </div>
 

@@ -8,7 +8,7 @@ export default function DashboardBento() {
   const { showroomState } = useShowroom();
   const [highlightedTile, setHighlightedTile] = useState<string | null>(null);
   const [showOverlay, setShowOverlay] = useState(false);
-  const [overlayType, setOverlayType] = useState<'color' | 'fabric' | null>(null);
+  const [overlayType, setOverlayType] = useState<'color' | 'fabric' | 'model' | null>(null);
 
   // Déterminer quelle tuile illuminer selon le contexte
   useEffect(() => {
@@ -42,7 +42,10 @@ export default function DashboardBento() {
 
     const toolName = showroomState.activeTool.toolName;
     
-    if (toolName === 'open_color_selector') {
+    if (toolName === 'open_model_selector') {
+      setOverlayType('model');
+      setShowOverlay(true);
+    } else if (toolName === 'open_color_selector') {
       setOverlayType('color');
       setShowOverlay(true);
     } else if (toolName === 'open_fabric_selector') {
@@ -90,6 +93,92 @@ export default function DashboardBento() {
       showroomState.onSelectFabric(fabricId, fabricName);
     }
     setShowOverlay(false);
+  };
+
+  // Fonction pour gérer la sélection de modèle
+  const handleModelSelect = (modelId: string, modelName: string) => {
+    if (showroomState.onSelectModel) {
+      showroomState.onSelectModel(modelId, modelName);
+    }
+    setShowOverlay(false);
+  };
+
+  // Rendu du sélecteur de modèles
+  const renderModelSelector = () => {
+    // Récupérer les modèles depuis l'input de l'outil
+    const toolInput = showroomState.activeTool?.input as any;
+    const modelsToDisplay = toolInput?.models_to_display || [];
+    
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-black text-gray-900">
+            🏠 Choisissez votre Modèle de Store
+          </h3>
+          <button
+            onClick={() => setShowOverlay(false)}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        {modelsToDisplay.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Aucun modèle à afficher</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-h-[70vh] overflow-y-auto px-2">
+            {modelsToDisplay.map((modelId: string) => {
+              const model = STORE_MODELS[modelId];
+              if (!model) {
+                console.warn('⚠️ Model not found:', modelId);
+                return null;
+              }
+              
+              const isSelected = showroomState.selectedModelId === modelId;
+              
+              return (
+                <button
+                  key={modelId}
+                  onClick={() => handleModelSelect(modelId, model.name)}
+                  className={`p-4 rounded-xl border-2 transition-all hover:scale-105 ${
+                    isSelected 
+                      ? 'border-4 border-green-500 ring-2 ring-green-300 shadow-lg' 
+                      : 'border-gray-300 hover:border-blue-400 hover:shadow-md'
+                  }`}
+                >
+                  <div className="relative w-full h-48 mb-3 bg-gray-100 rounded-lg overflow-hidden">
+                    <img
+                      src={model.image}
+                      alt={model.name}
+                      className="w-full h-full object-contain"
+                    />
+                    {model.is_promo && (
+                      <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                        PROMO
+                      </div>
+                    )}
+                  </div>
+                  <h4 className="text-lg font-black text-gray-900 mb-2">{model.name}</h4>
+                  <p className="text-xs text-gray-600 mb-3">{model.description}</p>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {model.features.slice(0, 3).map((feature, idx) => (
+                      <span key={idx} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                        {feature}
+                      </span>
+                    ))}
+                  </div>
+                  {isSelected && <p className="text-xs text-green-600 font-bold mt-2">✅ Sélectionné</p>}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
   };
 
   // Rendu du sélecteur de couleurs
@@ -184,76 +273,32 @@ export default function DashboardBento() {
   };
 
   return (
-    <div className="h-full overflow-y-auto p-6 relative">
-      {/* Overlay Modal pour les sélecteurs */}
+    <div className="h-full flex flex-col relative">
+      {/* Overlay Modal pour les sélecteurs - Couvre tout l'écran */}
       {showOverlay && (
-        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-slideUp">
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 md:p-4 animate-fadeIn">
+          <div className={`bg-white rounded-3xl shadow-2xl w-full max-h-[90vh] overflow-hidden animate-slideUp ${
+            overlayType === 'model' ? 'max-w-[98vw] xl:max-w-[95vw]' : 'max-w-4xl'
+          }`}>
+            {overlayType === 'model' && renderModelSelector()}
             {overlayType === 'color' && renderColorSelector()}
             {overlayType === 'fabric' && renderFabricSelector()}
           </div>
         </div>
       )}
 
-      {/* Header Simplifié */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-black text-[#2c3e50] mb-2">Dashboard Projet</h2>
-        <p className="text-gray-600 text-sm">Suivi en temps réel de votre configuration</p>
-      </div>
+      {/* Header avec style similaire à l'assistant */}
+      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-3 px-4 text-center shadow-lg">
+        <h2 className="text-lg font-bold leading-tight">Dashboard Projet</h2>
+        <p className="text-xs text-blue-100 mt-1">Suivi en temps réel de votre configuration</p>
+      </header>
 
       {/* Grille Bento */}
-      <div className="grid grid-cols-2 gap-4 auto-rows-min">
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="grid grid-cols-2 gap-4 auto-rows-min">
         
-        {/* TUILE PRIX - Large (2 colonnes) */}
-        <div className={tileClass('prix', 'col-span-2')}>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-black text-gray-900 text-sm">Tarification</h3>
-              <p className="text-xs text-gray-500">Devis instantané</p>
-            </div>
-          </div>
-          
-          {showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc ? (
-            <div className="grid grid-cols-3 gap-3">
-              {showroomState.ecoCalc && (
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 border border-blue-200">
-                  <p className="text-xs text-blue-600 font-semibold mb-1">Éco</p>
-                  <p className="text-2xl font-black text-blue-900">{showroomState.ecoCalc.totalTTC?.toFixed(2) || '—'}€</p>
-                  <p className="text-xs text-blue-600 mt-1">TTC</p>
-                </div>
-              )}
-              {showroomState.standardCalc && (
-                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-3 border border-indigo-200">
-                  <p className="text-xs text-indigo-600 font-semibold mb-1">Standard</p>
-                  <p className="text-2xl font-black text-indigo-900">{showroomState.standardCalc.totalTTC?.toFixed(2) || '—'}€</p>
-                  <p className="text-xs text-indigo-600 mt-1">TTC</p>
-                </div>
-              )}
-              {showroomState.premiumCalc && (
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-3 border border-purple-200">
-                  <p className="text-xs text-purple-600 font-semibold mb-1">Premium</p>
-                  <p className="text-2xl font-black text-purple-900">{showroomState.premiumCalc.totalTTC?.toFixed(2) || '—'}€</p>
-                  <p className="text-xs text-purple-600 mt-1">TTC</p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-400">
-              <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-sm">En attente du calcul...</p>
-            </div>
-          )}
-        </div>
-
         {/* TUILE MODÈLE */}
-        <div className={tileClass('modele', 'col-span-1 row-span-2')}>
+        <div className={tileClass('modele', 'col-span-2')}>
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -317,13 +362,13 @@ export default function DashboardBento() {
               {showroomState.proposedStoreWidth && (
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-600">Largeur</span>
-                  <span className="text-lg font-bold text-gray-900">{showroomState.proposedStoreWidth} cm</span>
+                  <span className="text-lg font-bold text-gray-900">{showroomState.proposedStoreWidth} m</span>
                 </div>
               )}
               {showroomState.proposedStoreHeight && (
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-600">Hauteur</span>
-                  <span className="text-lg font-bold text-gray-900">{showroomState.proposedStoreHeight} cm</span>
+                  <span className="text-lg font-bold text-gray-900">{showroomState.proposedStoreHeight} m</span>
                 </div>
               )}
             </div>
@@ -334,7 +379,7 @@ export default function DashboardBento() {
           )}
         </div>
 
-        {/* TUILE TOILE/COULEUR */}
+        {/* TUILE TOILE */}
         <div className={tileClass('toile', 'col-span-1')}>
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
@@ -343,36 +388,158 @@ export default function DashboardBento() {
               </svg>
             </div>
             <div>
-              <h3 className="font-black text-gray-900 text-sm">Finition</h3>
-              <p className="text-xs text-gray-500">Toile & Couleur</p>
+              <h3 className="font-black text-gray-900 text-sm">Toile</h3>
+              <p className="text-xs text-gray-500">Tissu sélectionné</p>
             </div>
           </div>
           
-          <div className="space-y-2">
-            {selectedFabric && (
-              <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-2 border border-orange-200">
-                <p className="text-xs text-gray-600 mb-1">Toile</p>
-                <p className="font-bold text-gray-900 text-sm">{selectedFabric.name}</p>
-              </div>
-            )}
-            {selectedColor && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-2 border border-blue-200">
-                <p className="text-xs text-gray-600 mb-1">Couleur Coffre</p>
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-6 h-6 rounded-lg border-2 border-white shadow"
-                    style={{ backgroundColor: selectedColor.hex }}
-                  />
-                  <p className="font-bold text-gray-900 text-sm">{selectedColor.name}</p>
-                </div>
-              </div>
-            )}
-            {!selectedFabric && !selectedColor && (
-              <div className="text-center py-4 text-gray-400">
-                <p className="text-xs">Non défini</p>
-              </div>
-            )}
+          {selectedFabric ? (
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3 border border-orange-200">
+              <p className="font-bold text-gray-900 text-sm">{selectedFabric.name}</p>
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-400">
+              <p className="text-xs">Non défini</p>
+            </div>
+          )}
+        </div>
+
+        {/* TUILE COULEUR */}
+        <div className={tileClass('couleur', 'col-span-1')}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-black text-gray-900 text-sm">Couleur</h3>
+              <p className="text-xs text-gray-500">Coffre RAL</p>
+            </div>
           </div>
+          
+          {selectedColor ? (
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200">
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-8 h-8 rounded-lg border-2 border-white shadow"
+                  style={{ backgroundColor: selectedColor.hex }}
+                />
+                <p className="font-bold text-gray-900 text-sm">{selectedColor.name}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-400">
+              <p className="text-xs">Non défini</p>
+            </div>
+          )}
+        </div>
+
+        {/* TUILE OPTIONS */}
+        <div className={tileClass('options', 'col-span-1')}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-black text-gray-900 text-sm">Options</h3>
+              <p className="text-xs text-gray-500">Accessoires</p>
+            </div>
+          </div>
+          
+          {(showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc) ? (
+            <div className="space-y-1">
+              {showroomState.standardCalc?.ledArmsPrice > 0 && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-green-600">✓</span>
+                  <span className="text-gray-700">LED Bras</span>
+                </div>
+              )}
+              {showroomState.standardCalc?.ledBoxPrice > 0 && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-green-600">✓</span>
+                  <span className="text-gray-700">LED Coffre</span>
+                </div>
+              )}
+              {showroomState.standardCalc?.lambrequinPrice > 0 && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-green-600">✓</span>
+                  <span className="text-gray-700">Lambrequin</span>
+                </div>
+              )}
+              {(!showroomState.standardCalc?.ledArmsPrice && !showroomState.standardCalc?.ledBoxPrice && !showroomState.standardCalc?.lambrequinPrice) && (
+                <div className="text-center py-4 text-gray-400">
+                  <p className="text-xs">Aucune option</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-400">
+              <p className="text-xs">Non défini</p>
+            </div>
+          )}
+        </div>
+
+        {/* TUILE PRIX - Large (2 colonnes) */}
+        <div className={tileClass('prix', 'col-span-2')}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-black text-gray-900 text-sm">Tarification</h3>
+              <p className="text-xs text-gray-500">Devis instantané</p>
+            </div>
+          </div>
+          
+          {showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc ? (
+            <div className="grid grid-cols-3 gap-3">
+              {showroomState.ecoCalc && (
+                <button 
+                  onClick={() => showroomState.onSelectEco?.(showroomState.ecoCalc.totalTTC)}
+                  className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer transform hover:scale-105"
+                >
+                  <p className="text-xs text-blue-600 font-semibold mb-1">Éco</p>
+                  <p className="text-2xl font-black text-blue-900">{showroomState.ecoCalc.totalTTC?.toFixed(2) || '—'}€</p>
+                  <p className="text-xs text-blue-600 mt-1">TTC</p>
+                  <p className="text-xs text-blue-500 mt-2">👆 Cliquez pour sélectionner</p>
+                </button>
+              )}
+              {showroomState.standardCalc && (
+                <button 
+                  onClick={() => showroomState.onSelectStandard?.(showroomState.standardCalc.totalTTC)}
+                  className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-3 border-2 border-indigo-200 hover:border-indigo-400 hover:shadow-lg transition-all cursor-pointer transform hover:scale-105"
+                >
+                  <p className="text-xs text-indigo-600 font-semibold mb-1">Standard</p>
+                  <p className="text-2xl font-black text-indigo-900">{showroomState.standardCalc.totalTTC?.toFixed(2) || '—'}€</p>
+                  <p className="text-xs text-indigo-600 mt-1">TTC</p>
+                  <p className="text-xs text-indigo-500 mt-2">👆 Cliquez pour sélectionner</p>
+                </button>
+              )}
+              {showroomState.premiumCalc && (
+                <button 
+                  onClick={() => showroomState.onSelectPremium?.(showroomState.premiumCalc.totalTTC)}
+                  className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-3 border-2 border-purple-200 hover:border-purple-400 hover:shadow-lg transition-all cursor-pointer transform hover:scale-105"
+                >
+                  <p className="text-xs text-purple-600 font-semibold mb-1">Premium</p>
+                  <p className="text-2xl font-black text-purple-900">{showroomState.premiumCalc.totalTTC?.toFixed(2) || '—'}€</p>
+                  <p className="text-xs text-purple-600 mt-1">TTC</p>
+                  <p className="text-xs text-purple-500 mt-2">👆 Cliquez pour sélectionner</p>
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-400">
+              <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-sm">En attente du calcul...</p>
+            </div>
+          )}
         </div>
 
         {/* TUILE RÉCAPITULATIF - Large */}
@@ -419,7 +586,27 @@ export default function DashboardBento() {
           </div>
         </div>
 
-      </div>
+        {/* Bouton de validation - Visible uniquement quand les offres sont affichées */}
+        {(showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc) && (
+          <div className="col-span-2 mt-4">
+            <a
+              href="/panier"
+              className="block w-full bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white text-center font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+            >
+              <div className="flex items-center justify-center gap-3">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-lg">Valider ma Configuration</span>
+              </div>
+              <p className="text-xs text-green-100 mt-2">
+                Ajoutez votre store au panier et finalisez votre commande
+              </p>
+            </a>
+          </div>
+        )}
+
+        </div> {/* Fermeture de la grille */}
 
       {/* Footer avec liens légaux discrets */}
       <div className="mt-6 pt-4 border-t border-gray-200">
@@ -437,6 +624,7 @@ export default function DashboardBento() {
           </a>
         </div>
         <p className="text-center text-xs text-gray-400 mt-2">© 2026 Storal.fr - Tous droits réservés</p>
+      </div>
       </div>
     </div>
   );

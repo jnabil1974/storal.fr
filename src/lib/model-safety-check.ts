@@ -48,8 +48,8 @@ export function generateDynamicCatalog(): string {
       if (model.description) {
         catalogText += `   ${model.description}\n`;
       }
-      catalogText += `   - Largeur MAX: ${maxW}cm (${(maxW / 100).toFixed(2)}m)\n`;
-      catalogText += `   - Avancée MAX: ${maxP}cm (${(maxP / 100).toFixed(2)}m)\n\n`;
+      catalogText += `   - Largeur MAX: ${(maxW / 100).toFixed(2)} mètres\n`;
+      catalogText += `   - Avancée MAX: ${(maxP / 100).toFixed(2)} mètres\n\n`;
     }
   }
 
@@ -67,8 +67,8 @@ export function generateDynamicCatalog(): string {
       if (model.description) {
         catalogText += `   ${model.description}\n`;
       }
-      catalogText += `   - Largeur MAX: ${maxW}cm (${(maxW / 100).toFixed(2)}m)\n`;
-      catalogText += `   - Avancée MAX: ${maxP}cm (${(maxP / 100).toFixed(2)}m)\n\n`;
+      catalogText += `   - Largeur MAX: ${(maxW / 100).toFixed(2)} mètres\n`;
+      catalogText += `   - Avancée MAX: ${(maxP / 100).toFixed(2)} mètres\n\n`;
     }
   }
 
@@ -86,8 +86,8 @@ export function generateDynamicCatalog(): string {
       if (model.description) {
         catalogText += `   ${model.description}\n`;
       }
-      catalogText += `   - Largeur MAX: ${maxW}cm (${(maxW / 100).toFixed(2)}m)\n`;
-      catalogText += `   - Avancée MAX: ${maxP}cm (${(maxP / 100).toFixed(2)}m)\n\n`;
+      catalogText += `   - Largeur MAX: ${(maxW / 100).toFixed(2)} mètres\n`;
+      catalogText += `   - Avancée MAX: ${(maxP / 100).toFixed(2)} mètres\n\n`;
     }
   }
 
@@ -105,8 +105,8 @@ export function generateDynamicCatalog(): string {
       if (model.description) {
         catalogText += `   ${model.description}\n`;
       }
-      catalogText += `   - Largeur MAX: ${maxW}cm (${(maxW / 100).toFixed(2)}m)\n`;
-      catalogText += `   - Avancée MAX: ${maxP}cm (${(maxP / 100).toFixed(2)}m)\n`;
+      catalogText += `   - Largeur MAX: ${(maxW / 100).toFixed(2)} mètres\n`;
+      catalogText += `   - Avancée MAX: ${(maxP / 100).toFixed(2)} mètres\n`;
       
       // Cas spécial pour BRAS_CROISÉS
       if (model.id.toLowerCase().includes('croise') || model.id.toLowerCase().includes('bras')) {
@@ -126,8 +126,43 @@ export function generateDynamicCatalog(): string {
     for (const model of promoModels) {
       const maxW = model.compatibility?.max_width || 0;
       const maxP = model.compatibility?.max_projection || 0;
-      catalogText += `- ${model.name}: ${maxW}cm × ${maxP}cm\n`;
+      catalogText += `- ${model.name}: ${(maxW / 100).toFixed(2)} × ${(maxP / 100).toFixed(2)} mètres\n`;
     }
+  }
+
+  catalogText += `\n`;
+
+  // 3. Générer les compatibilités OPTIONS pour chaque modèle
+  catalogText += `═══════════════════════════════════════════════════════════════
+📋 COMPATIBILITÉS OPTIONS PAR MODÈLE (LED & LAMBREQUIN)
+═══════════════════════════════════════════════════════════════
+
+⚠️ CONSIGNE ABSOLUE : Utilise UNIQUEMENT ces informations pour savoir si un modèle accepte ou non une option LED/Lambrequin.
+NE JAMAIS inventer ou deviner les compatibilités.
+
+`;
+
+  for (const [modelId, model] of Object.entries(STORE_MODELS)) {
+    const options: string[] = [];
+    const notAvailable: string[] = [];
+
+    if (model.compatibility.led_arms) options.push('✓ LED Bras');
+    else notAvailable.push('✗ LED Bras');
+
+    if (model.compatibility.led_box) options.push('✓ LED Coffre');
+    else notAvailable.push('✗ LED Coffre');
+
+    if (model.compatibility.lambrequin_fixe) options.push('✓ Lambrequin Fixe');
+    else notAvailable.push('✗ Lambrequin Fixe');
+
+    if (model.compatibility.lambrequin_enroulable) options.push('✓ Lambrequin Enroulable');
+    else notAvailable.push('✗ Lambrequin Enroulable');
+
+    catalogText += `- **${model.name}** (${modelId}): ${options.join(', ')}`;
+    if (notAvailable.length > 0) {
+      catalogText += ` | NON DISPONIBLE: ${notAvailable.join(', ')}`;
+    }
+    catalogText += `\n`;
   }
 
   catalogText += `\n`;
