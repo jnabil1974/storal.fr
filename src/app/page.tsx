@@ -19,6 +19,7 @@ export default function HomePage() {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Handler pour la recherche conversationnelle
   const handleSearch = (e?: React.FormEvent) => {
@@ -56,13 +57,144 @@ export default function HomePage() {
       });
 
   return (
-    <main className={`min-h-screen bg-[#f5f7fa] ${epilogue.className}`}>
+    <>
+      {/* === HEADER === */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-black tracking-tight text-[#2c3e50] uppercase">
+              Storal
+            </h1>
+          </Link>
+
+          {/* Navigation Desktop */}
+          <nav className="hidden md:flex items-center gap-10">
+            <Link 
+              href="/" 
+              className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+            >
+              Accueil
+            </Link>
+            
+            <a 
+              href="#products" 
+              className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+            >
+              Produits
+            </a>
+            
+            <Link 
+              href="/assistant" 
+              className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+            >
+              Assistant IA
+            </Link>
+            
+            <Link 
+              href="/about" 
+              className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+            >
+              À Propos
+            </Link>
+            
+            <Link 
+              href="/contact" 
+              className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+            >
+              Contact
+            </Link>
+          </nav>
+
+          {/* CTAs */}
+          <div className="flex items-center gap-4">
+            <Link 
+              href="/assistant" 
+              className="hidden sm:block bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider hover:brightness-110 transition-all celestial-glow"
+            >
+              Démarrer
+            </Link>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden p-2 text-gray-700 hover:text-blue-600"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden bg-white border-t border-gray-200">
+            <nav className="flex flex-col px-6 py-4 space-y-4">
+              <Link 
+                href="/" 
+                onClick={() => setIsMenuOpen(false)}
+                className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+              >
+                Accueil
+              </Link>
+              <a 
+                href="#products" 
+                onClick={() => setIsMenuOpen(false)}
+                className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+              >
+                Produits
+              </a>
+              <Link 
+                href="/assistant" 
+                onClick={() => setIsMenuOpen(false)}
+                className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+              >
+                Assistant IA
+              </Link>
+              <Link 
+                href="/about" 
+                onClick={() => setIsMenuOpen(false)}
+                className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+              >
+                À Propos
+              </Link>
+              <Link 
+                href="/contact" 
+                onClick={() => setIsMenuOpen(false)}
+                className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+              >
+                Contact
+              </Link>
+              <Link 
+                href="/assistant" 
+                onClick={() => setIsMenuOpen(false)}
+                className="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider text-center"
+              >
+                Démarrer
+              </Link>
+            </nav>
+          </div>
+        )}
+      </header>
+
+      <main className={`min-h-screen bg-[#f5f7fa] ${epilogue.className}`}>
       
       {/* === HERO SECTION === */}
       <section className="max-w-7xl mx-auto px-6 py-8">
         <div className="relative overflow-hidden rounded-3xl min-h-[520px] flex items-center justify-center p-8" 
              style={{
-               backgroundImage: 'linear-gradient(135deg, rgba(37, 99, 235, 0.85) 0%, rgba(59, 130, 246, 0.7) 100%)',
+               backgroundImage: 'url(/images/hero-terrasse.jpg), linear-gradient(135deg, rgba(37, 99, 235, 0.85) 0%, rgba(59, 130, 246, 0.7) 100%)',
                backgroundSize: 'cover',
                backgroundPosition: 'center'
              }}>
@@ -129,7 +261,7 @@ export default function HomePage() {
       </section>
 
       {/* === SECTION CATALOGUE === */}
-      <section className="max-w-7xl mx-auto px-6 py-8">
+      <section id="products" className="max-w-7xl mx-auto px-6 py-8">
         <div className="space-y-8">
           
           {/* Header section */}
@@ -402,5 +534,6 @@ export default function HomePage() {
         </div>
       </section>
     </main>
+    </>
   );
 }
