@@ -5,6 +5,15 @@ import ChatAssistant from '@/components/ChatAssistant';
 import DashboardBento from '@/components/DashboardBento';
 import { ShowroomProvider, useShowroom } from '@/contexts/ShowroomContext';
 
+// Fonts Google (Epilogue comme AstroTalky et page d'accueil)
+import { Epilogue } from 'next/font/google';
+
+const epilogue = Epilogue({ 
+  subsets: ['latin'],
+  weight: ['400', '500', '700', '900'],
+  display: 'swap',
+});
+
 interface Cart {
   modelId: string | null;
   modelName?: string;
@@ -32,7 +41,7 @@ function AssistantContent() {
 
   return (
       <div 
-        className="min-h-screen flex flex-col text-white relative bg-[#f5f7fa]"
+        className={`min-h-screen flex flex-col text-white relative bg-[#f5f7fa] ${epilogue.className}`}
         style={{
           backgroundImage: 'url("/images/hero-terrasse.jpg")',
           backgroundSize: 'cover',
