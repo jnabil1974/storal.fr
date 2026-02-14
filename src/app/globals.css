@@ -132,3 +132,52 @@ dialog::backdrop {
 .animate-scale-in {
   animation: scale-in 0.3s ease-out;
 }
+/* Print Styles for Order Summary */
+@media print {
+  /* Reset page layout for printing */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  /* Optimize page breaks */
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+  
+  table, img {
+    page-break-inside: avoid;
+  }
+  
+  /* Remove shadows and backgrounds that don't print well */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  /* Ensure links are visible */
+  a[href]:after {
+    content: none !important;
+  }
+  
+  /* Set proper margins for printing */
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+  
+  /* Make sure images are visible */
+  img {
+    max-width: 100% !important;
+  }
+  
+  /* Ensure tables fit on page */
+  table {
+    width: 100% !important;
+  }
+  
+  /* Remove border-radius for better printing */
+  * {
+    border-radius: 0 !important;
+  }
+}

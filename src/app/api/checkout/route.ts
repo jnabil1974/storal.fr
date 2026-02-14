@@ -32,21 +32,34 @@ export async function POST(request: NextRequest) {
       comment,
       recaptchaToken,
       paymentMethod = 'stripe',
-      sessionId,
+      sessionId: providedSessionId,
       createAccount = false,
       password,
       userId,
     } = body;
 
+    // Générer un session_id si absent (requis par la table)
+    const sessionId = providedSessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     console.log('[Checkout] Incoming request', {
       hasItems: Array.isArray(items) && items.length > 0,
       customerEmail: !!customerEmail,
       customerName: !!customerName,
-      sessionId: !!sessionId,
+      sessionId: sessionId,
+      sessionIdProvided: !!providedSessionId,
       paymentMethod,
+      hasRecaptchaToken: !!recaptchaToken,
+      createAccount,
+      hasPassword: !!password,
     });
 
     if (!customerEmail || !customerName || !deliveryAddress || items.length === 0) {
+      console.error('[Checkout] Validation failed:', { 
+        hasEmail: !!customerEmail, 
+        hasName: !!customerName, 
+        hasAddress: !!deliveryAddress, 
+        itemsCount: items.length 
+      });
       return NextResponse.json({ error: 'Données obligatoires manquantes' }, { status: 400 });
     }
 
@@ -109,50 +122,83 @@ export async function POST(request: NextRequest) {
     let userIdToUse: string | null = userId || null;
     let accountCreated = false;
     if (createAccount && password) {
+      console.log('[Checkout] Création de compte demandée pour:', customerEmail);
       const { data, error } = await supabaseAdmin.auth.admin.createUser({
         email: customerEmail,
         password,
         email_confirm: true,
       });
       if (error) {
-        return NextResponse.json({ error: 'Création compte échouée' }, { status: 500 });
+        console.error('[Checkout] Erreur création compte:', error);
+        return NextResponse.json({ 
+          error: `Création compte échouée: ${error.message || 'Erreur inconnue'}` 
+        }, { status: 500 });
       }
       userIdToUse = data.user?.id || userIdToUse;
       accountCreated = true;
+      console.log('[Checkout] Compte créé avec succès:', userIdToUse);
     }
 
     // Créer commande en attente
+    console.log('[Checkout] Création de la commande...');
+    
+    // Préparer les données à insérer
+    const orderData = {
+      session_id: sessionId || null,
+      customer_name: customerName,
+      customer_email: customerEmail,
+      customer_phone: customerPhone || null,
+      delivery_address: deliveryAddress,
+      delivery_city: deliveryCity,
+      delivery_postal_code: deliveryPostalCode,
+      delivery_country: deliveryCountry,
+      items,
+      total_items,
+      total_amount,
+      status: 'pending',
+      payment_method: paymentMethod,
+      user_id: userIdToUse,
+      notes: JSON.stringify({
+        billing: billingInfo,
+        comment: (comment && String(comment).trim()) || undefined,
+      }),
+    };
+    
+    console.log('[Checkout] Données à insérer:', {
+      session_id: orderData.session_id,
+      customer_name: orderData.customer_name,
+      customer_email: orderData.customer_email,
+      items_type: typeof orderData.items,
+      items_isArray: Array.isArray(orderData.items),
+      items_length: Array.isArray(orderData.items) ? orderData.items.length : 'N/A',
+      items_sample: Array.isArray(orderData.items) ? orderData.items[0] : orderData.items,
+      total_items: orderData.total_items,
+      total_amount: orderData.total_amount,
+      notes_length: orderData.notes?.length,
+    });
+    
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
-      .insert([
-        {
-          session_id: sessionId,
-          customer_name: customerName,
-          customer_email: customerEmail,
-          customer_phone: customerPhone || null,
-          delivery_address: deliveryAddress,
-          delivery_city: deliveryCity,
-          delivery_postal_code: deliveryPostalCode,
-          delivery_country: deliveryCountry,
-          items,
-          total_items,
-          total_amount,
-          status: 'pending',
-          payment_method: paymentMethod,
-          user_id: userIdToUse,
-          notes: JSON.stringify({
-            billing: billingInfo,
-            comment: (comment && String(comment).trim()) || undefined,
-          }),
-        },
-      ])
+      .insert([orderData])
       .select()
       .single();
 
     if (orderError || !order) {
-      console.error('[Checkout] Supabase insert error', orderError);
-      return NextResponse.json({ error: 'Erreur lors de la création de la commande' }, { status: 500 });
+      console.error('[Checkout] Supabase insert error', {
+        error: orderError,
+        message: orderError?.message,
+        details: orderError?.details,
+        hint: orderError?.hint,
+        code: orderError?.code,
+      });
+      return NextResponse.json({ 
+        error: `Erreur lors de la création de la commande: ${orderError?.message || 'Erreur inconnue'}`,
+        details: orderError?.details,
+        hint: orderError?.hint,
+      }, { status: 500 });
     }
+
+    console.log('[Checkout] Commande créée avec succès:', order.id);
 
     // Envoi de l'email de confirmation (non bloquant sur la réponse, mais logué)
     (async () => {

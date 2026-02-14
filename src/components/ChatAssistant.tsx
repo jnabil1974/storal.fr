@@ -6,6 +6,7 @@ import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
 import { STORE_MODELS, type StoreModel, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
 import VisualShowroom from './VisualShowroom';
+import { useShowroom } from '@/contexts/ShowroomContext';
 
 // --- Composant Typewriter Text ---
 const TypewriterText = ({ text, isWelcomeMessage }: { text: string; isWelcomeMessage: boolean }) => {
@@ -65,11 +66,13 @@ interface Cart {
   pricePremium?: number;
   selectedPrice?: number;
   priceType?: string;
-  // Détails des options
+  // Détails des options et prix
   storeHT?: number;
   ledArmsPrice?: number;
   ledBoxPrice?: number;
   lambrequinPrice?: number;
+  awningPrice?: number;
+  sousCoffrePrice?: number;
   poseHT?: number;
   tvaAmount?: number;
 }
@@ -95,6 +98,7 @@ const ProductModal = ({ model, onClose }: { model: StoreModel | null; onClose: (
 
 export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssistantProps) {
   const [input, setInput] = useState('');
+  const { setShowroomState } = useShowroom();
   
   // ChatID persistant pour conserver l'historique
   const [chatId] = useState(() => {
@@ -135,6 +139,17 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
     console.log('💾 Configuration sauvegardée:', newCart);
   };
 
+  // 🔥 Calcul dynamique de la pose selon la largeur en cm
+  const calculateInstallationCost = (widthCm: number): number => {
+    if (widthCm <= 6000) {
+      return 500;  // 500€ HT forfait jusqu'à 6m
+    } else {
+      const surpassCm = widthCm - 6000;
+      const surpassMeters = surpassCm / 1000;
+      return 500 + (Math.ceil(surpassMeters) * 100);  // 500€ + 100€/m supplémentaire
+    }
+  };
+
   // 🔥 Sauvegarder automatiquement la configuration quand l'outil change
   useEffect(() => {
     if (activeTool?.toolName === 'open_model_selector') {
@@ -160,12 +175,52 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
     
     if (activeTool?.toolName === 'display_triple_offer') {
       const input = activeTool.input as any;
-      const { standard, confort, premium, selected_model, width, depth, frame_color, fabric_color, exposure, with_motor } = input;
+      const { 
+        eco_price_ht, standard_price_ht, premium_price_ht,
+        // Prix détaillés des options
+        led_arms_price_ht = 0, 
+        led_box_price_ht = 0, 
+        lambrequin_price_ht = 0,
+        awning_price_ht = 0,
+        sous_coffre_price_ht = 0,
+        // Support old parameter names for backward compatibility
+        standard, confort, premium,
+        selected_model, width, depth, frame_color, fabric_color, exposure, with_motor,
+        taux_tva = 20, montant_pose_ht = 0, avec_pose = false
+      } = input;
+      
+      // Use new HT prices or fall back to old prices
+      const ecoHT = eco_price_ht || standard || 0;
+      const standardHT = standard_price_ht || confort || 0;
+      const premiumHT = premium_price_ht || premium || 0;
+      
+      // Calculate installation cost
+      const poseActuelle = width && avec_pose ? calculateInstallationCost(width) : 0;
+      
+      // Calculate TTC prices
+      const calculateTTC = (priceHT: number) => {
+        const storeWithPose = avec_pose ? priceHT + poseActuelle : priceHT;
+        const tvaMontant = Math.round(storeWithPose * (taux_tva / 100));
+        const priceTTC = Math.round(storeWithPose + tvaMontant);
+        return { ttc: priceTTC, tva: tvaMontant };
+      };
+      
+      const ecoCalc = calculateTTC(ecoHT);
+      const standardCalc = calculateTTC(standardHT);
+      const premiumCalc = calculateTTC(premiumHT);
       
       saveToCart({ 
-        priceEco: standard, 
-        priceStandard: confort, 
-        pricePremium: premium,
+        priceEco: ecoCalc.ttc, 
+        priceStandard: standardCalc.ttc, 
+        pricePremium: premiumCalc.ttc,
+        storeHT: ecoHT, // Le prix de base ECO est le store sans options
+        ledArmsPrice: led_arms_price_ht,
+        ledBoxPrice: led_box_price_ht,
+        lambrequinPrice: lambrequin_price_ht,
+        awningPrice: awning_price_ht,
+        sousCoffrePrice: sous_coffre_price_ht,
+        poseHT: poseActuelle,
+        tvaAmount: standardCalc.tva, // On prend la TVA de l'offre standard par défaut
         modelId: selected_model || cart?.modelId,
         width: width || cart?.width,
         projection: depth || cart?.projection,
@@ -177,6 +232,97 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTool]);
+
+  // 🔌 Exposer les états au ShowroomContext pour affichage externe
+  useEffect(() => {
+    const calculateEcoOffer = (input: any) => {
+      const { eco_price_ht = 0, taux_tva = 20 } = input;
+      return { totalHT: eco_price_ht, tva: (eco_price_ht * taux_tva) / 100, totalTTC: eco_price_ht * (1 + taux_tva / 100) };
+    };
+    
+    const calculateStandardOffer = (input: any) => {
+      const { standard_price_ht = 0, taux_tva = 20 } = input;
+      return { totalHT: standard_price_ht, tva: (standard_price_ht * taux_tva) / 100, totalTTC: standard_price_ht * (1 + taux_tva / 100) };
+    };
+    
+    const calculatePremiumOffer = (input: any) => {
+      const { premium_price_ht = 0, taux_tva = 20 } = input;
+      return { totalHT: premium_price_ht, tva: (premium_price_ht * taux_tva) / 100, totalTTC: premium_price_ht * (1 + taux_tva / 100) };
+    };
+
+    setShowroomState({
+      activeTool,
+      selectedColorId,
+      selectedFabricId,
+      selectedModelId,
+      proposedStoreWidth,
+      proposedStoreHeight,
+      hasStartedConversation: !!activeTool || !!selectedModelId,
+      showVideoHint,
+      ecoCalc: activeTool?.toolName === 'display_triple_offer' ? calculateEcoOffer(activeTool.input) : undefined,
+      standardCalc: activeTool?.toolName === 'display_triple_offer' ? calculateStandardOffer(activeTool.input) : undefined,
+      premiumCalc: activeTool?.toolName === 'display_triple_offer' ? calculatePremiumOffer(activeTool.input) : undefined,
+      avec_pose: activeTool?.toolName === 'display_triple_offer' ? (activeTool.input as any)?.avec_pose : false,
+      // Callbacks
+      onSelectColor: (colorId, colorName) => {
+        setSelectedColorId(colorId);
+        saveToCart({ colorId });
+        if (activeTool?.toolName === 'open_color_selector') {
+          addToolResult({ toolCallId: activeTool.toolCallId, result: { frame_color_id: colorId, frame_color_name: colorName, validated: true } } as any);
+          sendMessage({ text: `J'ai choisi l'armature ${colorName}` });
+        }
+      },
+      onSelectFabric: (fabricId, fabricName) => {
+        setSelectedFabricId(fabricId);
+        saveToCart({ fabricId });
+        if (activeTool?.toolName === 'open_fabric_selector') {
+          addToolResult({ toolCallId: activeTool.toolCallId, result: { fabric_id: fabricId, fabric_name: fabricName, validated: true } } as any);
+          sendMessage({ text: `J'ai choisi la toile ${fabricName}` });
+        }
+      },
+      onSelectModel: (modelId, modelName) => {
+        setSelectedModelId(modelId);
+        saveToCart({ modelId, modelName, priceEco: undefined, priceStandard: undefined, pricePremium: undefined, selectedPrice: undefined, priceType: undefined, storeHT: undefined, ledArmsPrice: undefined, ledBoxPrice: undefined, lambrequinPrice: undefined, poseHT: undefined, tvaAmount: undefined });
+        if (activeTool?.toolName === 'open_model_selector') {
+          addToolResult({ toolCallId: activeTool.toolCallId, result: { model_id: modelId, model_name: modelName, validated: true } } as any);
+          sendMessage({ text: `Je veux configurer le ${modelName}` });
+        }
+      },
+      onSelectEco: (priceHT) => {
+        saveToCart({ priceEco: priceHT, selectedPrice: priceHT, priceType: 'eco' });
+        if (activeTool?.toolName === 'display_triple_offer') {
+          addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'eco', price_ttc: priceHT, validated: true } } as any);
+          sendMessage({ text: `Je sélectionne l'offre Eco à ${priceHT}€ TTC` });
+        }
+      },
+      onSelectStandard: (priceHT) => {
+        saveToCart({ priceStandard: priceHT, selectedPrice: priceHT, priceType: 'standard' });
+        if (activeTool?.toolName === 'display_triple_offer') {
+          addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'standard', price_ttc: priceHT, validated: true } } as any);
+          sendMessage({ text: `Je sélectionne l'offre Standard à ${priceHT}€ TTC` });
+        }
+      },
+      onSelectPremium: (priceHT) => {
+        saveToCart({ pricePremium: priceHT, selectedPrice: priceHT, priceType: 'premium' });
+        if (activeTool?.toolName === 'display_triple_offer') {
+          addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'premium', price_ttc: priceHT, validated: true } } as any);
+          sendMessage({ text: `Je sélectionne l'offre Premium à ${priceHT}€ TTC` });
+        }
+      },
+      onTerraceChange: (dims) => {
+        setTerraceState(dims);
+      },
+    });
+  }, [
+    activeTool,
+    selectedColorId,
+    selectedFabricId,
+    selectedModelId,
+    proposedStoreWidth,
+    proposedStoreHeight,
+    showVideoHint,
+    setShowroomState,
+  ]);
 
   // UTILISATION NATIVE DU SDK - Méthode la plus stable avec sendMessage
   const { messages, sendMessage, status, addToolResult } = useChat({
@@ -354,17 +500,6 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
     }
     
     sendMessage({ text });
-  };
-  
-  // 🔥 Calcul dynamique de la pose selon la largeur en cm
-  const calculateInstallationCost = (widthCm: number): number => {
-    if (widthCm <= 6000) {
-      return 500;  // 500€ HT forfait jusqu'à 6m
-    } else {
-      const surpassCm = widthCm - 6000;
-      const surpassMeters = surpassCm / 1000;
-      return 500 + (Math.ceil(surpassMeters) * 100);  // 500€ + 100€/m supplémentaire
-    }
   };
 
   const renderActiveTool = () => {
@@ -696,7 +831,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
                     // 🔄 Réinitialiser les anciens prix quand on change de store
                     saveToCart({ modelId: model.id, modelName: model.name, priceEco: undefined, priceStandard: undefined, pricePremium: undefined, selectedPrice: undefined, storeHT: undefined, poseHT: undefined, tvaAmount: undefined, lambrequinPrice: undefined, ledArmsPrice: undefined, ledBoxPrice: undefined }); 
                     setSelectedModelId(model.id);
-                    addToolResult({ toolCallId: tool.toolCallId, result: { modelId: model.id, modelName: model.name, validated: true } }); 
+                    addToolResult({ toolCallId: tool.toolCallId, tool: 'open_model_selector', output: { modelId: model.id, modelName: model.name, validated: true } }); 
                     // 🔥 Envoyer un message utilisateur pour déclencher l'enchaînement automatique
                     setTimeout(() => {
                       sendMessage({ text: `J'ai choisi le modèle ${model.name}` });
@@ -733,7 +868,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
                   setSelectedColorId(color.id);
                   saveToCart({ colorId: color.id });
                   if (isCurrent) {
-                    addToolResult({ toolCallId: tool.toolCallId, result: { color_id: color.id, color_name: color.name, validated: true } });
+                    addToolResult({ toolCallId: tool.toolCallId, tool: 'open_color_selector', output: { color_id: color.id, color_name: color.name, validated: true } });
                     // 🔥 Envoyer immédiatement (sans délai) pour disparition instantanée
                     sendMessage({ text: `J'ai choisi la couleur ${color.name}` });
                   }
@@ -781,7 +916,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
                   setSelectedFabricId(fabric.id);
                   saveToCart({ fabricId: fabric.id });
                   if (isCurrent) {
-                    addToolResult({ toolCallId: tool.toolCallId, result: { fabric_id: fabric.id, fabric_name: fabric.name, validated: true } });
+                    addToolResult({ toolCallId: tool.toolCallId, tool: 'open_fabric_selector', output: { fabric_id: fabric.id, fabric_name: fabric.name, validated: true } });
                     // 🔥 Envoyer immédiatement (sans délai) pour disparition instantanée
                     sendMessage({ text: `J'ai choisi la toile ${fabric.name}` });
                   }
@@ -855,9 +990,9 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   };
 
   return (
-    <div className="flex h-screen bg-white gap-0">
-      {/* 🔵 COLONNE GAUCHE (50%) - CHAT UNIQUEMENT */}
-      <div className="w-full lg:w-1/2 flex flex-col h-screen bg-white border-r border-gray-200">
+    <div className="flex h-full bg-white gap-0">
+      {/* 🔵 CHAT UNIQUEMENT - Showroom déplacé dans page.tsx via ShowroomContext */}
+      <div className="w-full flex flex-col h-full bg-white">
         {isModalOpen && <ProductModal model={selectedModelForModal} onClose={() => setIsModalOpen(false)} />}
         
         <header className="bg-gray-900 text-white p-4 sticky top-0 z-10">
@@ -950,76 +1085,6 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
             </button>
           </div>
         </form>
-      </div>
-      
-      {/* 🔴 COLONNE DROITE (50%) - VISUAL SHOWROOM UNIQUEMENT */}
-      <div className="hidden lg:flex w-1/2 flex-col h-screen bg-gradient-to-br from-gray-50 to-white border-l border-gray-200 overflow-hidden">
-        <VisualShowroom
-          activeTool={activeTool}
-          onTerraceChange={handleTerraceChange}
-          proposedStoreWidth={proposedStoreWidth}
-          proposedStoreHeight={proposedStoreHeight}
-          showVideoHint={showVideoHint}
-          onSelectColor={(colorId, colorName) => {
-            setSelectedColorId(colorId);
-            saveToCart({ colorId });
-            if (activeTool?.toolName === 'open_color_selector') {
-              addToolResult({ toolCallId: activeTool.toolCallId, result: { frame_color_id: colorId, frame_color_name: colorName, validated: true } });
-              sendMessage({ text: `J'ai choisi l'armature ${colorName}` });
-            }
-          }}
-          onSelectFabric={(fabricId, fabricName) => {
-            setSelectedFabricId(fabricId);
-            saveToCart({ fabricId });
-            if (activeTool?.toolName === 'open_fabric_selector') {
-              addToolResult({ toolCallId: activeTool.toolCallId, result: { fabric_id: fabricId, fabric_name: fabricName, validated: true } });
-              sendMessage({ text: `J'ai choisi la toile ${fabricName}` });
-            }
-          }}
-          onSelectModel={(modelId, modelName) => {
-            setSelectedModelId(modelId);
-            saveToCart({ modelId, modelName, priceEco: undefined, priceStandard: undefined, pricePremium: undefined, selectedPrice: undefined, priceType: undefined, storeHT: undefined, ledArmsPrice: undefined, ledBoxPrice: undefined, lambrequinPrice: undefined, poseHT: undefined, tvaAmount: undefined });
-            if (activeTool?.toolName === 'open_model_selector') {
-              addToolResult({ toolCallId: activeTool.toolCallId, result: { model_id: modelId, model_name: modelName, validated: true } });
-              sendMessage({ text: `Je veux configurer le ${modelName}` });
-            }
-          }}
-          onSelectEco={(priceHT) => {
-            saveToCart({ priceEco: priceHT, selectedPrice: priceHT, priceType: 'eco' });
-            if (activeTool?.toolName === 'display_triple_offer') {
-              addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'eco', price_ttc: priceHT, validated: true } });
-              sendMessage({ text: `Je sélectionne l'offre Eco à ${priceHT}€ TTC` });
-            }
-          }}
-          onSelectStandard={(priceHT) => {
-            saveToCart({ priceStandard: priceHT, selectedPrice: priceHT, priceType: 'standard' });
-            if (activeTool?.toolName === 'display_triple_offer') {
-              addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'standard', price_ttc: priceHT, validated: true } });
-              sendMessage({ text: `Je sélectionne l'offre Standard à ${priceHT}€ TTC` });
-            }
-          }}
-          onSelectPremium={(priceHT) => {
-            saveToCart({ pricePremium: priceHT, selectedPrice: priceHT, priceType: 'premium' });
-            if (activeTool?.toolName === 'display_triple_offer') {
-              addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'premium', price_ttc: priceHT, validated: true } });
-              sendMessage({ text: `Je sélectionne l'offre Premium à ${priceHT}€ TTC` });
-            }
-          }}
-          selectedColorId={selectedColorId}
-          selectedFabricId={selectedFabricId}
-          selectedModelId={selectedModelId}
-          hasStartedConversation={messages.length > 0}
-          ecoCalc={activeTool?.toolName === 'display_triple_offer' ? calculateEcoOffer(activeTool.input) : undefined}
-          standardCalc={activeTool?.toolName === 'display_triple_offer' ? calculateStandardOffer(activeTool.input) : undefined}
-          premiumCalc={activeTool?.toolName === 'display_triple_offer' ? calculatePremiumOffer(activeTool.input) : undefined}
-          avec_pose={activeTool?.toolName === 'display_triple_offer' ? (activeTool.input as any)?.avec_pose : false}
-        />
-        
-        <div className="border-t border-gray-200 bg-white p-4">
-          <p className="text-xs text-gray-600 text-center">
-            ✅ Un technicien validera avec vous l'ensemble des cotes avant toute mise en fabrication.
-          </p>
-        </div>
       </div>
     </div>
   );

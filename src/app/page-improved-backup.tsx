@@ -3,10 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ChatAssistant from '@/components/ChatAssistant';
-import VisualShowroom from '@/components/VisualShowroom';
 import Image from 'next/image';
 import { STORE_MODELS, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
-import { ShowroomProvider, useShowroom } from '@/contexts/ShowroomContext';
 
 // --- Types ---
 interface Cart {
@@ -34,11 +32,10 @@ interface Cart {
   tvaAmount?: number;
 }
 
-function HomePageContent() {
+export default function HomePageImproved() {
   const [modelToConfig, setModelToConfig] = useState<string | null>(null);
   const [cart, setCart] = useState<Cart | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
-  const { showroomState } = useShowroom();
 
   // Load cart from localStorage on initial render
   useEffect(() => {
@@ -82,9 +79,7 @@ function HomePageContent() {
   const selectedModelData = cart?.modelId ? Object.values(STORE_MODELS).find(m => m.id === cart.modelId) : null;
   const selectedFabricData = cart?.fabricId ? FABRICS.find(f => f.id === cart.fabricId) : null;
   const selectedColorData = cart?.colorId ? FRAME_COLORS.find(c => c.id === cart.colorId) : null;
-  
-  // Masquer les promos dès que la conversation démarre OU qu'un modèle est sélectionné
-  const isConfiguring = !!cart?.modelId || !!showroomState?.hasStartedConversation;
+  const isConfiguring = !!cart?.modelId;
   const showPrices = !!(cart?.priceEco && cart?.priceStandard && cart?.pricePremium);
 
   // Calcul du détail de prix
@@ -98,8 +93,8 @@ function HomePageContent() {
   return (
     <div className="flex h-screen w-full bg-slate-50 overflow-hidden">
       
-      {/* COLONNE GAUCHE : CHAT ASSISTANT (35%) */}
-      <div className="w-[35%] h-full border-r border-slate-200 flex flex-col bg-white">
+      {/* COLONNE GAUCHE : CHAT ASSISTANT (25%) */}
+      <div className="w-1/4 h-full border-r border-slate-200 flex flex-col bg-white">
         <div className="p-3 border-b bg-white flex justify-between items-center">
           <Link href="/">
             <Image src="/images/logo-storal.png" alt="Storal" width={100} height={35} className="h-7 w-auto" />
@@ -113,54 +108,47 @@ function HomePageContent() {
         </div>
       </div>
 
-      {/* COLONNE CENTRALE : SHOWROOM INTERACTIF + DÉTAILS (40%) */}
-      <div className="w-[40%] h-full flex flex-col p-4 space-y-4 overflow-y-auto bg-white border-r border-slate-200">
+      {/* COLONNE CENTRALE : VISUEL + DÉTAILS (45%) */}
+      <div className="w-[45%] h-full flex flex-col p-4 space-y-4 overflow-y-auto bg-white border-r border-slate-200">
         
-        {/* SHOWROOM INTERACTIF - Connecté au chat via Context */}
-        <div className="bg-slate-50 rounded-xl border border-slate-200 min-h-[300px] overflow-hidden">
-          {showroomState && (
-            <VisualShowroom
-              activeTool={showroomState.activeTool}
-              onSelectColor={showroomState.onSelectColor || (() => {})}
-              onSelectFabric={showroomState.onSelectFabric || (() => {})}
-              onSelectModel={showroomState.onSelectModel || (() => {})}
-              onTerraceChange={showroomState.onTerraceChange}
-              selectedColorId={showroomState.selectedColorId}
-              selectedFabricId={showroomState.selectedFabricId}
-              selectedModelId={showroomState.selectedModelId}
-              hasStartedConversation={showroomState.hasStartedConversation}
-              onSelectEco={showroomState.onSelectEco}
-              onSelectStandard={showroomState.onSelectStandard}
-              onSelectPremium={showroomState.onSelectPremium}
-              ecoCalc={showroomState.ecoCalc}
-              standardCalc={showroomState.standardCalc}
-              premiumCalc={showroomState.premiumCalc}
-              avec_pose={showroomState.avec_pose}
-              proposedStoreWidth={showroomState.proposedStoreWidth}
-              proposedStoreHeight={showroomState.proposedStoreHeight}
-              showVideoHint={showroomState.showVideoHint}
-            />
+        {/* VISUEL PRODUIT */}
+        <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 min-h-[200px] flex flex-col items-center justify-center">
+          {isConfiguring ? (
+            <>
+              <h3 className="text-slate-400 uppercase text-[10px] font-bold tracking-widest mb-3">Aperçu de votre configuration</h3>
+              {selectedModelData?.image && (
+                <div className="relative w-full max-h-48 h-48">
+                  <Image 
+                    src={selectedModelData.image} 
+                    alt={selectedModelData.name}
+                    fill
+                    className="object-contain transition-all duration-500"
+                  />
+                </div>
+              )}
+              <div className="mt-3 flex flex-wrap gap-2 justify-center">
+                {selectedFabricData && (
+                  <span className="px-2 py-1 bg-white rounded-full text-[10px] font-medium border border-slate-200">
+                    Toile : {selectedFabricData.name}
+                  </span>
+                )}
+                {selectedColorData && (
+                  <span className="px-2 py-1 bg-white rounded-full text-[10px] font-medium border border-slate-200">
+                    Coffre : {selectedColorData.name}
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <h2 className="text-xl font-serif text-slate-800">Bienvenue chez Storal</h2>
+              <p className="text-slate-500 text-sm mt-2">Commencez la discussion pour configurer votre store</p>
+            </div>
           )}
         </div>
 
-        {/* Tags de sélection actuelle */}
-        {isConfiguring && (
-          <div className="flex flex-wrap gap-2 px-2">
-            {selectedFabricData && (
-              <span className="px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs font-medium text-blue-700">
-                Toile : {selectedFabricData.name}
-              </span>
-            )}
-            {selectedColorData && (
-              <span className="px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs font-medium text-blue-700">
-                Coffre : {selectedColorData.name}
-              </span>
-            )}
-          </div>
-        )}
-
         {/* FICHE TECHNIQUE */}
-        {isConfiguring ? (
+        {isConfiguring && (
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="bg-slate-800 text-white px-3 py-2 text-xs font-bold flex items-center gap-2">
               <span>📋</span>
@@ -197,138 +185,6 @@ function HomePageContent() {
                   <strong className="text-sm text-slate-800">{cart.withMotor ? '⚡ Radio Somfy' : '🔧 Manuel'}</strong>
                 </div>
               )}
-            </div>
-          </div>
-        ) : (
-          /* PROMOTIONS - Affichées avant la configuration */
-          <div className="space-y-3">
-            {/* Titre général des promos */}
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-2 rounded-xl text-center">
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-lg">🔥</span>
-                <span className="text-xs font-bold uppercase tracking-wide">Promotions Exceptionnelles</span>
-                <span className="text-lg">🔥</span>
-              </div>
-            </div>
-
-            {/* PROMO KISSYMY */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg shadow-md border-2 border-orange-300 overflow-hidden">
-              <div className="p-3 space-y-3">
-                {/* Nom du produit */}
-                <div className="text-center">
-                  <h3 className="text-xl font-bold text-slate-800">KISSYMY</h3>
-                  <p className="text-xs text-slate-600">Store coffre intégral design</p>
-                </div>
-
-                {/* Image du produit */}
-                <div className="bg-white rounded-lg p-2">
-                  <div className="relative h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
-                    <span className="text-4xl">🏠</span>
-                  </div>
-                </div>
-
-                {/* Prix */}
-                <div className="bg-white rounded-lg p-2 border border-orange-300 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <span className="text-sm text-slate-400 line-through">1 990€</span>
-                    <span className="text-2xl font-bold text-orange-600">1 490€</span>
-                  </div>
-                  <p className="text-[10px] text-slate-600">TTC - Pose incluse</p>
-                  <div className="mt-1 inline-block bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                    -25% 🎉
-                  </div>
-                </div>
-
-                {/* Caractéristiques */}
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-orange-600">✓</span>
-                    <span className="text-slate-700">Coffre intégral design</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-orange-600">✓</span>
-                    <span className="text-slate-700">Motorisation Somfy</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-orange-600">✓</span>
-                    <span className="text-slate-700">Garantie 12 ans</span>
-                  </div>
-                </div>
-
-                {/* CTA */}
-                <button 
-                  onClick={() => {
-                    const chatInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-                    if (chatInput) {
-                      chatInput.focus();
-                      chatInput.value = "Je veux configurer le KISSYMY en promo";
-                    }
-                  }}
-                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-2 rounded-lg transition-all shadow-md hover:shadow-lg text-sm"
-                >
-                  🎯 Commander
-                </button>
-              </div>
-            </div>
-
-            {/* PROMO INASTA */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-md border-2 border-blue-300 overflow-hidden">
-              <div className="p-3 space-y-3">
-                {/* Nom du produit */}
-                <div className="text-center">
-                  <h3 className="text-xl font-bold text-slate-800">INASTA</h3>
-                  <p className="text-xs text-slate-600">Store banne traditionnel robuste</p>
-                </div>
-
-                {/* Image du produit */}
-                <div className="bg-white rounded-lg p-2">
-                  <div className="relative h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
-                    <span className="text-4xl">⛱️</span>
-                  </div>
-                </div>
-
-                {/* Prix */}
-                <div className="bg-white rounded-lg p-2 border border-blue-300 text-center">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <span className="text-sm text-slate-400 line-through">1 690€</span>
-                    <span className="text-2xl font-bold text-blue-600">1 290€</span>
-                  </div>
-                  <p className="text-[10px] text-slate-600">TTC - Pose incluse</p>
-                  <div className="mt-1 inline-block bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                    -24% 🎉
-                  </div>
-                </div>
-
-                {/* Caractéristiques */}
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-blue-600">✓</span>
-                    <span className="text-slate-700">Structure traditionnelle</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-blue-600">✓</span>
-                    <span className="text-slate-700">Toile acrylique premium</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-blue-600">✓</span>
-                    <span className="text-slate-700">Garantie 10 ans</span>
-                  </div>
-                </div>
-
-                {/* CTA */}
-                <button 
-                  onClick={() => {
-                    const chatInput = document.querySelector('input[type="text"]') as HTMLInputElement;
-                    if (chatInput) {
-                      chatInput.focus();
-                      chatInput.value = "Je veux configurer l'INASTA en promo";
-                    }
-                  }}
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 rounded-lg transition-all shadow-md hover:shadow-lg text-sm"
-                >
-                  🎯 Commander
-                </button>
-              </div>
             </div>
           </div>
         )}
@@ -404,10 +260,12 @@ function HomePageContent() {
               </div>
               
               {totalOptionsHT > 0 && (
-                <div className="flex justify-between text-slate-600 text-xs pl-4">
-                  <span>Options</span>
-                  <span className="font-semibold">{totalOptionsHT.toFixed(2)}€</span>
-                </div>
+                <>
+                  <div className="flex justify-between text-slate-600 text-xs pl-4">
+                    <span>Options</span>
+                    <span className="font-semibold">{totalOptionsHT.toFixed(2)}€</span>
+                  </div>
+                </>
               )}
               
               {cart?.poseHT && cart.poseHT > 0 && (
@@ -436,75 +294,16 @@ function HomePageContent() {
         )}
       </div>
 
-      {/* COLONNE DROITE : PRIX & ACTIONS (25%) */}
-      <div className="w-1/4 h-full flex flex-col p-4 space-y-4 overflow-y-auto">
+      {/* COLONNE DROITE : PRIX & ACTIONS (30%) */}
+      <div className="w-[30%] h-full flex flex-col p-4 space-y-4 overflow-y-auto">
         
         {!showPrices ? (
-          <div className="flex-1 flex flex-col">
-            {/* TITRE */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3 rounded-xl text-center mb-4">
-              <h3 className="text-sm font-bold uppercase tracking-wide">🌟 Nos Garanties</h3>
-            </div>
-
-            {/* LISTE DES AVANTAGES */}
-            <div className="space-y-3 flex-1">
-              {/* Garantie 12 ans */}
-              <div className="bg-white rounded-xl border-2 border-blue-100 p-4 hover:border-blue-300 hover:shadow-md transition-all">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xl">🛡️</span>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-slate-800 text-sm mb-1">Garantie 12 ans</h4>
-                    <p className="text-xs text-slate-600">Protection totale sur tous nos produits</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Fabrication 24 heures */}
-              <div className="bg-white rounded-xl border-2 border-orange-100 p-4 hover:border-orange-300 hover:shadow-md transition-all">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xl">⚡</span>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-slate-800 text-sm mb-1">Fabrication 24h</h4>
-                    <p className="text-xs text-slate-600">Production rapide en atelier</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Livraison sous 7 jours */}
-              <div className="bg-white rounded-xl border-2 border-emerald-100 p-4 hover:border-emerald-300 hover:shadow-md transition-all">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xl">🚚</span>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-slate-800 text-sm mb-1">Livraison sous 7 jours</h4>
-                    <p className="text-xs text-slate-600">Partout en France</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Service de pose */}
-              <div className="bg-white rounded-xl border-2 border-purple-100 p-4 hover:border-purple-300 hover:shadow-md transition-all">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xl">🔧</span>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-slate-800 text-sm mb-1">Service de pose</h4>
-                    <p className="text-xs text-slate-600">Installation par nos experts</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* MESSAGE D'ENCOURAGEMENT */}
-            <div className="mt-4 p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
-              <p className="text-xs text-center text-slate-600">
-                💬 <strong>Discutez avec notre assistant</strong> pour obtenir votre devis personnalisé
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center p-6">
+              <div className="text-6xl mb-4">💬</div>
+              <h3 className="text-lg font-bold text-slate-800 mb-2">Configurez votre store</h3>
+              <p className="text-sm text-slate-500">
+                Discutez avec notre assistant pour obtenir votre devis personnalisé
               </p>
             </div>
           </div>
@@ -685,14 +484,5 @@ function HomePageContent() {
         )}
       </div>
     </div>
-  );
-}
-
-// Wrapper avec ShowroomProvider
-export default function HomePageWithShowroomFusion() {
-  return (
-    <ShowroomProvider>
-      <HomePageContent />
-    </ShowroomProvider>
   );
 }

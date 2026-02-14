@@ -7,12 +7,51 @@ import Link from 'next/link';
 import { downloadInvoice } from '../_invoice';
 import jsPDF from 'jspdf';
 
+// Interface pour les détails du panier avec options
+interface CartDetails {
+  modelId: string | null;
+  modelName?: string;
+  colorId: string | null;
+  fabricId: string | null;
+  width?: number | null;
+  projection?: number | null;
+  exposure?: string | null;
+  withMotor?: boolean;
+  priceEco?: number;
+  priceStandard?: number;
+  pricePremium?: number;
+  selectedPrice?: number;
+  priceType?: string;
+  // Détails des options et prix
+  storeHT?: number;
+  ledArmsPrice?: number;
+  ledBoxPrice?: number;
+  lambrequinPrice?: number;
+  awningPrice?: number;
+  sousCoffrePrice?: number;
+  poseHT?: number;
+  tvaAmount?: number;
+}
+
 export default function ConfirmationPage() {
   const params = useParams();
   const router = useRouter();
   const orderId = params.orderId as string;
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [cartDetails, setCartDetails] = useState<CartDetails | null>(null);
+
+  useEffect(() => {
+    // Charger les détails du panier depuis localStorage
+    try {
+      const savedCart = localStorage.getItem('storal-cart');
+      if (savedCart) {
+        setCartDetails(JSON.parse(savedCart));
+      }
+    } catch (error) {
+      console.error('Erreur chargement détails panier:', error);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -437,6 +476,76 @@ export default function ConfirmationPage() {
                     </div>
                   )}
 
+                  {/* Prix détaillés des options (si disponible depuis cartDetails) */}
+                  {cartDetails && (cartDetails.storeHT || cartDetails.ledArmsPrice || cartDetails.ledBoxPrice || cartDetails.lambrequinPrice || cartDetails.awningPrice || cartDetails.sousCoffrePrice || cartDetails.poseHT) && (
+                    <div className="bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-200 p-3 rounded mb-3 text-sm">
+                      <p className="font-semibold text-gray-800 mb-2">Détail de la tarification:</p>
+                      <div className="space-y-1">
+                        {cartDetails.storeHT && cartDetails.storeHT > 0 && (
+                          <div className="flex justify-between text-gray-700">
+                            <span>Store de base (HT)</span>
+                            <span className="font-semibold">{cartDetails.storeHT.toFixed(2)} €</span>
+                          </div>
+                        )}
+                        
+                        {cartDetails.priceType && (
+                          <div className="mt-2 mb-2 pt-2 border-t border-slate-300">
+                            <p className="text-xs font-bold text-blue-600 uppercase">Formule {cartDetails.priceType}</p>
+                          </div>
+                        )}
+                        
+                        {cartDetails.ledArmsPrice && cartDetails.ledArmsPrice > 0 && (
+                          <div className="flex justify-between text-gray-700 pl-3">
+                            <span className="flex items-center"><span className="text-blue-500 mr-1">💡</span> LED Bras (HT)</span>
+                            <span className="font-semibold">{cartDetails.ledArmsPrice.toFixed(2)} €</span>
+                          </div>
+                        )}
+                        
+                        {cartDetails.ledBoxPrice && cartDetails.ledBoxPrice > 0 && (
+                          <div className="flex justify-between text-gray-700 pl-3">
+                            <span className="flex items-center"><span className="text-blue-500 mr-1">💡</span> LED Coffre (HT)</span>
+                            <span className="font-semibold">{cartDetails.ledBoxPrice.toFixed(2)} €</span>
+                          </div>
+                        )}
+                        
+                        {cartDetails.lambrequinPrice && cartDetails.lambrequinPrice > 0 && (
+                          <div className="flex justify-between text-gray-700 pl-3">
+                            <span className="flex items-center"><span className="text-orange-500 mr-1">📏</span> Lambrequin enroulable (HT)</span>
+                            <span className="font-semibold">{cartDetails.lambrequinPrice.toFixed(2)} €</span>
+                          </div>
+                        )}
+                        
+                        {cartDetails.awningPrice && cartDetails.awningPrice > 0 && (
+                          <div className="flex justify-between text-gray-700 pl-3">
+                            <span className="flex items-center"><span className="text-purple-500 mr-1">🏠</span> Auvent (HT)</span>
+                            <span className="font-semibold">{cartDetails.awningPrice.toFixed(2)} €</span>
+                          </div>
+                        )}
+                        
+                        {cartDetails.sousCoffrePrice && cartDetails.sousCoffrePrice > 0 && (
+                          <div className="flex justify-between text-gray-700 pl-3">
+                            <span className="flex items-center"><span className="text-purple-500 mr-1">📦</span> Sous-coffre (HT)</span>
+                            <span className="font-semibold">{cartDetails.sousCoffrePrice.toFixed(2)} €</span>
+                          </div>
+                        )}
+                        
+                        {cartDetails.poseHT && cartDetails.poseHT > 0 && (
+                          <div className="flex justify-between text-gray-700 mt-2 pt-2 border-t border-slate-300">
+                            <span className="flex items-center"><span className="text-green-500 mr-1">🔧</span> Installation professionnelle (HT)</span>
+                            <span className="font-semibold">{cartDetails.poseHT.toFixed(2)} €</span>
+                          </div>
+                        )}
+                        
+                        {cartDetails.tvaAmount && cartDetails.tvaAmount > 0 && (
+                          <div className="flex justify-between text-gray-700">
+                            <span>TVA</span>
+                            <span className="font-semibold">{cartDetails.tvaAmount.toFixed(2)} €</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Quantity and price */}
                   <div className="flex justify-between items-center">
                     <div>
@@ -451,7 +560,7 @@ export default function ConfirmationPage() {
                       <p className="text-2xl font-bold text-blue-600">
                         {Number(item.totalPrice).toFixed(2)}€
                       </p>
-                      <p className="text-xs text-gray-500">Total article</p>
+                      <p className="text-xs text-gray-500">Total TTC</p>
                     </div>
                   </div>
                 </div>

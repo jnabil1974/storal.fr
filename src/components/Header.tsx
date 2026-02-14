@@ -77,17 +77,22 @@ export default function Header() {
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <Link href="/">
-              <div className="cursor-pointer hover:scale-105 transition-transform duration-200">
-                <Logo />
-              </div>
-            </Link>
+        <div className="flex items-center justify-between gap-8">
+          {/* Logo - Gauche */}
+          <Link href="/">
+            <div className="cursor-pointer hover:scale-105 transition-transform duration-200 flex-shrink-0">
+              <Logo />
+            </div>
+          </Link>
 
-            {/* Actions à droite: Téléphone, User, Cart */}
-            <div className="flex items-center gap-2 md:gap-4">
+          {/* Texte marketing - Centre (flex-1 pour occuper l'espace) */}
+          <div className="flex-1 text-center hidden md:block">
+            <h1 className="text-2xl font-bold text-gray-900">Expert en protection solaire</h1>
+            <p className="text-sm text-gray-600">Configurez votre store banne sur-mesure avec notre assistant intelligent.</p>
+          </div>
+
+          {/* Actions - Droite */}
+          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
               {/* Phone Number - Version mobile simplifiée */}
               <a href="tel:+33185093446" className="md:hidden flex items-center justify-center bg-rose-700 hover:bg-rose-800 text-white p-2 rounded-lg shadow-md transition-all">
                 <svg 
@@ -148,8 +153,7 @@ export default function Header() {
                 )}
               </Link>
             </div>
-          </div>
-        </div>
+         </div>
       </nav>
     </header>
   );
