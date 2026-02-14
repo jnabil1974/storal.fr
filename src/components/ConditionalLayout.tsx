@@ -4,14 +4,20 @@ import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
 import ChatVisibilityController from './ChatVisibilityController';
+import AssistantHeader from './AssistantHeader';
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAssistantPage = pathname === '/assistant';
 
   if (isAssistantPage) {
-    // Mode App : pas de Header/Footer/Chat global
-    return <>{children}</>;
+    // Mode App : Header simplifié uniquement
+    return (
+      <>
+        <AssistantHeader />
+        {children}
+      </>
+    );
   }
 
   // Mode site classique
