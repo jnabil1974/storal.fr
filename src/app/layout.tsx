@@ -60,12 +60,6 @@ export default function RootLayout({
               </div>
             </div>
             <Header />
-            {/* 🎯 Bannière publicitaire - 100px */}
-            <div className="h-[100px] bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 border-b border-gray-200 flex items-center justify-center px-4">
-              <p className="text-center text-gray-600 text-sm font-medium">
-                🎁 Espace réservé pour bannière publicitaire
-              </p>
-            </div>
             <main>{children}</main>
             <Footer />
             <ChatVisibilityController />

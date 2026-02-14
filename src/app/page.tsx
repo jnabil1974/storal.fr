@@ -96,7 +96,7 @@ function HomePageContent() {
   const totalTTC = subtotalHT + tva;
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 overflow-hidden">
+    <div className="flex h-screen w-full bg-slate-100 text-slate-900 overflow-hidden">
       
       {/* COLONNE GAUCHE : CHAT ASSISTANT (35%) */}
       <div className="w-[35%] h-full border-r border-slate-200 flex flex-col bg-white">
@@ -117,7 +117,7 @@ function HomePageContent() {
       <div className="w-[40%] h-full flex flex-col p-4 space-y-4 overflow-y-auto bg-white border-r border-slate-200">
         
         {/* SHOWROOM INTERACTIF - Connecté au chat via Context */}
-        <div className="bg-slate-50 rounded-xl border border-slate-200 min-h-[300px] overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm min-h-[300px] overflow-hidden">
           {showroomState && (
             <VisualShowroom
               activeTool={showroomState.activeTool}
@@ -147,12 +147,12 @@ function HomePageContent() {
         {isConfiguring && (
           <div className="flex flex-wrap gap-2 px-2">
             {selectedFabricData && (
-              <span className="px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs font-medium text-blue-700">
+              <span className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-full text-xs font-medium text-slate-700">
                 Toile : {selectedFabricData.name}
               </span>
             )}
             {selectedColorData && (
-              <span className="px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs font-medium text-blue-700">
+              <span className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-full text-xs font-medium text-slate-700">
                 Coffre : {selectedColorData.name}
               </span>
             )}
@@ -162,7 +162,7 @@ function HomePageContent() {
         {/* FICHE TECHNIQUE */}
         {isConfiguring ? (
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="bg-slate-800 text-white px-3 py-2 text-xs font-bold flex items-center gap-2">
+            <div className="bg-slate-900 text-white px-3 py-2 text-xs font-bold flex items-center gap-2">
               <span>📋</span>
               <span>FICHE TECHNIQUE</span>
             </div>
@@ -203,7 +203,7 @@ function HomePageContent() {
           /* PROMOTIONS - Affichées avant la configuration */
           <div className="space-y-3">
             {/* Titre général des promos */}
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-2 rounded-xl text-center">
+            <div className="bg-slate-900 text-white px-3 py-2 rounded-xl text-center">
               <div className="flex items-center justify-center gap-2">
                 <span className="text-lg">🔥</span>
                 <span className="text-xs font-bold uppercase tracking-wide">Promotions Exceptionnelles</span>
@@ -212,7 +212,7 @@ function HomePageContent() {
             </div>
 
             {/* PROMO KISSYMY */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg shadow-md border-2 border-orange-300 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="p-3 space-y-3">
                 {/* Nom du produit */}
                 <div className="text-center">
@@ -222,19 +222,19 @@ function HomePageContent() {
 
                 {/* Image du produit */}
                 <div className="bg-white rounded-lg p-2">
-                  <div className="relative h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
+                  <div className="relative h-24 bg-slate-50 rounded flex items-center justify-center">
                     <span className="text-4xl">🏠</span>
                   </div>
                 </div>
 
                 {/* Prix */}
-                <div className="bg-white rounded-lg p-2 border border-orange-300 text-center">
+                <div className="bg-white rounded-lg p-2 border border-slate-200 text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
                     <span className="text-sm text-slate-400 line-through">1 990€</span>
-                    <span className="text-2xl font-bold text-orange-600">1 490€</span>
+                    <span className="text-2xl font-bold text-slate-900">1 490€</span>
                   </div>
                   <p className="text-[10px] text-slate-600">TTC - Pose incluse</p>
-                  <div className="mt-1 inline-block bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                  <div className="mt-1 inline-block bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
                     -25% 🎉
                   </div>
                 </div>
@@ -242,15 +242,15 @@ function HomePageContent() {
                 {/* Caractéristiques */}
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-orange-600">✓</span>
+                    <span className="text-slate-700">✓</span>
                     <span className="text-slate-700">Coffre intégral design</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-orange-600">✓</span>
+                    <span className="text-slate-700">✓</span>
                     <span className="text-slate-700">Motorisation Somfy</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-orange-600">✓</span>
+                    <span className="text-slate-700">✓</span>
                     <span className="text-slate-700">Garantie 12 ans</span>
                   </div>
                 </div>
@@ -264,7 +264,7 @@ function HomePageContent() {
                       chatInput.value = "Je veux configurer le KISSYMY en promo";
                     }
                   }}
-                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-2 rounded-lg transition-all shadow-md hover:shadow-lg text-sm"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-sm"
                 >
                   🎯 Commander
                 </button>
@@ -272,7 +272,7 @@ function HomePageContent() {
             </div>
 
             {/* PROMO INASTA */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-md border-2 border-blue-300 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="p-3 space-y-3">
                 {/* Nom du produit */}
                 <div className="text-center">
@@ -282,19 +282,19 @@ function HomePageContent() {
 
                 {/* Image du produit */}
                 <div className="bg-white rounded-lg p-2">
-                  <div className="relative h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded flex items-center justify-center">
+                  <div className="relative h-24 bg-slate-50 rounded flex items-center justify-center">
                     <span className="text-4xl">⛱️</span>
                   </div>
                 </div>
 
                 {/* Prix */}
-                <div className="bg-white rounded-lg p-2 border border-blue-300 text-center">
+                <div className="bg-white rounded-lg p-2 border border-slate-200 text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
                     <span className="text-sm text-slate-400 line-through">1 690€</span>
-                    <span className="text-2xl font-bold text-blue-600">1 290€</span>
+                    <span className="text-2xl font-bold text-slate-900">1 290€</span>
                   </div>
                   <p className="text-[10px] text-slate-600">TTC - Pose incluse</p>
-                  <div className="mt-1 inline-block bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                  <div className="mt-1 inline-block bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
                     -24% 🎉
                   </div>
                 </div>
@@ -302,15 +302,15 @@ function HomePageContent() {
                 {/* Caractéristiques */}
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-blue-600">✓</span>
+                    <span className="text-slate-700">✓</span>
                     <span className="text-slate-700">Structure traditionnelle</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-blue-600">✓</span>
+                    <span className="text-slate-700">✓</span>
                     <span className="text-slate-700">Toile acrylique premium</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-blue-600">✓</span>
+                    <span className="text-slate-700">✓</span>
                     <span className="text-slate-700">Garantie 10 ans</span>
                   </div>
                 </div>
@@ -324,7 +324,7 @@ function HomePageContent() {
                       chatInput.value = "Je veux configurer l'INASTA en promo";
                     }
                   }}
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 rounded-lg transition-all shadow-md hover:shadow-lg text-sm"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-lg transition-all shadow-sm hover:shadow-md text-sm"
                 >
                   🎯 Commander
                 </button>
@@ -335,8 +335,8 @@ function HomePageContent() {
 
         {/* OPTIONS INCLUSES */}
         {isConfiguring && (cart?.ledArmsPrice || cart?.ledBoxPrice || cart?.lambrequinPrice || cart?.awningPrice || cart?.sousCoffrePrice) && (
-          <div className="bg-blue-50 rounded-xl border border-blue-200 overflow-hidden">
-            <div className="bg-blue-600 text-white px-3 py-2 text-xs font-bold flex items-center gap-2">
+          <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+            <div className="bg-slate-900 text-white px-3 py-2 text-xs font-bold flex items-center gap-2">
               <span>⚙️</span>
               <span>OPTIONS SÉLECTIONNÉES</span>
             </div>
@@ -344,46 +344,46 @@ function HomePageContent() {
               {cart?.ledArmsPrice && cart.ledArmsPrice > 0 && (
                 <div className="flex justify-between items-center text-slate-700">
                   <span className="flex items-center gap-2">
-                    <span className="text-blue-600">💡</span>
+                    <span className="text-slate-700">💡</span>
                     <span>LED Bras</span>
                   </span>
-                  <span className="font-semibold text-blue-700">+{cart.ledArmsPrice}€</span>
+                  <span className="font-semibold text-slate-900">+{cart.ledArmsPrice}€</span>
                 </div>
               )}
               {cart?.ledBoxPrice && cart.ledBoxPrice > 0 && (
                 <div className="flex justify-between items-center text-slate-700">
                   <span className="flex items-center gap-2">
-                    <span className="text-blue-600">💡</span>
+                    <span className="text-slate-700">💡</span>
                     <span>LED Coffre</span>
                   </span>
-                  <span className="font-semibold text-blue-700">+{cart.ledBoxPrice}€</span>
+                  <span className="font-semibold text-slate-900">+{cart.ledBoxPrice}€</span>
                 </div>
               )}
               {cart?.lambrequinPrice && cart.lambrequinPrice > 0 && (
                 <div className="flex justify-between items-center text-slate-700">
                   <span className="flex items-center gap-2">
-                    <span className="text-blue-600">📏</span>
+                    <span className="text-slate-700">📏</span>
                     <span>Lambrequin</span>
                   </span>
-                  <span className="font-semibold text-blue-700">+{cart.lambrequinPrice}€</span>
+                  <span className="font-semibold text-slate-900">+{cart.lambrequinPrice}€</span>
                 </div>
               )}
               {cart?.awningPrice && cart.awningPrice > 0 && (
                 <div className="flex justify-between items-center text-slate-700">
                   <span className="flex items-center gap-2">
-                    <span className="text-blue-600">🏠</span>
+                    <span className="text-slate-700">🏠</span>
                     <span>Auvent</span>
                   </span>
-                  <span className="font-semibold text-blue-700">+{cart.awningPrice}€</span>
+                  <span className="font-semibold text-slate-900">+{cart.awningPrice}€</span>
                 </div>
               )}
               {cart?.sousCoffrePrice && cart.sousCoffrePrice > 0 && (
                 <div className="flex justify-between items-center text-slate-700">
                   <span className="flex items-center gap-2">
-                    <span className="text-blue-600">📦</span>
+                    <span className="text-slate-700">📦</span>
                     <span>Sous-coffre</span>
                   </span>
-                  <span className="font-semibold text-blue-700">+{cart.sousCoffrePrice}€</span>
+                  <span className="font-semibold text-slate-900">+{cart.sousCoffrePrice}€</span>
                 </div>
               )}
             </div>
@@ -393,7 +393,7 @@ function HomePageContent() {
         {/* DÉTAIL DU PRIX */}
         {showPrices && (
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="bg-emerald-600 text-white px-3 py-2 text-xs font-bold flex items-center gap-2">
+            <div className="bg-slate-900 text-white px-3 py-2 text-xs font-bold flex items-center gap-2">
               <span>📊</span>
               <span>DÉTAIL DU PRIX</span>
             </div>
@@ -427,7 +427,7 @@ function HomePageContent() {
                 <span className="font-semibold">{tva.toFixed(2)}€</span>
               </div>
               
-              <div className="border-t-2 border-emerald-600 pt-2 flex justify-between text-emerald-700">
+              <div className="border-t-2 border-slate-900 pt-2 flex justify-between text-slate-900">
                 <span className="font-bold text-base">TOTAL TTC</span>
                 <span className="font-bold text-lg">{totalTTC.toFixed(2)}€</span>
               </div>
@@ -442,16 +442,16 @@ function HomePageContent() {
         {!showPrices ? (
           <div className="flex-1 flex flex-col">
             {/* TITRE */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3 rounded-xl text-center mb-4">
+            <div className="bg-slate-900 text-white px-4 py-3 rounded-xl text-center mb-4">
               <h3 className="text-sm font-bold uppercase tracking-wide">🌟 Nos Garanties</h3>
             </div>
 
             {/* LISTE DES AVANTAGES */}
             <div className="space-y-3 flex-1">
               {/* Garantie 12 ans */}
-              <div className="bg-white rounded-xl border-2 border-blue-100 p-4 hover:border-blue-300 hover:shadow-md transition-all">
+              <div className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition-all">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-xl">🛡️</span>
                   </div>
                   <div className="flex-1">
@@ -462,9 +462,9 @@ function HomePageContent() {
               </div>
 
               {/* Fabrication 24 heures */}
-              <div className="bg-white rounded-xl border-2 border-orange-100 p-4 hover:border-orange-300 hover:shadow-md transition-all">
+              <div className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition-all">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-xl">⚡</span>
                   </div>
                   <div className="flex-1">
@@ -475,9 +475,9 @@ function HomePageContent() {
               </div>
 
               {/* Livraison sous 7 jours */}
-              <div className="bg-white rounded-xl border-2 border-emerald-100 p-4 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition-all">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-xl">🚚</span>
                   </div>
                   <div className="flex-1">
@@ -488,9 +488,9 @@ function HomePageContent() {
               </div>
 
               {/* Service de pose */}
-              <div className="bg-white rounded-xl border-2 border-purple-100 p-4 hover:border-purple-300 hover:shadow-md transition-all">
+              <div className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition-all">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-xl">🔧</span>
                   </div>
                   <div className="flex-1">
@@ -502,7 +502,7 @@ function HomePageContent() {
             </div>
 
             {/* MESSAGE D'ENCOURAGEMENT */}
-            <div className="mt-4 p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
+            <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
               <p className="text-xs text-center text-slate-600">
                 💬 <strong>Discutez avec notre assistant</strong> pour obtenir votre devis personnalisé
               </p>
@@ -511,7 +511,7 @@ function HomePageContent() {
         ) : (
           <>
             {/* TITRE SECTION */}
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 rounded-xl text-center">
+            <div className="bg-slate-900 text-white px-4 py-3 rounded-xl text-center">
               <h3 className="text-sm font-bold uppercase tracking-wide">💰 Choisissez votre offre</h3>
             </div>
 
@@ -520,30 +520,30 @@ function HomePageContent() {
               {/* OFFRE ECO */}
               <div 
                 onClick={() => selectOffer('eco')}
-                className={`rounded-xl border-2 p-4 cursor-pointer transition-all ${
+                className={`rounded-xl border p-4 cursor-pointer transition-all ${
                   cart?.priceType === 'eco' 
-                    ? 'border-emerald-500 bg-emerald-50 shadow-lg' 
-                    : 'border-slate-200 bg-white hover:border-emerald-400 hover:shadow-md'
+                    ? 'border-slate-900 bg-white shadow-md ring-1 ring-slate-900/10' 
+                    : 'border-slate-200 bg-white hover:shadow-sm'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-emerald-600 uppercase">💚 Offre Eco</span>
+                  <span className="text-xs font-bold text-slate-700 uppercase">💚 Offre Eco</span>
                   {cart?.priceType === 'eco' && (
-                    <span className="text-emerald-600">✓</span>
+                    <span className="text-slate-900">✓</span>
                   )}
                 </div>
                 <div className="text-2xl font-bold text-slate-800 mb-3">{cart.priceEco}€ TTC</div>
                 <div className="space-y-1 text-xs text-slate-600">
                   <div className="flex items-start gap-2">
-                    <span className="text-emerald-600 mt-0.5">✓</span>
+                    <span className="text-slate-700 mt-0.5">✓</span>
                     <span>Toile standard</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="text-emerald-600 mt-0.5">✓</span>
+                    <span className="text-slate-700 mt-0.5">✓</span>
                     <span>Pose incluse</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="text-emerald-600 mt-0.5">✓</span>
+                    <span className="text-slate-700 mt-0.5">✓</span>
                     <span>Garantie 2 ans</span>
                   </div>
                 </div>
@@ -552,41 +552,41 @@ function HomePageContent() {
               {/* OFFRE STANDARD */}
               <div 
                 onClick={() => selectOffer('standard')}
-                className={`rounded-xl border-2 p-4 cursor-pointer relative transition-all ${
+                className={`rounded-xl border p-4 cursor-pointer relative transition-all ${
                   cart?.priceType === 'standard' 
-                    ? 'border-blue-500 bg-blue-500 text-white shadow-lg scale-105' 
-                    : 'border-blue-400 bg-blue-50 hover:shadow-md hover:scale-102'
+                    ? 'border-slate-900 bg-white shadow-md ring-1 ring-slate-900/10' 
+                    : 'border-slate-200 bg-white hover:shadow-sm'
                 }`}
               >
-                <span className="absolute -top-2 right-2 bg-orange-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">
+                <span className="absolute -top-2 right-2 bg-slate-900 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">
                   ⭐ TOP VENTE
                 </span>
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs font-bold uppercase ${cart?.priceType === 'standard' ? 'text-white' : 'text-blue-700'}`}>
+                  <span className="text-xs font-bold uppercase text-slate-700">
                     💙 Standard
                   </span>
                   {cart?.priceType === 'standard' && (
-                    <span className="text-white">✓</span>
+                    <span className="text-slate-900">✓</span>
                   )}
                 </div>
-                <div className={`text-2xl font-bold mb-3 ${cart?.priceType === 'standard' ? 'text-white' : 'text-slate-800'}`}>
+                <div className="text-2xl font-bold mb-3 text-slate-900">
                   {cart.priceStandard}€ TTC
                 </div>
-                <div className={`space-y-1 text-xs ${cart?.priceType === 'standard' ? 'text-blue-50' : 'text-slate-600'}`}>
+                <div className="space-y-1 text-xs text-slate-600">
                   <div className="flex items-start gap-2">
-                    <span className={cart?.priceType === 'standard' ? 'text-white' : 'text-blue-600'}>✓</span>
+                    <span className="text-slate-700">✓</span>
                     <span>Toile Dickson Premium</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className={cart?.priceType === 'standard' ? 'text-white' : 'text-blue-600'}>✓</span>
+                    <span className="text-slate-700">✓</span>
                     <span>LED bras inclus</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className={cart?.priceType === 'standard' ? 'text-white' : 'text-blue-600'}>✓</span>
+                    <span className="text-slate-700">✓</span>
                     <span>Garantie 5 ans</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className={cart?.priceType === 'standard' ? 'text-white' : 'text-blue-600'}>✓</span>
+                    <span className="text-slate-700">✓</span>
                     <span>Pose pro sous 7j</span>
                   </div>
                 </div>
@@ -595,34 +595,34 @@ function HomePageContent() {
               {/* OFFRE PREMIUM */}
               <div 
                 onClick={() => selectOffer('premium')}
-                className={`rounded-xl border-2 p-4 cursor-pointer transition-all ${
+                className={`rounded-xl border p-4 cursor-pointer transition-all ${
                   cart?.priceType === 'premium' 
-                    ? 'border-amber-500 bg-amber-50 shadow-lg' 
-                    : 'border-slate-200 bg-white hover:border-amber-400 hover:shadow-md'
+                    ? 'border-slate-900 bg-white shadow-md ring-1 ring-slate-900/10' 
+                    : 'border-slate-200 bg-white hover:shadow-sm'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-amber-600 uppercase">⭐ Premium</span>
+                  <span className="text-xs font-bold text-slate-700 uppercase">⭐ Premium</span>
                   {cart?.priceType === 'premium' && (
-                    <span className="text-amber-600">✓</span>
+                    <span className="text-slate-900">✓</span>
                   )}
                 </div>
                 <div className="text-2xl font-bold text-slate-800 mb-3">{cart.pricePremium}€ TTC</div>
                 <div className="space-y-1 text-xs text-slate-600">
                   <div className="flex items-start gap-2">
-                    <span className="text-amber-600 mt-0.5">✓</span>
+                    <span className="text-slate-700 mt-0.5">✓</span>
                     <span>Toile haut de gamme</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="text-amber-600 mt-0.5">✓</span>
+                    <span className="text-slate-700 mt-0.5">✓</span>
                     <span>Toutes options incluses</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="text-amber-600 mt-0.5">✓</span>
+                    <span className="text-slate-700 mt-0.5">✓</span>
                     <span>Garantie 10 ans</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="text-amber-600 mt-0.5">✓</span>
+                    <span className="text-slate-700 mt-0.5">✓</span>
                     <span>Service prioritaire</span>
                   </div>
                 </div>
@@ -631,8 +631,8 @@ function HomePageContent() {
 
             {/* MESSAGE D'INSTRUCTION SI AUCUNE OFFRE */}
             {!cart?.selectedPrice && (
-              <div className="text-center py-3 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-xs text-blue-700 font-medium">
+              <div className="text-center py-3 bg-slate-50 rounded-lg border border-slate-200">
+                <p className="text-xs text-slate-700 font-medium">
                   👆 Cliquez sur une offre pour continuer
                 </p>
               </div>
@@ -648,10 +648,10 @@ function HomePageContent() {
                     console.log('🛒 Article ajouté au panier:', cart);
                     setTimeout(() => setAddedToCart(false), 3000);
                   }}
-                  className={`block w-full text-center py-3 text-white text-sm font-bold rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 ${
+                  className={`block w-full text-center py-3 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg ${
                     addedToCart 
-                      ? 'bg-green-500 hover:bg-green-600' 
-                      : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+                      ? 'bg-slate-900 hover:bg-slate-800' 
+                      : 'bg-slate-900 hover:bg-slate-800'
                   }`}
                 >
                   {addedToCart ? '✅ AJOUTÉ' : '🛒 AJOUTER AU PANIER'}
@@ -659,7 +659,7 @@ function HomePageContent() {
 
                 <Link 
                   href="/order-summary" 
-                  className="block w-full text-center py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-base font-bold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-xl hover:shadow-2xl transform hover:scale-105"
+                  className="block w-full text-center py-4 bg-slate-900 text-white text-base font-bold rounded-xl hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl"
                 >
                   🚀 FINALISER MA COMMANDE
                 </Link>

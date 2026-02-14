@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Astro Preview – Bleu nuit</title>
+<style>
+  :root{
+    --navy-900:#0b1d3a;
+    --navy-800:#10264c;
+    --navy-700:#173165;
+    --navy-600:#1e3a8a;
+    --accent:#3b82f6;
+    --bg:#f6f8fc;
+    --card:#ffffff;
+    --muted:#6b7280;
+    --border:#e6eaf2;
+    --shadow:0 18px 45px rgba(11,29,58,.12);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:#0f172a;}
+  a{color:inherit;text-decoration:none}
+  .page{min-height:100vh;display:flex;flex-direction:column}
+  .nav{
+    position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--border);
+  }
+  .nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;}
+  .brand{display:flex;gap:10px;align-items:center;font-weight:700;}
+  .logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--navy-900),var(--navy-600));}
+  .menu{display:flex;gap:18px;color:var(--muted);font-size:14px;}
+  .cta{background:var(--navy-900);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;}
+
+  .hero{background:linear-gradient(135deg,var(--navy-900),var(--navy-700));color:#fff;}
+  .hero-inner{max-width:1200px;margin:0 auto;padding:48px 24px 32px;display:grid;grid-template-columns:1.2fr .8fr;gap:24px;}
+  .hero h1{margin:0 0 10px;font-size:36px;line-height:1.1;}
+  .hero p{margin:0 0 20px;color:#dbe5ff;}
+  .hero-actions{display:flex;gap:12px;}
+  .btn{border:1px solid transparent;padding:12px 16px;border-radius:12px;font-weight:600;font-size:14px;}
+  .btn.primary{background:#fff;color:var(--navy-900);}
+  .btn.ghost{border-color:#c7d2fe;color:#e5edff;background:transparent;}
+  .hero-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:18px;}
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;}
+  .stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 12px;font-size:12px;color:#e5edff;}
+
+  .section{max-width:1200px;margin:0 auto;padding:32px 24px;}
+  .section h2{margin:0 0 8px;font-size:24px;}
+  .section p{margin:0 0 20px;color:var(--muted);}
+
+  .categories{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+  .cat{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;box-shadow:var(--shadow);}
+  .cat .icon{width:36px;height:36px;border-radius:10px;margin:0 auto 8px;background:linear-gradient(135deg,#e8eefc,var(--accent));}
+  .cat span{font-size:12px;font-weight:600;color:#1f2937;}
+
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:14px;}
+  .card .row{display:flex;align-items:center;gap:10px;}
+  .avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#e2e8f0,#cbd5f5);}
+  .badge{font-size:11px;color:#0f172a;background:#eef2ff;border-radius:999px;padding:4px 8px;font-weight:600;}
+  .meta{color:var(--muted);font-size:12px;margin-top:6px;}
+  .price{margin-top:10px;font-weight:700;color:var(--navy-900);}
+  .status{margin-left:auto;font-size:11px;color:#16a34a;background:#e7f8ef;border-radius:999px;padding:4px 8px;}
+
+  .app{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;}
+  .store{display:flex;gap:12px;flex-wrap:wrap;}
+  .store a{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff;font-weight:600;font-size:13px;}
+
+  footer{background:#0b1224;color:#cbd5f5;margin-top:auto;}
+  .foot-inner{max-width:1200px;margin:0 auto;padding:28px 24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+  .links{display:flex;gap:14px;font-size:13px;color:#a5b4fc;}
+
+  @media (max-width: 1000px){
+    .hero-inner{grid-template-columns:1fr;}
+    .categories{grid-template-columns:repeat(3,1fr);}
+    .grid{grid-template-columns:repeat(2,1fr);}
+    .app{grid-template-columns:1fr;}
+  }
+  @media (max-width: 640px){
+    .menu{display:none;}
+    .categories{grid-template-columns:repeat(2,1fr);}
+    .grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="nav">
+      <div class="nav-inner">
+        <div class="brand"><div class="logo"></div>AstroTalky</div>
+        <div class="menu">
+          <a href="#">Accueil</a>
+          <a href="#">Services</a>
+          <a href="#">À propos</a>
+          <a href="#">Contact</a>
+        </div>
+        <a class="cta" href="#start">Démarrer un chat</a>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="hero-inner">
+        <div>
+          <h1>Intelligence au‑delà des étoiles</h1>
+          <p>Horoscopes personnalisés et experts en arts cosmiques — expérience moderne, rapide et sécurisée.</p>
+          <div class="hero-actions">
+            <button class="btn primary">Commencer</button>
+            <button class="btn ghost">Voir les experts</button>
+          </div>
+          <div class="stats">
+            <div class="stat">✓ 1M+ lectures</div>
+            <div class="stat">✓ 24/7 experts</div>
+            <div class="stat">✓ IA assistée</div>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div style="font-weight:700;margin-bottom:6px;">Connexion rapide</div>
+          <div style="color:#dbe5ff;font-size:13px;">Entrez votre numéro pour lancer un chat sécurisé.</div>
+          <div style="margin-top:12px;display:grid;gap:8px;">
+            <div style="background:#fff;border-radius:10px;padding:10px;color:#0f172a;">+33 • • • • • • • •</div>
+            <button class="btn primary" style="width:100%;">Envoyer le code</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Catégories populaires</h2>
+      <p>Des experts dédiés pour chaque étape de votre parcours.</p>
+      <div class="categories">
+        <div class="cat"><div class="icon"></div><span>Amour</span></div>
+        <div class="cat"><div class="icon"></div><span>Carrière</span></div>
+        <div class="cat"><div class="icon"></div><span>Bien‑être</span></div>
+        <div class="cat"><div class="icon"></div><span>Couple</span></div>
+        <div class="cat"><div class="icon"></div><span>Finance</span></div>
+        <div class="cat"><div class="icon"></div><span>Général</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="start">
+      <h2>Experts disponibles maintenant</h2>
+      <p>Consultations en direct, tarifs clairs, sélection premium.</p>
+      <div class="grid">
+        <div class="card">
+          <div class="row">
+            <div class="avatar"></div>
+            <div>
+              <div style="font-weight:600;">Munish Sharma</div>
+              <div class="meta">Astrologie védique</div>
+            </div>
+            <span class="status">En ligne</span>
+          </div>
+          <div class="meta">553 consultations</div>
+          <div class="price">15 €/min</div>
+        </div>
+        <div class="card">
+          <div class="row">
+            <div class="avatar"></div>
+            <div>
+              <div style="font-weight:600;">Sonal Bhardwaj</div>
+              <div class="meta">Numérologie</div>
+            </div>
+            <span class="status">En ligne</span>
+          </div>
+          <div class="meta">661 consultations</div>
+          <div class="price">13 €/min</div>
+        </div>
+        <div class="card">
+          <div class="row">
+            <div class="avatar"></div>
+            <div>
+              <div style="font-weight:600;">Divya Agarwal</div>
+              <div class="meta">Numérologie</div>
+            </div>
+            <span class="status">En ligne</span>
+          </div>
+          <div class="meta">682 consultations</div>
+          <div class="price">20 €/min</div>
+        </div>
+        <div class="card">
+          <div class="row">
+            <div class="avatar"></div>
+            <div>
+              <div style="font-weight:600;">Anjali Tripathi</div>
+              <div class="meta">Astrologie védique</div>
+            </div>
+            <span class="status">En ligne</span>
+          </div>
+          <div class="meta">456 consultations</div>
+          <div class="price">25 €/min</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="app">
+        <div>
+          <h2>Application mobile</h2>
+          <p>Retrouvez vos consultations et rapports sur mobile, avec un accès rapide à vos experts favoris.</p>
+          <div class="store">
+            <a href="#">Google Play</a>
+            <a href="#">App Store</a>
+          </div>
+        </div>
+        <div class="card" style="min-height:180px;display:flex;align-items:center;justify-content:center;">
+          <div style="text-align:center;color:var(--muted);">Aperçu de l’app</div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="foot-inner">
+        <div>
+          <div style="font-weight:700;">AstroTalky</div>
+          <div style="font-size:12px;color:#93a4ff;">Mapping the cosmos for your evolution.</div>
+        </div>
+        <div class="links">
+          <a href="#">À propos</a>
+          <a href="#">Conditions</a>
+          <a href="#">Confidentialité</a>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

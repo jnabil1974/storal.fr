@@ -995,7 +995,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
       <div className="w-full flex flex-col h-full bg-white">
         {isModalOpen && <ProductModal model={selectedModelForModal} onClose={() => setIsModalOpen(false)} />}
         
-        <header className="bg-gray-900 text-white p-4 sticky top-0 z-10">
+        <header className="bg-gray-900 text-white p-4 sticky top-0 z-10 text-center">
           <h2 className="text-xl font-bold">Expert Storal - Assistant Personnalisé</h2>
           <p className="text-sm text-gray-300">Configurez votre produit idéal</p>
         </header>
@@ -1003,7 +1003,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {messages.length === 0 && (
             <div className="text-center py-8 space-y-6">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl px-6 py-6 border border-blue-200 shadow-md max-w-2xl mx-auto">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl px-6 py-6 border border-blue-200 shadow-md max-w-[60%] mx-auto">
                 <TypewriterText 
                   text="Bonjour ! Je suis l'Agent Storal. Bienvenue dans une **expérience passionnante** : ici, nous ne nous contentons pas de choisir un store, nous allons créer ensemble **votre ombre idéale**. Mon objectif est de répondre avec précision à vos attentes techniques tout en transformant votre extérieur. Prêt à commencer l'aventure ?" 
                   isWelcomeMessage={true} 
@@ -1040,7 +1040,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
             
             return (
               <div key={`${message.id}-${idx}`} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`rounded-2xl px-4 py-3 max-w-xs ${message.role === 'user' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+                <div className={`rounded-2xl px-4 py-3 ${message.role === 'user' ? 'max-w-[40%] bg-gray-900 text-white' : 'max-w-[60%] bg-gray-100 text-gray-900'}`}>
                   {message.role === 'assistant' && <div className="text-xs font-semibold text-gray-500 mb-2">Expert Storal</div>}
                   {isWelcomeMessage ? (
                     <TypewriterText text={messageText} isWelcomeMessage={true} />
@@ -1054,7 +1054,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
           
           {isLoading && !activeTool && (
             <div className="flex justify-start p-4">
-              <div className="bg-gray-100 rounded-2xl px-4 py-3">
+              <div className="bg-gray-100 rounded-2xl px-4 py-3 max-w-[60%]">
                 <div className="flex space-x-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                   <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Storal – Showroom moderne (preview)</title>
+<style>
+  :root{
+    --bg: #f6f7fb;
+    --card: #ffffff;
+    --muted:#7a8391;
+    --primary:#1f6feb;
+    --accent:#0ea5e9;
+    --shadow: 0 20px 60px rgba(15,23,42,.08);
+    --border: rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue";
+    background: var(--bg); color:#0f172a;
+  }
+  .page{
+    min-height:100vh;
+    display:grid;
+    grid-template-rows: 72px 1fr;
+  }
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 32px; background:#fff; border-bottom:1px solid var(--border);
+    box-shadow: 0 4px 18px rgba(15,23,42,.04);
+  }
+  .brand{display:flex; gap:12px; align-items:center;}
+  .logo{
+    width:38px; height:38px; border-radius:10px;
+    background:linear-gradient(135deg, #1f6feb, #60a5fa);
+  }
+  .nav{display:flex; gap:22px; color:var(--muted); font-size:14px;}
+  .cta{
+    background:#0f172a; color:#fff; padding:10px 16px; border-radius:12px;
+    font-size:13px; font-weight:600;
+  }
+
+  .layout{
+    display:grid; grid-template-columns: 320px 1fr 320px; gap:24px;
+    padding:28px 32px;
+  }
+  .panel{
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    box-shadow: var(--shadow); padding:16px;
+  }
+  .panel h3{margin:6px 0 12px; font-size:16px;}
+  .muted{color:var(--muted); font-size:13px;}
+  .pill{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px; border-radius:999px;
+    background:#eef2ff; color:#4f46e5; font-size:12px; font-weight:600;
+  }
+
+  /* Centre */
+  .center{
+    display:grid; grid-template-rows: auto 1fr auto; gap:16px;
+  }
+  .hero{
+    background:linear-gradient(135deg,#0f172a,#1f6feb);
+    color:#fff; border-radius:18px; padding:22px; box-shadow: var(--shadow);
+  }
+  .hero h1{margin:0 0 8px; font-size:26px;}
+  .hero p{margin:0; opacity:.85}
+
+  .modules{
+    display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px;
+  }
+  .module{
+    background:#fff; border:1px solid var(--border); border-radius:16px;
+    padding:16px; box-shadow: var(--shadow);
+    min-height:220px;
+  }
+  .module h4{margin:4px 0 8px;}
+  .module .badge{
+    display:inline-block; padding:4px 8px; border-radius:8px;
+    background:#f1f5f9; font-size:11px; color:#334155; font-weight:600;
+  }
+  .module .preview{
+    margin-top:12px; height:120px; border-radius:12px;
+    background: linear-gradient(135deg,#e2e8f0,#f8fafc);
+    border:1px dashed rgba(15,23,42,.08);
+  }
+
+  .actions{
+    display:flex; gap:12px;
+  }
+  .btn{
+    padding:10px 14px; border-radius:12px; font-size:13px;
+    border:1px solid var(--border); background:#fff; font-weight:600;
+  }
+  .btn.primary{background:var(--primary); color:#fff; border:none}
+</style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div style="font-weight:700">Storal Showroom</div>
+          <div class="muted">Configurateur premium</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <span>Accueil</span><span>Store-banne</span><span>Contact</span><span>FAQ</span>
+      </nav>
+      <div class="cta">Demander un devis</div>
+    </header>
+
+    <div class="layout">
+      <!-- Gauche -->
+      <aside class="panel">
+        <span class="pill">Assistant IA</span>
+        <h3>Conseiller Storal</h3>
+        <p class="muted">Recommandations instantanées selon ton usage et budget.</p>
+        <div style="margin-top:12px; padding:12px; background:#f8fafc; border-radius:12px; font-size:13px;">
+          💬 Bonjour ! Quel modèle recherchez-vous ?
+        </div>
+      </aside>
+
+      <!-- Centre -->
+      <main class="center">
+        <section class="hero">
+          <h1>Créez votre store parfait</h1>
+          <p>Visualisez, comparez et choisissez votre configuration en quelques minutes.</p>
+        </section>
+
+        <section class="modules">
+          <div class="module">
+            <span class="badge">Showroom</span>
+            <h4>Visualisation 3D</h4>
+            <p class="muted">Aperçu réaliste du rendu final chez vous.</p>
+            <div class="preview"></div>
+          </div>
+
+          <div class="module">
+            <span class="badge">Configurateur</span>
+            <h4>Choix matières</h4>
+            <p class="muted">Couleurs, toiles, finitions et options.</p>
+            <div class="preview"></div>
+          </div>
+
+          <div class="module">
+            <span class="badge">Devis</span>
+            <h4>Prix instantané</h4>
+            <p class="muted">Calcul clair avec options et TVA.</p>
+            <div class="preview"></div>
+          </div>
+        </section>
+
+        <div class="actions">
+          <button class="btn">Comparer les modèles</button>
+          <button class="btn primary">Continuer la configuration</button>
+        </div>
+      </main>
+
+      <!-- Droite -->
+      <aside class="panel">
+        <h3>Résumé</h3>
+        <p class="muted">Modèle, dimensions, options et prix TTC.</p>
+        <div style="margin-top:12px; padding:12px; border-radius:12px; background:#f8fafc;">
+          <div style="font-weight:600;">Küald 4200</div>
+          <div class="muted">Largeur 4m · Avancée 3m</div>
+          <div style="margin-top:10px; font-size:18px; font-weight:700;">2 490 € TTC</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</body>
+</html>
