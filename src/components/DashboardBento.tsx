@@ -279,6 +279,24 @@ export default function DashboardBento() {
         </div>
 
       </div>
+
+      {/* Footer avec liens légaux discrets */}
+      <div className="mt-6 pt-4 border-t border-white/10">
+        <div className="flex justify-center gap-4 text-xs text-white/40">
+          <a href="/mentions-legales" target="_blank" className="hover:text-white/70 transition">
+            Mentions légales
+          </a>
+          <span>•</span>
+          <a href="/cgv" target="_blank" className="hover:text-white/70 transition">
+            CGV
+          </a>
+          <span>•</span>
+          <a href="/politique-confidentialite" target="_blank" className="hover:text-white/70 transition">
+            Confidentialité
+          </a>
+        </div>
+        <p className="text-center text-xs text-white/30 mt-2">© 2026 Storal.fr - Tous droits réservés</p>
+      </div>
     </div>
   );
 }

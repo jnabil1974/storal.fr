@@ -31,7 +31,7 @@ function AssistantContent() {
   const [cart, setCart] = useState<Cart | null>(null);
 
   return (
-      <div className="min-h-screen text-white">
+      <div className="h-screen flex flex-col text-white">
         {/* Header Mode App - Simplifié */}
         <header className="sticky top-0 z-50 bg-[#0b1d3a]/90 backdrop-blur-xl border-b border-white/10">
           <div className="max-w-7xl mx-auto px-6 py-3">
@@ -63,8 +63,8 @@ function AssistantContent() {
         </header>
 
         {/* Main Content - Interface Application avec Split View */}
-        <main className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex gap-6 h-[calc(100vh-100px)] min-h-[600px]">
+        <main className="flex-1 max-w-7xl mx-auto px-6 py-6 overflow-hidden">
+          <div className="flex gap-6 h-full">
             
             {/* COLONNE GAUCHE : ChatAssistant (60%) */}
             <div className="w-[60%] bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-black/20 border border-white/20 overflow-hidden text-gray-900">
