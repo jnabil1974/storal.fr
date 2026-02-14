@@ -372,12 +372,12 @@ export default function HomePage() {
               <div
                 key={model.id}
                 onClick={() => handleQuickSuggestion(`Je veux configurer le modèle ${model.name}`)}
-                className="group bg-white border border-gray-100 p-5 rounded-3xl flex flex-col gap-5 cursor-pointer transition-all hover:shadow-[0_0_25px_rgba(37,99,235,0.25)] shadow-[0_0_15px_rgba(37,99,235,0.1)]"
+                className="group relative bg-white border border-gray-100 p-5 rounded-3xl flex flex-col gap-5 cursor-pointer transition-all hover:shadow-[0_0_25px_rgba(37,99,235,0.25)] shadow-[0_0_15px_rgba(37,99,235,0.1)]"
                 style={{ boxShadow: '0 0 15px rgba(37, 99, 235, 0.1)' }}
               >
-                {/* Badge promo */}
+                {/* Badge promo en haut à droite */}
                 {model.is_promo && (
-                  <div className="absolute top-3 right-3 z-10 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+                  <div className="absolute top-3 right-3 z-10 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-lg">
                     PROMO
                   </div>
                 )}
