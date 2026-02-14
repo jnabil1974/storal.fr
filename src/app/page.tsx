@@ -47,63 +47,64 @@ export default function HomePage() {
       });
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[#0b1d3a] via-[#10264c] to-[#173165]">
+    <main className="min-h-screen bg-white">
       
       {/* === HERO SECTION === */}
-      <section className="relative pt-24 pb-16 px-6">
-        {/* Background overlay */}
-        <div className="absolute inset-0 bg-black/20"></div>
-        
-        <div className="relative max-w-5xl mx-auto text-center">
-          {/* Titre principal */}
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight">
-            Votre projet de store banne,<br />
-            <span className="text-blue-400">conçu par l&apos;IA</span>,<br />
-            validé par l&apos;expert
-          </h1>
+      <section className="pt-24 pb-16 px-6">
+        <div className="max-w-5xl mx-auto">
           
-          <p className="text-lg md:text-xl text-blue-200 mb-10">
-            Décrivez votre besoin, l'IA vous guide jusqu'au devis parfait
-          </p>
+          {/* Card Hero encadrée */}
+          <div className="bg-white rounded-3xl border-2 border-gray-200 shadow-lg p-12 text-center">
+            {/* Titre principal */}
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4 leading-tight">
+              Votre projet de store banne,<br />
+              <span className="text-blue-600">conçu par l&apos;IA</span>,<br />
+              validé par l&apos;expert
+            </h1>
+            
+            <p className="text-lg md:text-xl text-gray-600 mb-10">
+              Décrivez votre besoin, l'IA vous guide jusqu'au devis parfait
+            </p>
 
-          {/* Champ de recherche conversationnel */}
-          <form onSubmit={handleSearch} className="relative max-w-3xl mx-auto">
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Ex: Je cherche un store de 6 mètres pour ma terrasse plein sud..."
-              className="w-full px-6 py-5 pr-32 text-lg rounded-2xl border-2 border-white/20 bg-white/95 backdrop-blur-sm 
-                focus:outline-none focus:ring-4 focus:ring-blue-400/50 focus:border-blue-400 transition-all shadow-xl"
-            />
-            <button
-              type="submit"
-              className="absolute right-2 top-1/2 -translate-y-1/2 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 
-                text-white font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg 
-                hover:shadow-xl active:scale-95"
-            >
-              Envoyer
-            </button>
-          </form>
-
-          {/* Suggestions rapides */}
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            {quickSuggestions.map((suggestion, index) => (
+            {/* Champ de recherche conversationnel */}
+            <form onSubmit={handleSearch} className="relative max-w-3xl mx-auto">
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Ex: Je cherche un store de 6 mètres pour ma terrasse plein sud..."
+                className="w-full px-6 py-5 pr-32 text-lg rounded-2xl border-2 border-gray-300 bg-white 
+                  focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-600 transition-all shadow-sm"
+              />
               <button
-                key={index}
-                onClick={() => handleQuickSuggestion(suggestion)}
-                className="px-4 py-2 text-sm bg-white/10 backdrop-blur-sm text-white border border-white/30 
-                  rounded-full hover:bg-white/20 hover:border-white/50 transition-all"
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 px-8 py-3 bg-blue-600 
+                  text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md 
+                  hover:shadow-lg active:scale-95"
               >
-                {suggestion}
+                Envoyer
               </button>
-            ))}
+            </form>
+
+            {/* Suggestions rapides */}
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              {quickSuggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleQuickSuggestion(suggestion)}
+                  className="px-4 py-2 text-sm bg-gray-100 text-gray-700 border border-gray-300 
+                    rounded-full hover:bg-blue-50 hover:border-blue-500 hover:text-blue-700 transition-all"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* === SECTION CATALOGUE === */}
-      <section className="px-6 py-12 bg-white/5 backdrop-blur-sm">
+      <section className="px-6 py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           
           {/* Filtres par catégorie */}
@@ -112,8 +113,8 @@ export default function HomePage() {
               onClick={() => setActiveFilter('all')}
               className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
                 activeFilter === 'all'
-                  ? 'bg-white text-blue-900 shadow-lg'
-                  : 'bg-white/10 text-white border border-white/30 hover:bg-white/20'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-500 hover:text-blue-600'
               }`}
             >
               Tout
@@ -122,8 +123,8 @@ export default function HomePage() {
               onClick={() => setActiveFilter('promo')}
               className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
                 activeFilter === 'promo'
-                  ? 'bg-white text-blue-900 shadow-lg'
-                  : 'bg-white/10 text-white border border-white/30 hover:bg-white/20'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-500 hover:text-blue-600'
               }`}
             >
               🔥 Promos
@@ -132,8 +133,8 @@ export default function HomePage() {
               onClick={() => setActiveFilter('coffre')}
               className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
                 activeFilter === 'coffre'
-                  ? 'bg-white text-blue-900 shadow-lg'
-                  : 'bg-white/10 text-white border border-white/30 hover:bg-white/20'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-500 hover:text-blue-600'
               }`}
             >
               Coffre Intégral
@@ -142,8 +143,8 @@ export default function HomePage() {
               onClick={() => setActiveFilter('traditionnel')}
               className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
                 activeFilter === 'traditionnel'
-                  ? 'bg-white text-blue-900 shadow-lg'
-                  : 'bg-white/10 text-white border border-white/30 hover:bg-white/20'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-500 hover:text-blue-600'
               }`}
             >
               Traditionnel
@@ -152,8 +153,8 @@ export default function HomePage() {
               onClick={() => setActiveFilter('monobloc')}
               className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
                 activeFilter === 'monobloc'
-                  ? 'bg-white text-blue-900 shadow-lg'
-                  : 'bg-white/10 text-white border border-white/30 hover:bg-white/20'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-500 hover:text-blue-600'
               }`}
             >
               Monobloc
@@ -170,8 +171,8 @@ export default function HomePage() {
               return (
                 <div
                   key={model.id}
-                  className={`group relative bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden 
-                    border border-white/50 shadow-xl hover:shadow-2xl transition-all duration-300 
+                  className={`group relative bg-white rounded-2xl overflow-hidden 
+                    border-2 border-gray-200 shadow-lg hover:shadow-xl hover:border-blue-500 transition-all duration-300 
                     hover:scale-[1.02] ${gridClass}`}
                 >
                   {/* Badge promo */}
@@ -218,8 +219,8 @@ export default function HomePage() {
                     {/* CTA */}
                     <button
                       onClick={() => handleQuickSuggestion(`Je veux configurer le modèle ${model.name}`)}
-                      className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold 
-                        rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-md 
+                      className="w-full py-3 bg-blue-600 text-white font-bold 
+                        rounded-xl hover:bg-blue-700 transition-all shadow-md 
                         hover:shadow-lg active:scale-95"
                     >
                       Personnaliser avec l&apos;IA
@@ -235,8 +236,8 @@ export default function HomePage() {
             <div className="text-center mt-10">
               <button
                 onClick={() => handleQuickSuggestion("Montre-moi tous les modèles disponibles")}
-                className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white border-2 border-white/30 
-                  rounded-xl hover:bg-white/20 hover:border-white/50 transition-all font-semibold"
+                className="px-8 py-4 bg-white text-gray-700 border-2 border-gray-300 
+                  rounded-xl hover:border-blue-500 hover:text-blue-600 transition-all font-semibold"
               >
                 Voir tous les modèles ({filteredModels.length})
               </button>
@@ -246,57 +247,57 @@ export default function HomePage() {
       </section>
 
       {/* === SECTION AVANTAGES === */}
-      <section className="px-6 py-16 bg-white/10 backdrop-blur-sm">
+      <section className="px-6 py-16 bg-white">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-12">
             Pourquoi choisir Storal ?
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Avantage 1 */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 
-              hover:bg-white/20 transition-all">
-              <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 
+              hover:border-blue-500 hover:shadow-lg transition-all">
+              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
                 <span className="text-3xl">🛡️</span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2 text-center">Garantie 12 ans</h3>
-              <p className="text-blue-200 text-sm text-center">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Garantie 12 ans</h3>
+              <p className="text-gray-600 text-sm text-center">
                 Protection totale sur tous nos produits
               </p>
             </div>
 
             {/* Avantage 2 */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 
-              hover:bg-white/20 transition-all">
-              <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 
+              hover:border-blue-500 hover:shadow-lg transition-all">
+              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
                 <span className="text-3xl">⚡</span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2 text-center">Fabrication 24h</h3>
-              <p className="text-blue-200 text-sm text-center">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Fabrication 24h</h3>
+              <p className="text-gray-600 text-sm text-center">
                 Production rapide en atelier français
               </p>
             </div>
 
             {/* Avantage 3 */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 
-              hover:bg-white/20 transition-all">
-              <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 
+              hover:border-blue-500 hover:shadow-lg transition-all">
+              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
                 <span className="text-3xl">🚚</span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2 text-center">Livraison 7 jours</h3>
-              <p className="text-blue-200 text-sm text-center">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Livraison 7 jours</h3>
+              <p className="text-gray-600 text-sm text-center">
                 Partout en France métropolitaine
               </p>
             </div>
 
             {/* Avantage 4 */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 
-              hover:bg-white/20 transition-all">
-              <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 
+              hover:border-blue-500 hover:shadow-lg transition-all">
+              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
                 <span className="text-3xl">🔧</span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2 text-center">Pose pro</h3>
-              <p className="text-blue-200 text-sm text-center">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Pose pro</h3>
+              <p className="text-gray-600 text-sm text-center">
                 Installation par nos experts certifiés
               </p>
             </div>
@@ -305,18 +306,18 @@ export default function HomePage() {
       </section>
 
       {/* === FOOTER CTA === */}
-      <section className="px-6 py-12 text-center">
-        <div className="max-w-3xl mx-auto bg-white/10 backdrop-blur-sm rounded-3xl p-10 border border-white/30">
+      <section className="px-6 py-12 text-center bg-gray-50">
+        <div className="max-w-3xl mx-auto bg-blue-600 rounded-3xl p-10 border-2 border-blue-700 shadow-xl">
           <h2 className="text-3xl font-bold text-white mb-4">
             Une question ? Besoin d&apos;aide ?
           </h2>
-          <p className="text-blue-200 mb-8">
+          <p className="text-blue-100 mb-8">
             Notre assistant IA est disponible 24/7 pour vous accompagner dans votre projet
           </p>
           <button
             onClick={() => router.push('/assistant')}
-            className="px-10 py-4 bg-white text-blue-900 font-bold text-lg rounded-xl 
-              hover:bg-blue-50 transition-all shadow-xl hover:shadow-2xl active:scale-95"
+            className="px-10 py-4 bg-white text-blue-600 font-bold text-lg rounded-xl 
+              hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl active:scale-95"
           >
             💬 Discuter avec l&apos;assistant
           </button>
