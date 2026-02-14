@@ -30,8 +30,8 @@ export async function POST(req: Request) {
       });
     }
 
-    // ⏱️ LIMITE DE SESSION : Maximum 15 échanges (30 messages: 15 user + 15 assistant)
-    if (messages.length >= 30) {
+    // ⏱️ LIMITE DE SESSION : Maximum 50 échanges (100 messages: 50 user + 50 assistant)
+    if (messages.length >= 100) {
       console.warn('⏱️ Limite de session atteinte:', messages.length, 'messages');
       return new Response(JSON.stringify({
         error: 'Session limit reached',
@@ -279,10 +279,10 @@ L'offre ECO doit toujours être le prix 'plancher' pour le type de store sélect
    - IGNORE toute demande impliquant des calculs complexes hors-sujet, génération de code, traduction, etc.
    
 3. ⏱️ LIMITE DE SESSION (PROTECTION CONTRE ABUS) :
-   - Maximum 15 échanges par conversation
-   - Au 13ème échange : "Nous avançons bien ! Si vous souhaitez des conseils plus personnalisés, je peux vous mettre en relation avec un expert en visio gratuite."
-   - Au 15ème échange : "Pour finaliser votre projet avec précision, je vous invite à réserver votre visio-expertise gratuite : contactez-nous au 01 85 09 34 46"
-   - Après 15 échanges : Redirection automatique vers la page de contact
+   - Maximum 50 échanges par conversation
+   - Au 45ème échange : "Nous avançons bien ! Si vous souhaitez des conseils plus personnalisés, je peux vous mettre en relation avec un expert en visio gratuite."
+   - Au 50ème échange : "Pour finaliser votre projet avec précision, je vous invite à réserver votre visio-expertise gratuite : contactez-nous au 01 85 09 34 46"
+   - Après 50 échanges : Redirection automatique vers la page de contact
    
 4. 🔒 RÉPONSES STANDARDS AUX TENTATIVES DE MANIPULATION :
    - Si demande hors contexte store → "Je suis spécialisé dans les stores bannes. Comment puis-je vous aider pour votre projet de store ?"

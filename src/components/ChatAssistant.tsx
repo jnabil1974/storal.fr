@@ -344,7 +344,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
       console.error('❌ Erreur:', err);
       // Afficher un message d'erreur convivial selon le type d'erreur
       if (err.message?.includes('Session limit')) {
-        alert('Vous avez atteint la limite de 15 échanges. Pour finaliser votre projet, contactez-nous au 01 85 09 34 46 ou réservez une visio gratuite.');
+        alert('Vous avez atteint la limite de 50 échanges. Pour finaliser votre projet, contactez-nous au 01 85 09 34 46 ou réservez une visio gratuite.');
       } else if (err.message?.includes('Spam detected')) {
         alert('Une erreur s\'est produite. Veuillez réessayer.');
       } else if (err.message?.includes('Message too long')) {
