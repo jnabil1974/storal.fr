@@ -78,35 +78,35 @@ export default function HomePage() {
           <nav className="hidden md:flex items-center gap-10">
             <Link 
               href="/" 
-              className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+              className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
             >
               Accueil
             </Link>
             
             <a 
               href="#products" 
-              className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+              className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
             >
               Produits
             </a>
             
             <Link 
               href="/assistant" 
-              className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+              className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
             >
               Assistant IA
             </Link>
             
             <Link 
               href="/about" 
-              className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+              className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
             >
               À Propos
             </Link>
             
             <Link 
               href="/contact" 
-              className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+              className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
             >
               Contact
             </Link>
@@ -144,35 +144,35 @@ export default function HomePage() {
               <Link 
                 href="/" 
                 onClick={() => setIsMenuOpen(false)}
-                className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+                className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
               >
                 Accueil
               </Link>
               <a 
                 href="#products" 
                 onClick={() => setIsMenuOpen(false)}
-                className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+                className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
               >
                 Produits
               </a>
               <Link 
                 href="/assistant" 
                 onClick={() => setIsMenuOpen(false)}
-                className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+                className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
               >
                 Assistant IA
               </Link>
               <Link 
                 href="/about" 
                 onClick={() => setIsMenuOpen(false)}
-                className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+                className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
               >
                 À Propos
               </Link>
               <Link 
                 href="/contact" 
                 onClick={() => setIsMenuOpen(false)}
-                className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider"
+                className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
               >
                 Contact
               </Link>

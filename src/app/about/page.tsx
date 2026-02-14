@@ -21,7 +21,7 @@ export default function AboutPage() {
             </div>
             <h1 className="text-2xl font-black tracking-tight text-[#2c3e50] uppercase">Storal</h1>
           </Link>
-          <Link href="/" className="text-sm font-bold hover:text-blue-600 transition-colors uppercase tracking-wider">
+          <Link href="/" className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider">
             ← Retour
           </Link>
         </div>
