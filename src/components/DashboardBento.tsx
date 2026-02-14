@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react';
 export default function DashboardBento() {
   const { showroomState } = useShowroom();
   const [highlightedTile, setHighlightedTile] = useState<string | null>(null);
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [overlayType, setOverlayType] = useState<'color' | 'fabric' | null>(null);
 
   // Déterminer quelle tuile illuminer selon le contexte
   useEffect(() => {
@@ -30,6 +32,28 @@ export default function DashboardBento() {
     }
   }, [showroomState]);
 
+  // Gérer l'ouverture/fermeture de l'overlay selon l'outil actif
+  useEffect(() => {
+    if (!showroomState.activeTool) {
+      setShowOverlay(false);
+      setOverlayType(null);
+      return;
+    }
+
+    const toolName = showroomState.activeTool.toolName;
+    
+    if (toolName === 'open_color_selector') {
+      setOverlayType('color');
+      setShowOverlay(true);
+    } else if (toolName === 'open_fabric_selector') {
+      setOverlayType('fabric');
+      setShowOverlay(true);
+    } else {
+      setShowOverlay(false);
+      setOverlayType(null);
+    }
+  }, [showroomState.activeTool]);
+
   // Récupérer les données sélectionnées
   const selectedModel = showroomState.selectedModelId 
     ? STORE_MODELS[showroomState.selectedModelId] 
@@ -52,8 +76,125 @@ export default function DashboardBento() {
     }`;
   };
 
+  // Fonction pour gérer la sélection de couleur
+  const handleColorSelect = (colorId: string, colorName: string) => {
+    if (showroomState.onSelectColor) {
+      showroomState.onSelectColor(colorId, colorName);
+    }
+    setShowOverlay(false);
+  };
+
+  // Fonction pour gérer la sélection de toile
+  const handleFabricSelect = (fabricId: string, fabricName: string) => {
+    if (showroomState.onSelectFabric) {
+      showroomState.onSelectFabric(fabricId, fabricName);
+    }
+    setShowOverlay(false);
+  };
+
+  // Rendu du sélecteur de couleurs
+  const renderColorSelector = () => {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-black text-gray-900">
+            🎨 Choisissez votre Couleur d'Armature
+          </h3>
+          <button
+            onClick={() => setShowOverlay(false)}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[60vh] overflow-y-auto">
+          {FRAME_COLORS.map((color) => {
+            const isSelected = showroomState.selectedColorId === color.id;
+            return (
+              <button
+                key={color.id}
+                onClick={() => handleColorSelect(color.id, color.name)}
+                className={`p-4 rounded-xl border-2 transition-all text-center hover:scale-105 ${
+                  isSelected 
+                    ? 'border-4 border-green-500 ring-2 ring-green-300 shadow-lg' 
+                    : 'border-gray-300 hover:border-blue-400 hover:shadow-md'
+                }`}
+              >
+                <div 
+                  className="w-full h-20 rounded-lg mb-2 border-2 border-gray-400"
+                  style={{ backgroundColor: color.hex }}
+                  title={color.hex}
+                />
+                <p className="text-sm font-bold text-gray-900">{color.name}</p>
+                {color.price > 0 && <p className="text-xs text-orange-600 font-semibold">+{color.price}€</p>}
+                {isSelected && <p className="text-xs text-green-600 font-bold mt-1">✅ Sélectionné</p>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // Rendu du sélecteur de toiles
+  const renderFabricSelector = () => {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-black text-gray-900">
+            🧵 Choisissez votre Toile
+          </h3>
+          <button
+            onClick={() => setShowOverlay(false)}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto">
+          {FABRICS.map((fabric) => {
+            const isSelected = showroomState.selectedFabricId === fabric.id;
+            return (
+              <button
+                key={fabric.id}
+                onClick={() => handleFabricSelect(fabric.id, fabric.name)}
+                className={`p-4 rounded-xl border-2 transition-all text-left hover:scale-105 ${
+                  isSelected 
+                    ? 'border-4 border-green-500 ring-2 ring-green-300 shadow-lg' 
+                    : 'border-gray-300 hover:border-blue-400 hover:shadow-md'
+                }`}
+              >
+                <div className="w-full h-24 rounded-lg mb-3 bg-gradient-to-br from-gray-100 to-gray-200 border border-gray-400 overflow-hidden flex items-center justify-center">
+                  <span className="text-xs font-bold text-gray-600">{fabric.category.toUpperCase()}</span>
+                </div>
+                <p className="text-sm font-bold text-gray-900 mb-1">{fabric.ref}</p>
+                <p className="text-xs text-gray-700">{fabric.name}</p>
+                {fabric.price > 0 && <p className="text-xs text-blue-600 font-bold mt-1">+{fabric.price}€</p>}
+                {isSelected && <p className="text-xs text-green-600 font-bold mt-1">✅ Sélectionné</p>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto p-6 relative">
+      {/* Overlay Modal pour les sélecteurs */}
+      {showOverlay && (
+        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-slideUp">
+            {overlayType === 'color' && renderColorSelector()}
+            {overlayType === 'fabric' && renderFabricSelector()}
+          </div>
+        </div>
+      )}
+
       {/* Header Simplifié */}
       <div className="mb-6">
         <h2 className="text-2xl font-black text-[#2c3e50] mb-2">Dashboard Projet</h2>
