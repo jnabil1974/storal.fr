@@ -31,13 +31,24 @@ function AssistantContent() {
   const [cart, setCart] = useState<Cart | null>(null);
 
   return (
-      <div className="h-screen flex flex-col text-white">
+      <div 
+        className="min-h-screen flex flex-col text-white relative bg-[#f5f7fa]"
+        style={{
+          backgroundImage: 'url("/images/hero-terrasse.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Gradient Overlay - Style AstroTalky */}
+        <div className="absolute inset-0 bg-[#2c3e50]/40 mix-blend-multiply pointer-events-none" />
+        <div className="absolute inset-0 hero-gradient pointer-events-none" />
+        
         {/* Main Content - Interface Application avec Split View */}
-        <main className="flex-1 max-w-7xl mx-auto px-6 py-6 overflow-hidden w-full">
-          <div className="flex gap-6 h-full">
+        <main className="relative z-10 flex-1 max-w-7xl mx-auto px-6 py-8 w-full">
+          <div className="flex gap-8 h-[calc(100vh-4rem)]">
             
             {/* COLONNE GAUCHE : ChatAssistant (60%) */}
-            <div className="w-[60%] bg-white/95 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-black/20 border border-white/20 overflow-hidden text-gray-900">
+            <div className="w-[60%] bg-white/95 backdrop-blur-xl rounded-3xl shadow-lg border border-gray-100 overflow-hidden text-[#2f2e41] celestial-glow transition-all">
               <ChatAssistant 
                 cart={cart} 
                 setCart={setCart}
@@ -45,7 +56,7 @@ function AssistantContent() {
             </div>
 
             {/* COLONNE DROITE : Dashboard Bento Dynamique (40%) */}
-            <div className="w-[40%] bg-transparent rounded-3xl overflow-hidden">
+            <div className="w-[40%] rounded-3xl overflow-hidden">
               <DashboardBento />
             </div>
 
