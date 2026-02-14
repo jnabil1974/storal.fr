@@ -990,9 +990,9 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   };
 
   return (
-    <div className="flex h-full bg-white gap-0">
+    <div className="flex flex-col h-full bg-white">
       {/* 🔵 CHAT UNIQUEMENT - Showroom déplacé dans page.tsx via ShowroomContext */}
-      <div className="w-full flex flex-col h-full bg-white">
+      <div className="flex-1 flex flex-col h-full bg-white">
         {isModalOpen && <ProductModal model={selectedModelForModal} onClose={() => setIsModalOpen(false)} />}
         
         <header className="bg-gray-900 text-white p-4 sticky top-0 z-10 text-center">
