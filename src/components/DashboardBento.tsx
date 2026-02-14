@@ -56,8 +56,8 @@ export default function DashboardBento() {
     <div className="h-full overflow-y-auto p-6">
       {/* Header Simplifié */}
       <div className="mb-6">
-        <h2 className="text-2xl font-black text-white mb-2">Dashboard Projet</h2>
-        <p className="text-white/70 text-sm">Suivi en temps réel de votre configuration</p>
+        <h2 className="text-2xl font-black text-[#2c3e50] mb-2">Dashboard Projet</h2>
+        <p className="text-gray-600 text-sm">Suivi en temps réel de votre configuration</p>
       </div>
 
       {/* Grille Bento */}
@@ -281,21 +281,21 @@ export default function DashboardBento() {
       </div>
 
       {/* Footer avec liens légaux discrets */}
-      <div className="mt-6 pt-4 border-t border-white/10">
-        <div className="flex justify-center gap-4 text-xs text-white/40">
-          <a href="/mentions-legales" target="_blank" className="hover:text-white/70 transition">
+      <div className="mt-6 pt-4 border-t border-gray-200">
+        <div className="flex justify-center gap-4 text-xs text-gray-500">
+          <a href="/mentions-legales" target="_blank" className="hover:text-gray-700 transition">
             Mentions légales
           </a>
           <span>•</span>
-          <a href="/cgv" target="_blank" className="hover:text-white/70 transition">
+          <a href="/cgv" target="_blank" className="hover:text-gray-700 transition">
             CGV
           </a>
           <span>•</span>
-          <a href="/politique-confidentialite" target="_blank" className="hover:text-white/70 transition">
+          <a href="/politique-confidentialite" target="_blank" className="hover:text-gray-700 transition">
             Confidentialité
           </a>
         </div>
-        <p className="text-center text-xs text-white/30 mt-2">© 2026 Storal.fr - Tous droits réservés</p>
+        <p className="text-center text-xs text-gray-400 mt-2">© 2026 Storal.fr - Tous droits réservés</p>
       </div>
     </div>
   );
