@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AstroTalky |  AI Powered Free Astrology Platform </title>
+
+<link rel="icon" type="image/png" href="https://astro.ftafat.in/upload/admin/1763632972_ChatGPT Image Nov 20, 2025, 03_30_41 PM (2).png">
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ff7024",
+                        "background-light": "#f5f7fa",
+                        "background-dark": "#0e1c2f",
+                        "cosmic-charcoal": "#2f2e41",
+                        "nebula-indigo": "#2c3e50",
+                        "starlight-bronze": "#ddc698",
+                    },
+                    fontFamily: {
+                        "display": ["Epilogue", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .celestial-glow {
+            box-shadow: 0 0 15px rgba(255, 112, 36, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        .celestial-glow:hover {
+            box-shadow: 0 0 25px rgba(255, 112, 36, 0.25);
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(14, 28, 47, 0.85) 0%, rgba(44, 62, 80, 0.7) 100%);
+        }
+    </style>
+
+    </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-cosmic-charcoal dark:text-white transition-colors duration-300">
+
+<header class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white">
+                <span class="material-symbols-outlined text-2xl">auto_awesome</span>
+            </div>
+            <a href="https://astro.ftafat.in/index">
+                <h1 class="text-2xl font-black tracking-tight text-nebula-indigo dark:text-white uppercase">AstroTalky</h1>
+            </a>
+
+        </div>
+        <nav class="hidden md:flex items-center gap-10">
+            <a class="text-sm font-bold hover:text-primary transition-colors uppercase tracking-wider" href="https://astro.ftafat.in/index">Home</a>
+            <div class="relative group">
+                <a class="text-sm font-bold hover:text-primary transition-colors uppercase tracking-wider flex items-center gap-1" href="#">
+                    Services
+                    <span class="material-symbols-outlined text-lg">expand_more</span>
+                </a>
+                <div class="absolute top-full left-0 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                    <div class="w-48 bg-white dark:bg-background-dark border border-gray-200 dark:border-gray-800 rounded-xl shadow-2xl py-2 overflow-hidden">
+                        <a  href="https://astro.ftafat.in/index#startChat"  class="block px-4 py-2.5 text-[12px] font-bold hover:text-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors uppercase tracking-widest">Ask Astrologer</a>
+                        <a href="https://astro.ftafat.in/kundali" class="block px-4 py-2.5 text-[12px] font-bold hover:text-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors uppercase tracking-widest">Make Kundali</a>
+                        <a href="https://astro.ftafat.in/predication" class="block px-4 py-2.5 text-[12px] font-bold hover:text-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors uppercase tracking-widest">Predictions</a>
+
+                        <a href="https://astro.ftafat.in/horoscope" class="block px-4 py-2.5 text-[12px] font-bold hover:text-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors uppercase tracking-widest">Horoscope</a>
+                        <a href="https://astro.ftafat.in/match" class="block px-4 py-2.5 text-[12px] font-bold hover:text-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors uppercase tracking-widest">Match Making</a>
+
+                        <a href="https://astro.ftafat.in/baby" class="block px-4 py-2.5 text-[12px] font-bold hover:text-primary hover:bg-gray-50 dark:hover:bg-white/5 transition-colors uppercase tracking-widest">Baby Name</a>
+                    </div>
+                </div>
+            </div>
+            <a class="text-sm font-bold hover:text-primary transition-colors uppercase tracking-wider" href="https://astro.ftafat.in/about">About Us</a>
+            <a class="text-sm font-bold hover:text-primary transition-colors uppercase tracking-wider" href="https://astro.ftafat.in/contact">Contact Us</a>
+            <a class="text-sm font-bold hover:text-primary transition-colors uppercase tracking-wider"  href="https://astro.ftafat.in/index#mobileApp ">Mobile App</a>
+        </nav>
+        <div class="flex items-center gap-4">
+            <a href="#startChat" class="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider hover:brightness-110 transition-all celestial-glow">
+                Start Chat
+            </a>
+
+                        <a href="javascript::void()" onclick="openLoginModal()" class="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider hover:brightness-110 transition-all">Login</a>
+                    </div>
+    </div>
+</header>`
+<main class="max-w-7xl mx-auto px-6 py-8">
+
+<p style="color:red;padding:20px 20px" align="center">Usage in the demo is limited to a specific time period. Add or Remove function is not working in demo. </p>
+
+
+
+<section class="relative mb-16">
+<div class="relative overflow-hidden rounded-3xl min-h-[520px] flex items-center justify-center p-8 hero-gradient" data-alt="Mystical space background with subtle nebula clouds" style="background-image: url('https://astro.ftafat.in/upload/home.png'); background-size: cover; background-position: center;">
+<div class="absolute inset-0 bg-nebula-indigo/40 mix-blend-multiply"></div>
+<div class="relative z-10 max-w-2xl text-center space-y-8">
+<div class="space-y-4">
+<span class="inline-block px-4 py-1.5 bg-primary/20 text-primary rounded-full text-xs font-black uppercase tracking-widest border border-primary/30">Intelligence beyond the stars</span>
+<h2 class="text-5xl md:text-7xl font-black text-white leading-tight">The Future <br/>of Fate</h2>
+<p class="text-lg text-white/80 font-medium">Experience personalized AI-driven horoscopes and connect with world-class masters of the cosmic arts.</p>
+</div>
+<div class="flex flex-col sm:flex-row gap-2 bg-white/10 backdrop-blur-xl p-2 rounded-2xl border border-white/20">
+<div class="flex-1 flex items-center px-4 gap-3 text-white">
+<span class="material-symbols-outlined opacity-60">search_spark</span>
+<input class="bg-transparent border-none focus:ring-0 text-white placeholder:text-white/50 w-full text-lg py-4" placeholder="Ask the universe a specific question..." type="text" readonly/>
+</div>
+<a class="bg-primary hover:bg-primary/90 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all" href="#startChat">
+                           Start Chat</a>
+</div>
+<div class="flex justify-center gap-6 text-white/60 text-sm font-bold uppercase tracking-widest">
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> 1M+ Readings</div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> 24/7 Experts</div>
+<div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">check_circle</span> AI-Powered</div>
+</div>
+</div>
+</div>
+</section>
+<section class="space-y-8" id="startChat">
+<div class="space-y-6 border-b border-gray-200 dark:border-gray-800 pb-8">
+<div class="space-y-2">
+<h3 class="text-3xl font-black text-nebula-indigo dark:text-white">Expert Astrologers</h3>
+<p class="text-gray-500 dark:text-gray-400">Hand-picked professionals for your spiritual journey. </p>
+</div>
+
+    <!-- Chips/Filters -->
+    <div class="flex overflow-x-auto gap-8 pb-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+        <div class="category-chip flex flex-col items-center gap-3 shrink-0 cursor-pointer group active mt-4" data-cate-id="all" style="margin-left: 20px;">
+            <div class="chip-container w-28 h-28 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/20 transition-all group-hover:scale-110">
+                <span class="material-symbols-outlined text-4xl">all_inclusive</span>
+            </div>
+            <span class="chip-text text-sm font-black text-nebula-indigo dark:text-white uppercase tracking-wider">All</span>
+        </div>
+                <div class="category-chip flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4" data-cate-id="7431763637826490">
+            <div class="chip-container w-28 h-28 rounded-full border-2 border-transparent transition-all p-1">
+                <img src="https://astro.ftafat.in/upload/category/1764760978327.jpg" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-700 shadow-sm transition-all group-hover:scale-105" alt="Love">
+            </div>
+            <span class="chip-text text-sm font-black text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors uppercase tracking-wider">Love</span>
+        </div>
+                <div class="category-chip flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4" data-cate-id="4151763637840171">
+            <div class="chip-container w-28 h-28 rounded-full border-2 border-transparent transition-all p-1">
+                <img src="https://astro.ftafat.in/upload/category/1764761217219.jpg" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-700 shadow-sm transition-all group-hover:scale-105" alt="Career">
+            </div>
+            <span class="chip-text text-sm font-black text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors uppercase tracking-wider">Career</span>
+        </div>
+                <div class="category-chip flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4" data-cate-id="1321763637834857">
+            <div class="chip-container w-28 h-28 rounded-full border-2 border-transparent transition-all p-1">
+                <img src="https://astro.ftafat.in/upload/category/1764761043526.jpg" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-700 shadow-sm transition-all group-hover:scale-105" alt="Life Coach">
+            </div>
+            <span class="chip-text text-sm font-black text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors uppercase tracking-wider">Life Coach</span>
+        </div>
+                <div class="category-chip flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4" data-cate-id="6041763637836620">
+            <div class="chip-container w-28 h-28 rounded-full border-2 border-transparent transition-all p-1">
+                <img src="https://astro.ftafat.in/upload/category/1764761088520.jpg" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-700 shadow-sm transition-all group-hover:scale-105" alt="Health">
+            </div>
+            <span class="chip-text text-sm font-black text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors uppercase tracking-wider">Health</span>
+        </div>
+                <div class="category-chip flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4" data-cate-id="2041763637838502">
+            <div class="chip-container w-28 h-28 rounded-full border-2 border-transparent transition-all p-1">
+                <img src="https://astro.ftafat.in/upload/category/1764761124430.jpg" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-700 shadow-sm transition-all group-hover:scale-105" alt="Marriage">
+            </div>
+            <span class="chip-text text-sm font-black text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors uppercase tracking-wider">Marriage</span>
+        </div>
+                <div class="category-chip flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4" data-cate-id="8621763637846196">
+            <div class="chip-container w-28 h-28 rounded-full border-2 border-transparent transition-all p-1">
+                <img src="https://astro.ftafat.in/upload/category/1764761349619.jpg" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-700 shadow-sm transition-all group-hover:scale-105" alt="Wealth">
+            </div>
+            <span class="chip-text text-sm font-black text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors uppercase tracking-wider">Wealth</span>
+        </div>
+                <div class="category-chip flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4" data-cate-id="1801763637847133">
+            <div class="chip-container w-28 h-28 rounded-full border-2 border-transparent transition-all p-1">
+                <img src="https://astro.ftafat.in/upload/category/1764761395440.jpg" class="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-700 shadow-sm transition-all group-hover:scale-105" alt="General">
+            </div>
+            <span class="chip-text text-sm font-black text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors uppercase tracking-wider">General</span>
+        </div>
+            </div>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;4151763637840171&quot;,&quot;6041763637836620&quot;,&quot;2041763637838502&quot;,&quot;8621763637846196&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="9941764758966644">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Munish Sharma" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758966660.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Munish Sharma </h4>
+<p class="text-sm text-primary font-bold">Vedic Astrology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">553 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.15<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;4151763637840171&quot;,&quot;6041763637836620&quot;,&quot;2041763637838502&quot;,&quot;8621763637846196&quot;]" 
+     data-astro-id="4871764758918769">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Sonal Bhardwaj" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758918239.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Sonal Bhardwaj </h4>
+<p class="text-sm text-primary font-bold">Numerology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">661 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.13<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;4151763637840171&quot;,&quot;6041763637836620&quot;,&quot;2041763637838502&quot;]" 
+     data-astro-id="7951764758859779">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Divya Agarwal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758859661.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Divya Agarwal </h4>
+<p class="text-sm text-primary font-bold">Numerology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">682 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.20<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;4151763637840171&quot;,&quot;6041763637836620&quot;,&quot;2041763637838502&quot;]" 
+     data-astro-id="8161764758859751">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Divya Agarwal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758859451.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Divya Agarwal </h4>
+<p class="text-sm text-primary font-bold">Numerology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">568 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.25<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;4151763637840171&quot;,&quot;6041763637836620&quot;,&quot;2041763637838502&quot;]" 
+     data-astro-id="7011764758829423">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Anjali Tripathi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758829247.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Anjali Tripathi </h4>
+<p class="text-sm text-primary font-bold">Vedic Astrology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">456 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.25<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;7431763637826490&quot;,&quot;4151763637840171&quot;,&quot;6041763637836620&quot;,&quot;2041763637838502&quot;,&quot;8621763637846196&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="6121764758774311">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Meera Vyas" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758774463.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Meera Vyas </h4>
+<p class="text-sm text-primary font-bold">Numerology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">872 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.23<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;6041763637836620&quot;,&quot;2041763637838502&quot;,&quot;4151763637840171&quot;,&quot;8621763637846196&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="1981764758731496">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Prateek Joshi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758731432.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Prateek Joshi </h4>
+<p class="text-sm text-primary font-bold"></p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">888 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.5<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;2041763637838502&quot;,&quot;4151763637840171&quot;,&quot;8621763637846196&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="6571764758689257">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Manish Sharma" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758689535.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Manish Sharma </h4>
+<p class="text-sm text-primary font-bold">Numerology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">543 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.5<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;6041763637836620&quot;,&quot;2041763637838502&quot;,&quot;4151763637840171&quot;,&quot;8621763637846196&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="1371764758659393">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Vikram Singh" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758659282.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Vikram Singh </h4>
+<p class="text-sm text-primary font-bold">Vedic Astrology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">871 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.5<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;6041763637836620&quot;,&quot;2041763637838502&quot;,&quot;8621763637846196&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="7471764758617585">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Ashwin Chaturvedi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758617247.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Ashwin Chaturvedi </h4>
+<p class="text-sm text-primary font-bold">Numerology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">872 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.18<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;6041763637836620&quot;,&quot;2041763637838502&quot;,&quot;4151763637840171&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="6241764758571997">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Rameshwar Dixit" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758571606.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Rameshwar Dixit </h4>
+<p class="text-sm text-primary font-bold">Vedic Astrology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">333 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.15<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;7431763637826490&quot;,&quot;1321763637834857&quot;,&quot;6041763637836620&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="4521764758010691">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Siddharth Bhardwaj" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764758010454.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Siddharth Bhardwaj </h4>
+<p class="text-sm text-primary font-bold">Numerology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">666 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.10<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;7431763637826490&quot;,&quot;1321763637834857&quot;,&quot;6041763637836620&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="5941764757983642">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Harshvardhan Mehta" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764757983237.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Harshvardhan Mehta </h4>
+<p class="text-sm text-primary font-bold">Vedic Astrology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">555 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.20<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;7431763637826490&quot;,&quot;1321763637834857&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="8771764757948480">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Rishika Vedant" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764757948532.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Rishika Vedant </h4>
+<p class="text-sm text-primary font-bold">Numerology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">871 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.22<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;7431763637826490&quot;,&quot;1321763637834857&quot;,&quot;8621763637846196&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="2951764757666986">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Aditya Tripathi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764757666448.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Aditya Tripathi </h4>
+<p class="text-sm text-primary font-bold">Numerology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">543 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.22<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;7431763637826490&quot;,&quot;4151763637840171&quot;,&quot;1321763637834857&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="8441764757638178">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Parthiv Joshi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764757638640.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Parthiv Joshi </h4>
+<p class="text-sm text-primary font-bold">Vedic Astrology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">666 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.22<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;7431763637826490&quot;,&quot;1321763637834857&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="5741764757481748">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Viveka Chaturvedi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764757481573.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Viveka Chaturvedi </h4>
+<p class="text-sm text-primary font-bold">Numerology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">244 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.15<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;7431763637826490&quot;,&quot;1321763637834857&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="7471764757448853">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Anant Kashyap" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764757448304.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Anant Kashyap </h4>
+<p class="text-sm text-primary font-bold">Vedic Astrology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">876 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.22<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;7431763637826490&quot;,&quot;1321763637834857&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="6981764757420394">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Jyoti Kumari Sharma" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764757420401.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Jyoti Kumari Sharma </h4>
+<p class="text-sm text-primary font-bold">Vedic Astrology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">655 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.12<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;7431763637826490&quot;,&quot;1321763637834857&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="9681764757371476">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Nikhil Agarwal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764757371382.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Nikhil Agarwal </h4>
+<p class="text-sm text-primary font-bold">Numerology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">871 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.20<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+<div class="astrologer-card group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-3xl celestial-glow flex flex-col gap-5 cursor-pointer " 
+     data-categories="[&quot;7431763637826490&quot;,&quot;1321763637834857&quot;,&quot;1801763637847133&quot;]" 
+     data-astro-id="1241764757344494">
+<div class="relative w-full aspect-square overflow-hidden rounded-2xl">
+<img alt="Raghunath Vyas" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Portrait of a friendly male Vedic astrologer" src="https://astro.ftafat.in/upload/astrologer/1764757344463.jpg"/>
+<div class="absolute top-3 right-3 bg-green-500 w-3 h-3 rounded-full border-2 border-white ring-4 ring-green-500/20"></div>
+<div class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-nebula-indigo">
+Online</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-lg font-black dark:text-white">Raghunath Vyas </h4>
+<p class="text-sm text-primary font-bold">Vedic Astrology</p>
+</div>
+<div class="flex items-center gap-1 text-starlight-bronze">
+<span class="text-sm font-black" style="font-size: 10px;">1010 orders</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
+<div class="text-lg font-black text-nebula-indigo dark:text-white">
+Rs.11<span class="text-xs text-gray-400 font-normal">/min</span>
+</div>
+<button class="bg-nebula-indigo dark:bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-lg">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+
+
+</div>
+</section>
+
+<!-- Login Modal -->
+<div id="loginModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-gray-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div class="p-8 space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-2xl font-black text-nebula-indigo dark:text-white">Login to Continue</h3>
+                <button onclick="closeLoginModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <p class="text-gray-500 dark:text-gray-400">Please enter your mobile number to connect with our expert astrologers.</p>
+            
+            <form id="loginForm" class="space-y-4">
+                <input type="hidden" name="_token" value="PK5Z7kouqA9Cp8fXQMJQI4whiwsqrvK1CcvJQHQE" autocomplete="off">                <input type="hidden" name="is_web" value="1">
+                <div class="flex gap-3">
+                    <div class="w-32">
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider">Code</label>
+                        <select name="country" class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-3.5 text-sm font-bold focus:ring-2 focus:ring-primary appearance-none">
+                                                            <option value="93" >+93</option>
+                                                            <option value="355" >+355</option>
+                                                            <option value="213" >+213</option>
+                                                            <option value="376" >+376</option>
+                                                            <option value="244" >+244</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="54" >+54</option>
+                                                            <option value="374" >+374</option>
+                                                            <option value="61" >+61</option>
+                                                            <option value="43" >+43</option>
+                                                            <option value="994" >+994</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="973" >+973</option>
+                                                            <option value="880" >+880</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="375" >+375</option>
+                                                            <option value="32" >+32</option>
+                                                            <option value="501" >+501</option>
+                                                            <option value="229" >+229</option>
+                                                            <option value="975" >+975</option>
+                                                            <option value="591" >+591</option>
+                                                            <option value="387" >+387</option>
+                                                            <option value="267" >+267</option>
+                                                            <option value="55" >+55</option>
+                                                            <option value="673" >+673</option>
+                                                            <option value="359" >+359</option>
+                                                            <option value="226" >+226</option>
+                                                            <option value="257" >+257</option>
+                                                            <option value="855" >+855</option>
+                                                            <option value="237" >+237</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="238" >+238</option>
+                                                            <option value="236" >+236</option>
+                                                            <option value="235" >+235</option>
+                                                            <option value="56" >+56</option>
+                                                            <option value="86" >+86</option>
+                                                            <option value="57" >+57</option>
+                                                            <option value="269" >+269</option>
+                                                            <option value="242" >+242</option>
+                                                            <option value="506" >+506</option>
+                                                            <option value="385" >+385</option>
+                                                            <option value="53" >+53</option>
+                                                            <option value="357" >+357</option>
+                                                            <option value="420" >+420</option>
+                                                            <option value="45" >+45</option>
+                                                            <option value="253" >+253</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="593" >+593</option>
+                                                            <option value="20" >+20</option>
+                                                            <option value="503" >+503</option>
+                                                            <option value="240" >+240</option>
+                                                            <option value="291" >+291</option>
+                                                            <option value="372" >+372</option>
+                                                            <option value="251" >+251</option>
+                                                            <option value="679" >+679</option>
+                                                            <option value="358" >+358</option>
+                                                            <option value="33" >+33</option>
+                                                            <option value="241" >+241</option>
+                                                            <option value="220" >+220</option>
+                                                            <option value="995" >+995</option>
+                                                            <option value="49" >+49</option>
+                                                            <option value="233" >+233</option>
+                                                            <option value="30" >+30</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="502" >+502</option>
+                                                            <option value="224" >+224</option>
+                                                            <option value="245" >+245</option>
+                                                            <option value="592" >+592</option>
+                                                            <option value="509" >+509</option>
+                                                            <option value="504" >+504</option>
+                                                            <option value="36" >+36</option>
+                                                            <option value="354" >+354</option>
+                                                            <option value="91" selected>+91</option>
+                                                            <option value="62" >+62</option>
+                                                            <option value="98" >+98</option>
+                                                            <option value="964" >+964</option>
+                                                            <option value="353" >+353</option>
+                                                            <option value="972" >+972</option>
+                                                            <option value="39" >+39</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="81" >+81</option>
+                                                            <option value="962" >+962</option>
+                                                            <option value="7" >+7</option>
+                                                            <option value="254" >+254</option>
+                                                            <option value="686" >+686</option>
+                                                            <option value="965" >+965</option>
+                                                            <option value="996" >+996</option>
+                                                            <option value="856" >+856</option>
+                                                            <option value="371" >+371</option>
+                                                            <option value="961" >+961</option>
+                                                            <option value="266" >+266</option>
+                                                            <option value="231" >+231</option>
+                                                            <option value="218" >+218</option>
+                                                            <option value="423" >+423</option>
+                                                            <option value="370" >+370</option>
+                                                            <option value="352" >+352</option>
+                                                            <option value="261" >+261</option>
+                                                            <option value="265" >+265</option>
+                                                            <option value="60" >+60</option>
+                                                            <option value="960" >+960</option>
+                                                            <option value="223" >+223</option>
+                                                            <option value="356" >+356</option>
+                                                            <option value="692" >+692</option>
+                                                            <option value="222" >+222</option>
+                                                            <option value="230" >+230</option>
+                                                            <option value="52" >+52</option>
+                                                            <option value="691" >+691</option>
+                                                            <option value="373" >+373</option>
+                                                            <option value="377" >+377</option>
+                                                            <option value="976" >+976</option>
+                                                            <option value="382" >+382</option>
+                                                            <option value="212" >+212</option>
+                                                            <option value="258" >+258</option>
+                                                            <option value="95" >+95</option>
+                                                            <option value="264" >+264</option>
+                                                            <option value="674" >+674</option>
+                                                            <option value="977" >+977</option>
+                                                            <option value="31" >+31</option>
+                                                            <option value="64" >+64</option>
+                                                            <option value="505" >+505</option>
+                                                            <option value="227" >+227</option>
+                                                            <option value="234" >+234</option>
+                                                            <option value="850" >+850</option>
+                                                            <option value="389" >+389</option>
+                                                            <option value="47" >+47</option>
+                                                            <option value="968" >+968</option>
+                                                            <option value="92" >+92</option>
+                                                            <option value="680" >+680</option>
+                                                            <option value="507" >+507</option>
+                                                            <option value="675" >+675</option>
+                                                            <option value="595" >+595</option>
+                                                            <option value="51" >+51</option>
+                                                            <option value="63" >+63</option>
+                                                            <option value="48" >+48</option>
+                                                            <option value="351" >+351</option>
+                                                            <option value="974" >+974</option>
+                                                            <option value="40" >+40</option>
+                                                            <option value="7" >+7</option>
+                                                            <option value="250" >+250</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="685" >+685</option>
+                                                            <option value="378" >+378</option>
+                                                            <option value="966" >+966</option>
+                                                            <option value="221" >+221</option>
+                                                            <option value="381" >+381</option>
+                                                            <option value="248" >+248</option>
+                                                            <option value="232" >+232</option>
+                                                            <option value="65" >+65</option>
+                                                            <option value="421" >+421</option>
+                                                            <option value="386" >+386</option>
+                                                            <option value="677" >+677</option>
+                                                            <option value="252" >+252</option>
+                                                            <option value="27" >+27</option>
+                                                            <option value="82" >+82</option>
+                                                            <option value="34" >+34</option>
+                                                            <option value="94" >+94</option>
+                                                            <option value="249" >+249</option>
+                                                            <option value="597" >+597</option>
+                                                            <option value="46" >+46</option>
+                                                            <option value="41" >+41</option>
+                                                            <option value="963" >+963</option>
+                                                            <option value="886" >+886</option>
+                                                            <option value="992" >+992</option>
+                                                            <option value="255" >+255</option>
+                                                            <option value="66" >+66</option>
+                                                            <option value="228" >+228</option>
+                                                            <option value="676" >+676</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="216" >+216</option>
+                                                            <option value="90" >+90</option>
+                                                            <option value="993" >+993</option>
+                                                            <option value="688" >+688</option>
+                                                            <option value="256" >+256</option>
+                                                            <option value="380" >+380</option>
+                                                            <option value="971" >+971</option>
+                                                            <option value="44" >+44</option>
+                                                            <option value="1" >+1</option>
+                                                            <option value="598" >+598</option>
+                                                            <option value="998" >+998</option>
+                                                            <option value="678" >+678</option>
+                                                            <option value="379" >+379</option>
+                                                            <option value="58" >+58</option>
+                                                            <option value="84" >+84</option>
+                                                            <option value="967" >+967</option>
+                                                            <option value="260" >+260</option>
+                                                            <option value="263" >+263</option>
+                                                    </select>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2 tracking-wider">Mobile Number</label>
+                        <input type="tel" name="phone" placeholder="Enter number" required
+                               class="w-full bg-gray-50 dark:bg-gray-800 border-none rounded-xl px-4 py-3.5 text-sm font-bold focus:ring-2 focus:ring-primary">
+                    </div>
+                </div>
+                
+                <button type="submit" id="loginBtn" class="w-full bg-primary text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 transition-all active:scale-95 disabled:opacity-50">
+                   Send OTP                </button>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- OTP Modal -->
+<div id="otpModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-gray-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div class="p-8 space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-2xl font-black text-nebula-indigo dark:text-white">Verify OTP</h3>
+                <button onclick="closeOtpModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <p class="text-gray-500 dark:text-gray-400">Enter the 4-digit code sent to your mobile number.</p>
+            
+            <form id="verifyOtpForm" class="space-y-6">
+                <input type="hidden" name="_token" value="PK5Z7kouqA9Cp8fXQMJQI4whiwsqrvK1CcvJQHQE" autocomplete="off">                <input type="hidden" id="otp_user_id" name="user_id">
+                <input type="hidden" name="is_web" value="1">
+                <div class="flex justify-between gap-4">
+                    <input type="text" maxlength="1" class="otp-input w-16 h-16 text-center text-2xl font-black bg-gray-50 dark:bg-gray-800 border-none rounded-2xl focus:ring-2 focus:ring-primary">
+                    <input type="text" maxlength="1" class="otp-input w-16 h-16 text-center text-2xl font-black bg-gray-50 dark:bg-gray-800 border-none rounded-2xl focus:ring-2 focus:ring-primary">
+                    <input type="text" maxlength="1" class="otp-input w-16 h-16 text-center text-2xl font-black bg-gray-50 dark:bg-gray-800 border-none rounded-2xl focus:ring-2 focus:ring-primary">
+                    <input type="text" maxlength="1" class="otp-input w-16 h-16 text-center text-2xl font-black bg-gray-50 dark:bg-gray-800 border-none rounded-2xl focus:ring-2 focus:ring-primary">
+                </div>
+                
+                <button type="submit" id="verifyBtn" class="w-full bg-primary text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 transition-all active:scale-95 disabled:opacity-50">
+                   Verify & Login                </button>
+
+                <div class="text-center">
+                    <p id="timerContainer" class="text-sm font-bold text-gray-400">
+                       Resend code in <span id="timer" class="text-primary">30</span>s
+                    </p>
+                    <button type="button" id="resendBtn" onclick="resendOtp()" class="hidden text-sm font-black text-primary uppercase tracking-wider hover:underline">
+                        Resend Code                    </button>
+                    <p id="resendMsg" class="hidden text-xs font-bold text-green-500 mt-2"> OTP Sent Successfully!</p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+const loginModal = document.getElementById('loginModal');
+const otpModal = document.getElementById('otpModal');
+const isAuth = 0;
+let timerInterval;
+
+function startTimer() {
+    let timeLeft = 30;
+    const timerDisplay = document.getElementById('timer');
+    const timerContainer = document.getElementById('timerContainer');
+    const resendBtn = document.getElementById('resendBtn');
+    const resendMsg = document.getElementById('resendMsg');
+
+    timerContainer.classList.remove('hidden');
+    resendBtn.classList.add('hidden');
+    resendMsg.classList.add('hidden');
+    
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.innerText = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timerContainer.classList.add('hidden');
+            resendBtn.classList.remove('hidden');
+        }
+    }, 1000);
+}
+
+async function resendOtp() {
+    const userId = document.getElementById('otp_user_id').value;
+    const resendBtn = document.getElementById('resendBtn');
+    const resendMsg = document.getElementById('resendMsg');
+
+    resendBtn.disabled = true;
+    resendBtn.innerText = 'Sending...';
+
+    try {
+        const formData = new FormData();
+        formData.append('user_id', userId);
+        formData.append('_token', 'PK5Z7kouqA9Cp8fXQMJQI4whiwsqrvK1CcvJQHQE');
+
+        const response = await fetch('https://astro.ftafat.in/api/resendCode', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            resendMsg.classList.remove('hidden');
+            startTimer();
+        }
+    } catch (error) {
+        console.error('Resend error:', error);
+    } finally {
+        resendBtn.disabled = false;
+        resendBtn.innerText = 'Resend Code';
+    }
+}
+
+function openLoginModal() {
+    loginModal.classList.remove('hidden');
+    loginModal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLoginModal() {
+    loginModal.classList.add('hidden');
+    loginModal.classList.remove('flex');
+    document.body.style.overflow = 'auto';
+}
+
+function openOtpModal(userId) {
+    document.getElementById('otp_user_id').value = userId;
+    closeLoginModal();
+    otpModal.classList.remove('hidden');
+    otpModal.classList.add('flex');
+    startTimer();
+}
+
+function closeOtpModal() {
+    otpModal.classList.add('hidden');
+    otpModal.classList.remove('flex');
+    document.body.style.overflow = 'auto';
+    clearInterval(timerInterval);
+}
+
+// Close on click outside
+[loginModal, otpModal].forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeLoginModal();
+            closeOtpModal();
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const verifyOtpForm = document.getElementById('verifyOtpForm');
+    const otpInputs = document.querySelectorAll('.otp-input');
+
+    // OTP Inputs Auto Focus
+    otpInputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+            if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+        });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        });
+    });
+
+    // Handle Login Form Submission
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = true;
+        btn.innerText = 'Sending...';
+
+        try {
+            const formData = new FormData(loginForm);
+            const response = await fetch('https://astro.ftafat.in/api/login', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const data = await response.json();
+
+            if (data.msg === 'otp') {
+                openOtpModal(data.user_id);
+            } else if (data.msg === 'done') {
+                localStorage.setItem('user_profile', JSON.stringify(data.user_data));
+                localStorage.setItem('token', data.token);
+                window.location = "https://astro.ftafat.in/index?loginID="+data.user_data.id;
+            } else {
+                alert(data.error || 'Something went wrong');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('Failed to connect to server');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Send OTP';
+        }
+    });
+
+    // Handle OTP Verification
+    verifyOtpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('verifyBtn');
+        const otp = Array.from(otpInputs).map(i => i.value).join('');
+        
+        if (otp.length < 4) return alert('Please enter 4-digit OTP');
+        
+        btn.disabled = true;
+        btn.innerText = 'Verifying...';
+
+        try {
+            const userId = document.getElementById('otp_user_id').value;
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('vcode', otp);
+            formData.append('is_web', '1');
+            formData.append('_token', 'PK5Z7kouqA9Cp8fXQMJQI4whiwsqrvK1CcvJQHQE');
+
+            const response = await fetch('https://astro.ftafat.in/api/verifyCode', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.msg === 'done') {
+                localStorage.setItem('user_profile', JSON.stringify(data.user_data));
+                localStorage.setItem('token', data.token);
+                window.location = "https://astro.ftafat.in/index?loginID="+data.user_data.id;
+            } else {
+                alert(data.error || 'Invalid OTP');
+            }
+        } catch (error) {
+            console.error('OTP error:', error);
+            alert('Verification failed');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Verify & Login';
+        }
+    });
+
+    const chips = document.querySelectorAll('.category-chip');
+    const cards = document.querySelectorAll('.astrologer-card');
+
+    // Handle Astrologer Card Clicks
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            const astroId = card.getAttribute('data-astro-id');
+
+            if (isAuth == 0) {
+                openLoginModal();
+            } else {
+                window.location.href = `https://astro.ftafat.in/chat/${astroId}`;
+            }
+        });
+    });
+
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const cateId = chip.getAttribute('data-cate-id');
+
+            // Update active state UI
+            chips.forEach(c => {
+                c.classList.remove('active');
+                const container = c.querySelector('.chip-container');
+                const text = c.querySelector('.chip-text');
+                
+                if (c.getAttribute('data-cate-id') === 'all') {
+                    // Always stay primary
+                    container.classList.add('bg-primary', 'text-white');
+                    container.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-gray-400');
+                    text.classList.add('text-nebula-indigo', 'dark:text-white');
+                    text.classList.remove('text-gray-500', 'dark:text-gray-400');
+                    
+                    // Add a ring only when actually active
+                    if (cateId === 'all') {
+                        container.classList.add('ring-4', 'ring-primary/40', 'scale-110');
+                    } else {
+                        container.classList.remove('ring-4', 'ring-primary/40', 'scale-110');
+                    }
+                } else {
+                    container.classList.remove('border-primary', 'ring-4', 'ring-primary/20', 'scale-110');
+                    container.classList.add('border-transparent');
+                    text.classList.remove('text-primary');
+                    text.classList.add('text-gray-500', 'dark:text-gray-400');
+                }
+            });
+
+            chip.classList.add('active');
+            const activeContainer = chip.querySelector('.chip-container');
+            const activeText = chip.querySelector('.chip-text');
+
+            if (cateId !== 'all') {
+                activeContainer.classList.add('border-primary', 'ring-4', 'ring-primary/20', 'scale-110');
+                activeContainer.classList.remove('border-transparent');
+                activeText.classList.add('text-primary');
+                activeText.classList.remove('text-gray-500', 'dark:text-gray-400');
+            }
+
+            // Filter cards
+            cards.forEach(card => {
+                if (cateId === 'all') {
+                    card.style.display = 'flex';
+                } else {
+                    try {
+                        const rawCategories = card.getAttribute('data-categories');
+                        const categories = JSON.parse(rawCategories || '[]');
+                        
+                        // Handle both array of IDs and array of objects with cate_id
+                        const hasCate = categories.some(c => {
+                            if (typeof c === 'object' && c !== null) {
+                                return String(c.cate_id) === String(cateId);
+                            }
+                            return String(c) === String(cateId);
+                        });
+
+                        if (hasCate) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    } catch (e) {
+                        console.error('Error parsing categories:', e);
+                        card.style.display = 'flex'; // Show anyway on error
+                    }
+                }
+            });
+        });
+    });
+});
+</script>
+<!-- Mobile App Download Section -->
+<section id="mobileApp" class="py-20 mt-16 bg-gradient-to-br from-nebula-indigo/5 via-primary/5 to-starlight-bronze/5 dark:from-gray-900/50 dark:via-gray-800/50 dark:to-gray-900/50" style="border-radius: 20px;">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl md:text-5xl font-black text-nebula-indigo dark:text-white mb-4">
+                Download Our App
+            </h2>
+            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Get the best astrology experience on your mobile device. Available for both Android and iOS.
+            </p>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+            <!-- Android Download -->
+            <a href="Andorid" target="_blank" class="group relative overflow-hidden bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl px-8 py-6 hover:border-primary dark:hover:border-primary transition-all duration-300 hover:shadow-2xl hover:scale-105 w-full md:w-auto">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <img src="https://astro.ftafat.in/upload/android.png" style="height: 45px;">
+                    </div>
+                    <div class="text-left">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Get it on</div>
+                        <div class="text-xl font-black text-gray-900 dark:text-white">Google Play</div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- iOS Download -->
+            <a href="ios" target="_blank" class="group relative overflow-hidden bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl px-8 py-6 hover:border-primary dark:hover:border-primary transition-all duration-300 hover:shadow-2xl hover:scale-105 w-full md:w-auto">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                        </svg>
+                    </div>
+                    <div class="text-left">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Download on</div>
+                        <div class="text-xl font-black text-gray-900 dark:text-white">App Store</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="mt-12 text-center">
+            <div class="flex items-center justify-center gap-8 text-sm text-gray-500 dark:text-gray-400">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">star</span>
+                    <span>4.8 Rating</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">download</span>
+                    <span>10K+ Downloads</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">verified</span>
+                    <span>Secure &amp; Safe</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+</main>
+
+<footer class="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-20">
+<div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">auto_awesome</span>
+</div>
+<h5 class="text-xl font-black text-nebula-indigo dark:text-white uppercase">AstroTalky</h5>
+</div>
+<div class="flex gap-8 text-sm font-bold text-gray-500 uppercase tracking-widest">
+<a class="hover:text-primary" href="https://astro.ftafat.in/about">About</a>
+<a class="hover:text-primary" href="https://astro.ftafat.in/terms">Terms</a>
+<a class="hover:text-primary" href="https://astro.ftafat.in/privacy">Privacy</a>
+<a class="hover:text-primary" href="https://astro.ftafat.in/contact">Contact Us</a>
+</div>
+<div class="text-xs text-gray-400 font-medium">
+                © 2026 AstroTalky. Mapping the cosmos for your evolution.            </div>
+</div>
+</footer>
+
+
+
+</body></html>

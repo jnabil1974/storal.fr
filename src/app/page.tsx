@@ -6,6 +6,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { STORE_MODELS } from '@/lib/catalog-data';
 
+// Fonts Google (Epilogue comme AstroTalky)
+import { Epilogue } from 'next/font/google';
+
+const epilogue = Epilogue({ 
+  subsets: ['latin'],
+  weight: ['400', '500', '700', '900'],
+  display: 'swap',
+});
+
 export default function HomePage() {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState('');
@@ -47,197 +56,265 @@ export default function HomePage() {
       });
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className={`min-h-screen bg-[#f5f7fa] ${epilogue.className}`}>
       
       {/* === HERO SECTION === */}
-      <section className="pt-24 pb-16 px-6">
-        <div className="max-w-5xl mx-auto">
+      <section className="max-w-7xl mx-auto px-6 py-8">
+        <div className="relative overflow-hidden rounded-3xl min-h-[520px] flex items-center justify-center p-8" 
+             style={{
+               backgroundImage: 'linear-gradient(135deg, rgba(37, 99, 235, 0.85) 0%, rgba(59, 130, 246, 0.7) 100%)',
+               backgroundSize: 'cover',
+               backgroundPosition: 'center'
+             }}>
+          <div className="absolute inset-0 bg-[#2c3e50]/40 mix-blend-multiply"></div>
           
-          {/* Card Hero encadrée */}
-          <div className="bg-white rounded-3xl border-2 border-gray-200 shadow-lg p-12 text-center">
-            {/* Titre principal */}
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4 leading-tight">
-              Votre projet de store banne,<br />
-              <span className="text-blue-600">conçu par l&apos;IA</span>,<br />
-              validé par l&apos;expert
-            </h1>
+          <div className="relative z-10 max-w-2xl text-center space-y-8">
+            <div className="space-y-4">
+              <span className="inline-block px-4 py-1.5 bg-blue-600/20 text-blue-300 rounded-full text-xs font-black uppercase tracking-widest border border-blue-400/30">
+                L'expertise combinée à l'IA
+              </span>
+              <h2 className="text-5xl md:text-7xl font-black text-white leading-tight">
+                Votre Store<br/>Sur Mesure
+              </h2>
+              <p className="text-lg text-white/80 font-medium">
+                Configurez votre store banne en quelques clics grâce à notre assistant IA et aux conseils d'experts certifiés.
+              </p>
+            </div>
             
-            <p className="text-lg md:text-xl text-gray-600 mb-10">
-              Décrivez votre besoin, l'IA vous guide jusqu'au devis parfait
-            </p>
-
             {/* Champ de recherche conversationnel */}
-            <form onSubmit={handleSearch} className="relative max-w-3xl mx-auto">
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Ex: Je cherche un store de 6 mètres pour ma terrasse plein sud..."
-                className="w-full px-6 py-5 pr-32 text-lg rounded-2xl border-2 border-gray-300 bg-white 
-                  focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-600 transition-all shadow-sm"
-              />
+            <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 bg-white/10 backdrop-blur-xl p-2 rounded-2xl border border-white/20">
+              <div className="flex-1 flex items-center px-4 gap-3 text-white">
+                <svg className="w-6 h-6 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="bg-transparent border-none focus:ring-0 text-white placeholder:text-white/50 w-full text-lg py-4 outline-none"
+                  placeholder="Ex: Je cherche un store de 6m pour ma terrasse..."
+                />
+              </div>
               <button
                 type="submit"
-                className="absolute right-2 top-1/2 -translate-y-1/2 px-8 py-3 bg-blue-600 
-                  text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md 
-                  hover:shadow-lg active:scale-95"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl active:scale-95"
               >
                 Envoyer
               </button>
             </form>
-
-            {/* Suggestions rapides */}
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              {quickSuggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleQuickSuggestion(suggestion)}
-                  className="px-4 py-2 text-sm bg-gray-100 text-gray-700 border border-gray-300 
-                    rounded-full hover:bg-blue-50 hover:border-blue-500 hover:text-blue-700 transition-all"
-                >
-                  {suggestion}
-                </button>
-              ))}
+            
+            {/* Stats badges */}
+            <div className="flex justify-center gap-6 text-white/60 text-sm font-bold uppercase tracking-widest">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>10K+ Installations</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Garantie 12 ans</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Assistance IA</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* === SECTION CATALOGUE === */}
-      <section className="px-6 py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
+      <section className="max-w-7xl mx-auto px-6 py-8">
+        <div className="space-y-8">
           
-          {/* Filtres par catégorie */}
-          <div className="flex flex-wrap justify-center gap-3 mb-10">
-            <button
-              onClick={() => setActiveFilter('all')}
-              className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
-                activeFilter === 'all'
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-500 hover:text-blue-600'
-              }`}
-            >
-              Tout
-            </button>
-            <button
-              onClick={() => setActiveFilter('promo')}
-              className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
-                activeFilter === 'promo'
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-500 hover:text-blue-600'
-              }`}
-            >
-              🔥 Promos
-            </button>
-            <button
-              onClick={() => setActiveFilter('coffre')}
-              className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
-                activeFilter === 'coffre'
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-500 hover:text-blue-600'
-              }`}
-            >
-              Coffre Intégral
-            </button>
-            <button
-              onClick={() => setActiveFilter('traditionnel')}
-              className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
-                activeFilter === 'traditionnel'
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-500 hover:text-blue-600'
-              }`}
-            >
-              Traditionnel
-            </button>
-            <button
-              onClick={() => setActiveFilter('monobloc')}
-              className={`px-6 py-2.5 rounded-full font-semibold transition-all ${
-                activeFilter === 'monobloc'
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-500 hover:text-blue-600'
-              }`}
-            >
-              Monobloc
-            </button>
+          {/* Header section */}
+          <div className="space-y-6 border-b border-gray-200 pb-8">
+            <div className="space-y-2">
+              <h3 className="text-3xl font-black text-[#2c3e50]">Nos Modèles de Stores</h3>
+              <p className="text-gray-500">Sélectionnés pour leur qualité et leur durabilité</p>
+            </div>
+
+            {/* Filtres par catégorie - Style AstroTalky */}
+            <div className="flex overflow-x-auto gap-8 pb-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+              <div
+                onClick={() => setActiveFilter('all')}
+                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4 ${activeFilter === 'all' ? 'active' : ''}`}
+                style={{ marginLeft: '10px' }}
+              >
+                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
+                  activeFilter === 'all' 
+                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
+                    : 'border-2 border-gray-200 bg-white'
+                }`}>
+                  <span className="text-4xl">🏠</span>
+                </div>
+                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
+                  activeFilter === 'all' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
+                }`}>
+                  Tout
+                </span>
+              </div>
+
+              <div
+                onClick={() => setActiveFilter('promo')}
+                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
+              >
+                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
+                  activeFilter === 'promo' 
+                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
+                    : 'border-2 border-gray-200 bg-white'
+                }`}>
+                  <span className="text-4xl">🔥</span>
+                </div>
+                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
+                  activeFilter === 'promo' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
+                }`}>
+                  Promos
+                </span>
+              </div>
+
+              <div
+                onClick={() => setActiveFilter('coffre')}
+                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
+              >
+                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
+                  activeFilter === 'coffre' 
+                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
+                    : 'border-2 border-gray-200 bg-white'
+                }`}>
+                  <span className="text-4xl">📦</span>
+                </div>
+                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
+                  activeFilter === 'coffre' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
+                }`}>
+                  Coffre
+                </span>
+              </div>
+
+              <div
+                onClick={() => setActiveFilter('traditionnel')}
+                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
+              >
+                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
+                  activeFilter === 'traditionnel' 
+                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
+                    : 'border-2 border-gray-200 bg-white'
+                }`}>
+                  <span className="text-4xl">⛱️</span>
+                </div>
+                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
+                  activeFilter === 'traditionnel' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
+                }`}>
+                  Traditionnel
+                </span>
+              </div>
+
+              <div
+                onClick={() => setActiveFilter('monobloc')}
+                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
+              >
+                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
+                  activeFilter === 'monobloc' 
+                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
+                    : 'border-2 border-gray-200 bg-white'
+                }`}>
+                  <span className="text-4xl">🏗️</span>
+                </div>
+                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
+                  activeFilter === 'monobloc' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
+                }`}>
+                  Monobloc
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Grille Bento des produits */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredModels.slice(0, 9).map((model, index) => {
-              // Variation de taille pour effet Bento
-              const isLarge = (index === 0 || index === 4);
-              const gridClass = isLarge ? 'md:col-span-2 md:row-span-2' : '';
+          {/* Grille des produits - Style AstroTalky */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {filteredModels.slice(0, 8).map((model) => (
+              <div
+                key={model.id}
+                onClick={() => handleQuickSuggestion(`Je veux configurer le modèle ${model.name}`)}
+                className="group bg-white border border-gray-100 p-5 rounded-3xl flex flex-col gap-5 cursor-pointer transition-all hover:shadow-[0_0_25px_rgba(37,99,235,0.25)] shadow-[0_0_15px_rgba(37,99,235,0.1)]"
+                style={{ boxShadow: '0 0 15px rgba(37, 99, 235, 0.1)' }}
+              >
+                {/* Badge promo */}
+                {model.is_promo && (
+                  <div className="absolute top-3 right-3 z-10 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+                    PROMO
+                  </div>
+                )}
 
-              return (
-                <div
-                  key={model.id}
-                  className={`group relative bg-white rounded-2xl overflow-hidden 
-                    border-2 border-gray-200 shadow-lg hover:shadow-xl hover:border-blue-500 transition-all duration-300 
-                    hover:scale-[1.02] ${gridClass}`}
-                >
-                  {/* Badge promo */}
-                  {model.is_promo && (
-                    <div className="absolute top-4 right-4 z-10 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                      🔥 PROMO
+                {/* Image du produit */}
+                <div className="relative w-full aspect-square overflow-hidden rounded-2xl">
+                  {model.image ? (
+                    <Image
+                      src={model.image}
+                      alt={model.name}
+                      width={300}
+                      height={300}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                      <span className="text-6xl">🏠</span>
                     </div>
                   )}
+                  {model.is_promo && (
+                    <div className="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-[#2c3e50]">
+                      EN PROMO
+                    </div>
+                  )}
+                </div>
 
-                  {/* Image du produit */}
-                  <div className={`relative bg-gradient-to-br from-slate-100 to-slate-200 ${isLarge ? 'h-80' : 'h-48'}`}>
-                    <div className="absolute inset-0 flex items-center justify-center p-8">
-                      {model.image ? (
-                        <Image
-                          src={model.image}
-                          alt={model.name}
-                          width={isLarge ? 400 : 200}
-                          height={isLarge ? 400 : 200}
-                          className="object-contain w-full h-full opacity-90 group-hover:opacity-100 transition-opacity"
-                        />
-                      ) : (
-                        <span className={`${isLarge ? 'text-8xl' : 'text-6xl'}`}>🏠</span>
-                      )}
+                {/* Contenu de la carte */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="text-lg font-black text-[#2c3e50]">{model.name}</h4>
+                      <p className="text-sm text-blue-600 font-bold">{model.description}</p>
                     </div>
                   </div>
 
-                  {/* Contenu de la carte */}
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">{model.name}</h3>
-                    <p className="text-slate-600 mb-4 text-sm">{model.description}</p>
+                  {/* Features */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {model.features.slice(0, 3).map((feature, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 bg-gray-50 text-gray-600 text-[10px] font-bold uppercase tracking-wider rounded"
+                      >
+                        {feature}
+                      </span>
+                    ))}
+                  </div>
 
-                    {/* Features */}
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {model.features.slice(0, 3).map((feature, idx) => (
-                        <span
-                          key={idx}
-                          className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-medium"
-                        >
-                          {feature}
-                        </span>
-                      ))}
+                  {/* Prix et CTA */}
+                  <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+                    <div className="text-sm font-black text-gray-500">
+                      À partir de<span className="block text-lg text-[#2c3e50]">1 490€</span>
                     </div>
-
-                    {/* CTA */}
-                    <button
-                      onClick={() => handleQuickSuggestion(`Je veux configurer le modèle ${model.name}`)}
-                      className="w-full py-3 bg-blue-600 text-white font-bold 
-                        rounded-xl hover:bg-blue-700 transition-all shadow-md 
-                        hover:shadow-lg active:scale-95"
-                    >
-                      Personnaliser avec l&apos;IA
+                    <button className="bg-[#2c3e50] text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
                     </button>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
 
           {/* Voir tous les produits */}
-          {filteredModels.length > 9 && (
+          {filteredModels.length > 8 && (
             <div className="text-center mt-10">
               <button
                 onClick={() => handleQuickSuggestion("Montre-moi tous les modèles disponibles")}
-                className="px-8 py-4 bg-white text-gray-700 border-2 border-gray-300 
-                  rounded-xl hover:border-blue-500 hover:text-blue-600 transition-all font-semibold"
+                className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold uppercase tracking-wider hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl"
               >
                 Voir tous les modèles ({filteredModels.length})
               </button>
@@ -247,57 +324,58 @@ export default function HomePage() {
       </section>
 
       {/* === SECTION AVANTAGES === */}
-      <section className="px-6 py-16 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 text-center mb-12">
-            Pourquoi choisir Storal ?
-          </h2>
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <div className="space-y-8">
+          <div className="text-center space-y-2">
+            <h3 className="text-3xl font-black text-[#2c3e50]">Pourquoi choisir Storal ?</h3>
+            <p className="text-gray-500">L'excellence au service de votre confort</p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Avantage 1 */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 
-              hover:border-blue-500 hover:shadow-lg transition-all">
-              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <div className="bg-white border border-gray-100 rounded-3xl p-6 transition-all hover:shadow-[0_0_25px_rgba(37,99,235,0.25)]" 
+                 style={{ boxShadow: '0 0 15px rgba(37, 99, 235, 0.1)' }}>
+              <div className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center mb-4 mx-auto text-white">
                 <span className="text-3xl">🛡️</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Garantie 12 ans</h3>
-              <p className="text-gray-600 text-sm text-center">
+              <h3 className="text-lg font-black text-[#2c3e50] mb-2 text-center uppercase tracking-wider">Garantie 12 ans</h3>
+              <p className="text-gray-500 text-sm text-center">
                 Protection totale sur tous nos produits
               </p>
             </div>
 
             {/* Avantage 2 */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 
-              hover:border-blue-500 hover:shadow-lg transition-all">
-              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <div className="bg-white border border-gray-100 rounded-3xl p-6 transition-all hover:shadow-[0_0_25px_rgba(37,99,235,0.25)]" 
+                 style={{ boxShadow: '0 0 15px rgba(37, 99, 235, 0.1)' }}>
+              <div className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center mb-4 mx-auto text-white">
                 <span className="text-3xl">⚡</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Fabrication 24h</h3>
-              <p className="text-gray-600 text-sm text-center">
+              <h3 className="text-lg font-black text-[#2c3e50] mb-2 text-center uppercase tracking-wider">Fabrication 24h</h3>
+              <p className="text-gray-500 text-sm text-center">
                 Production rapide en atelier français
               </p>
             </div>
 
             {/* Avantage 3 */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 
-              hover:border-blue-500 hover:shadow-lg transition-all">
-              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <div className="bg-white border border-gray-100 rounded-3xl p-6 transition-all hover:shadow-[0_0_25px_rgba(37,99,235,0.25)]" 
+                 style={{ boxShadow: '0 0 15px rgba(37, 99, 235, 0.1)' }}>
+              <div className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center mb-4 mx-auto text-white">
                 <span className="text-3xl">🚚</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Livraison 7 jours</h3>
-              <p className="text-gray-600 text-sm text-center">
+              <h3 className="text-lg font-black text-[#2c3e50] mb-2 text-center uppercase tracking-wider">Livraison 7 jours</h3>
+              <p className="text-gray-500 text-sm text-center">
                 Partout en France métropolitaine
               </p>
             </div>
 
             {/* Avantage 4 */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-gray-200 
-              hover:border-blue-500 hover:shadow-lg transition-all">
-              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <div className="bg-white border border-gray-100 rounded-3xl p-6 transition-all hover:shadow-[0_0_25px_rgba(37,99,235,0.25)]" 
+                 style={{ boxShadow: '0 0 15px rgba(37, 99, 235, 0.1)' }}>
+              <div className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center mb-4 mx-auto text-white">
                 <span className="text-3xl">🔧</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Pose pro</h3>
-              <p className="text-gray-600 text-sm text-center">
+              <h3 className="text-lg font-black text-[#2c3e50] mb-2 text-center uppercase tracking-wider">Pose Pro</h3>
+              <p className="text-gray-500 text-sm text-center">
                 Installation par nos experts certifiés
               </p>
             </div>
@@ -306,17 +384,17 @@ export default function HomePage() {
       </section>
 
       {/* === FOOTER CTA === */}
-      <section className="px-6 py-12 text-center bg-gray-50">
-        <div className="max-w-3xl mx-auto bg-blue-600 rounded-3xl p-10 border-2 border-blue-700 shadow-xl">
-          <h2 className="text-3xl font-bold text-white mb-4">
+      <section className="max-w-7xl mx-auto px-6 py-12">
+        <div className="bg-blue-600 rounded-3xl p-10 text-center shadow-xl shadow-blue-600/20">
+          <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-wide">
             Une question ? Besoin d&apos;aide ?
           </h2>
-          <p className="text-blue-100 mb-8">
+          <p className="text-blue-100 mb-8 text-lg">
             Notre assistant IA est disponible 24/7 pour vous accompagner dans votre projet
           </p>
           <button
             onClick={() => router.push('/assistant')}
-            className="px-10 py-4 bg-white text-blue-600 font-bold text-lg rounded-xl 
+            className="px-10 py-4 bg-white text-blue-600 font-black text-lg rounded-xl uppercase tracking-wider
               hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl active:scale-95"
           >
             💬 Discuter avec l&apos;assistant
