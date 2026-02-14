@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import ChatAssistant from '@/components/ChatAssistant';
+import { ShowroomProvider } from '@/contexts/ShowroomContext';
 
 interface Cart {
   modelId: string | null;
@@ -29,9 +30,11 @@ export default function AssistantPage() {
   const [cart, setCart] = useState<Cart | null>(null);
 
   return (
-    <div className="h-screen w-full bg-white">
-      {/* ChatAssistant gère maintenant la layout 50/50 complète */}
-      <ChatAssistant cart={cart} setCart={setCart} />
-    </div>
+    <ShowroomProvider>
+      <div className="h-screen w-full bg-white">
+        {/* ChatAssistant gère maintenant la layout 50/50 complète */}
+        <ChatAssistant cart={cart} setCart={setCart} />
+      </div>
+    </ShowroomProvider>
   );
 }
