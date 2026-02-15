@@ -3,138 +3,21 @@
 import { useCart } from '@/contexts/CartContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect, useRef } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { calculateFinalPrice, STORE_MODELS, FABRIC_OPTIONS } from '@/lib/catalog-data';
-import { ProductType } from '@/types/products';
+import { useState, useEffect } from 'react';
+import { STORE_MODELS, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
 
 export default function CartPageClient() {
-  const { cart, removeItem, updateQuantity, clearCart, isLoading, addItem } = useCart();
+  const { cart, removeItem, updateQuantity, clearCart, isLoading } = useCart();
   const [isClearing, setIsClearing] = useState(false);
-  const [paramError, setParamError] = useState<string | null>(null);
-  const processedParamsRef = useRef<Set<string>>(new Set());
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  useEffect(() => {
-    const modelId = searchParams.get('model') as 'kissimy' | 'heliom';
-    const widthStr = searchParams.get('width');
-    const projectionStr = searchParams.get('projection');
-    const colorId = searchParams.get('color');
-    const motor = searchParams.get('motor');
-    const motorSide = searchParams.get('motorSide');
-    const sensor = searchParams.get('sensor');
-    const ledArmsParam = searchParams.get('ledArms');
-    const ledBoxParam = searchParams.get('ledBox');
-    const lambrequinParam = searchParams.get('lambrequin');
-    const lambrequinMotorizedParam = searchParams.get('lambrequinMotorized');
-    const lambrequinFabricId = searchParams.get('lambrequin_fabric_id');
-
-    // Créer une clé unique pour cette configuration
-    const paramsKey = `${modelId}-${widthStr}-${projectionStr}-${colorId}-${motor}-${motorSide}-${sensor}-${ledArmsParam}-${ledBoxParam}-${lambrequinParam}-${lambrequinMotorizedParam}-${lambrequinFabricId}`;
-    
-    // Si déjà traité, ne rien faire
-    if (processedParamsRef.current.has(paramsKey)) return;
-
-    if (modelId && (STORE_MODELS[modelId]) && widthStr && projectionStr) {
-      console.log("Processing item from URL params:", { modelId, widthStr, projectionStr, colorId, motorSide, sensor, ledArmsParam, ledBoxParam, lambrequinParam, lambrequinMotorizedParam, lambrequinFabricId });
-      
-      // Marquer comme traité immédiatement pour éviter les doublons
-      processedParamsRef.current.add(paramsKey);
-
-      const widthMm = parseInt(widthStr, 10);
-      const projectionMm = parseInt(projectionStr, 10);
-      const modelData = STORE_MODELS[modelId];
-      const availableProjections = Object.keys(modelData.buyPrices).map(Number);
-
-      if (!availableProjections.includes(projectionMm)) {
-        setParamError(
-          `Avancée invalide. Choisissez parmi: ${availableProjections.join(', ')} mm.`
-        );
-        router.replace('/cart', { scroll: false });
-        return;
-      }
-
-      const grid = modelData.buyPrices[projectionMm];
-      const maxWidth = grid?.length ? Math.max(...grid.map(t => t.maxW)) : null;
-      if (maxWidth !== null && widthMm > maxWidth) {
-        setParamError(
-          `Largeur invalide pour une avancée de ${projectionMm} mm. Max: ${maxWidth} mm.`
-        );
-        router.replace('/cart', { scroll: false });
-        return;
-      }
-
-      // Conversion du format chatbot (lambrequin + lambrequinMotorized) vers le format calculateFinalPrice
-      const hasLambrequin = lambrequinParam === 'true';
-      const isLambrequinMotorized = lambrequinMotorizedParam === 'true';
-      
-      const options = {
-          ledArms: ledArmsParam === 'true',
-          ledBox: ledBoxParam === 'true',
-          lambrequinFixe: hasLambrequin && !isLambrequinMotorized,  // Fixe si non motorisé
-          lambrequinEnroulable: hasLambrequin && isLambrequinMotorized,  // Enroulable si motorisé
-          lambrequinMotorized: isLambrequinMotorized,
-          isPosePro: true, // Default to pro installation for VAT
-          isCustomColor: false
-      };
-
-      const priceInfo = calculateFinalPrice({ modelId, width: widthMm, projection: projectionMm, options });
-      console.log("Price calculation result:", priceInfo);
-
-      if (priceInfo) {
-
-        const configuration: { [key: string]: string | number } = {};
-        searchParams.forEach((value, key) => {
-          configuration[key] = value;
-        });
-        configuration.width = widthMm;
-        configuration.projection = projectionMm;
-
-        const itemToAdd = {
-          productId: `store-${modelId}`,
-          productType: ProductType.STORE_BANNE,
-          productName: modelData.name,
-          basePrice: priceInfo.ht,
-          configuration: configuration as any,
-          quantity: 1,
-          pricePerUnit: priceInfo.ttc,
-        };
-        
-        console.log("Item to add:", itemToAdd);
-
-        const itemInCart = cart.items.find(item => 
-          item.productId === itemToAdd.productId &&
-          JSON.stringify(item.configuration) === JSON.stringify(itemToAdd.configuration)
-        );
-
-        if (!itemInCart) {
-          console.log("Item not in cart, adding...");
-          addItem(itemToAdd).then(() => {
-            console.log("Item added successfully.");
-            router.replace('/cart', { scroll: false });
-          }).catch(err => {
-            console.error("Failed to add item to cart:", err);
-          });
-        } else {
-            console.log("Item already in cart, cleaning URL params.");
-            router.replace('/cart', { scroll: false });
-        }
-      } else {
-        setParamError('Configuration invalide. Vérifiez les dimensions et options.');
-        console.error("Price calculation error: Unable to calculate price");
-        router.replace('/cart', { scroll: false });
-      }
-    }
-  }, [searchParams]);
-
 
   const handleRemove = async (id: string) => {
+    console.log('🗑️ Removing item:', id);
     await removeItem(id);
   };
 
   const handleQuantityChange = async (id: string, newQuantity: number) => {
     if (newQuantity > 0) {
+      console.log('🔢 Updating quantity:', id, newQuantity);
       await updateQuantity(id, newQuantity);
     }
   };
@@ -142,241 +25,435 @@ export default function CartPageClient() {
   const handleClearCart = async () => {
     if (confirm('Êtes-vous sûr de vouloir vider le panier ?')) {
       setIsClearing(true);
+      console.log('🧹 Clearing cart...');
       await clearCart();
       setIsClearing(false);
     }
   };
 
+  // Format configuration for display
+  const formatConfigValue = (key: string, value: any): string => {
+    if (key === 'width' && typeof value === 'number') {
+      return `${(value / 10).toFixed(1)} cm`;
+    }
+    if (key === 'projection' || key === 'depth') {
+      return `${(value / 10).toFixed(1)} cm`;
+    }
+    if (key === 'terraceLength' || key === 'terraceWidth') {
+      return `${(value / 100).toFixed(2)} m`;
+    }
+    if (key === 'installHeight' && typeof value === 'number') {
+      return `${value.toFixed(2)} m`;
+    }
+    if (typeof value === 'boolean') {
+      return value ? '✓ Oui' : '✗ Non';
+    }
+    return String(value);
+  };
+
+  const formatConfigKey = (key: string): string => {
+    const labels: { [key: string]: string } = {
+      width: 'Largeur store',
+      depth: 'Profondeur store',
+      projection: 'Avancée',
+      motorized: 'Motorisé',
+      fabric: 'Tissu',
+      fabricColor: 'Couleur toile',
+      frameColor: 'Couleur armature',
+      armType: 'Type d\'armature',
+      windSensor: 'Capteur vent',
+      rainSensor: 'Capteur pluie',
+      model: 'Modèle',
+      color: 'Couleur',
+      motorSide: 'Côté moteur',
+      sensor: 'Capteurs',
+      ledArms: 'LED bras',
+      ledBox: 'LED coffre',
+      lambrequin: 'Lambrequin',
+      lambrequinMotorized: 'Lambrequin motorisé',
+      terraceLength: 'Longueur terrasse',
+      terraceWidth: 'Largeur terrasse',
+      environment: 'Environnement',
+      orientation: 'Orientation',
+      installHeight: 'Hauteur de pose',
+      cableExit: 'Sortie de câble',
+      obstacles: 'Obstacles',
+    };
+    return labels[key] || key;
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Header */}
-      <div className="bg-blue-600 text-white py-8">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-8 shadow-lg">
         <div className="max-w-6xl mx-auto px-4">
-          <h1 className="text-3xl font-bold mb-2">Mon Panier</h1>
-          <p className="text-blue-100">{cart.totalItems} article(s)</p>
+          <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+            🛒 Mon Panier
+          </h1>
+          <p className="text-blue-100 text-lg">
+            {cart.totalItems > 0 
+              ? `${cart.totalItems} article${cart.totalItems > 1 ? 's' : ''} dans votre panier`
+              : 'Votre panier est vide'
+            }
+          </p>
         </div>
       </div>
 
       {/* Main content */}
-      <main className="max-w-6xl mx-auto px-4 py-12">
-        {paramError && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {paramError}
-          </div>
-        )}
+      <main className="max-w-6xl mx-auto px-4 py-8">
         {(isLoading && cart.items.length === 0) ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-             <p className="text-gray-600 text-lg mb-6">Chargement du panier...</p>
+          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 text-lg">Chargement du panier...</p>
           </div>
         ) : cart.items.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <p className="text-gray-600 text-lg mb-6">Votre panier est vide</p>
-            <Link href="/">
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
-                Continuer vos achats
-              </button>
-            </Link>
+          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+            <div className="text-6xl mb-4">🛍️</div>
+            <p className="text-gray-600 text-2xl font-semibold mb-4">
+              Votre panier est vide
+            </p>
+            <p className="text-gray-500 mb-8">
+              Commencez votre configuration avec notre assistant intelligent
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Link href="/assistant">
+                <button className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-semibold shadow-md hover:shadow-xl">
+                  🤖 Assistant de configuration
+                </button>
+              </Link>
+              <Link href="/">
+                <button className="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg hover:bg-gray-300 transition font-semibold">
+                  🏠 Retour à l'accueil
+                </button>
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Articles */}
-            <div className="lg:col-span-2 space-y-4">
-              {cart.items.map((item) => {
-                // Extraire le modèle depuis la configuration pour afficher l'image
-                const modelId = item.configuration?.model as string;
-                const modelData = modelId ? STORE_MODELS[modelId] : null;
+            <div className="lg:col-span-2 space-y-6">
+              {cart.items.map((item, index) => {
+                // Extraire le modèle depuis le productId (qui contient directement le modelId)
+                const modelId = item.productId as string;
+                const modelData = modelId && STORE_MODELS[modelId as keyof typeof STORE_MODELS] 
+                  ? STORE_MODELS[modelId as keyof typeof STORE_MODELS]
+                  : null;
                 const productImage = modelData?.image || '/images/stores/default.jpg';
-
-                // Extraire la toile si disponible
-                const fabricId = item.configuration?.fabric_id as string;
-                let fabricImage = null;
-                if (fabricId) {
-                  // Chercher dans les deux catégories de toiles
-                  const mainFabric = FABRIC_OPTIONS.MAIN_STORE?.find(f => f.id === fabricId);
-                  const lambrequinFabric = FABRIC_OPTIONS.LAMBREQUIN?.find(f => f.id === fabricId);
-                  const fabric = mainFabric || lambrequinFabric;
-                  fabricImage = fabric?.image;
-                }
+                
+                console.log('🖼️ Cart item:', { modelId, modelData, productImage });
 
                 return (
-                  <div key={item.id} className="bg-white rounded-lg shadow p-6 flex gap-6">
-                    {/* Product Images */}
-                    <div className="flex flex-col gap-3 flex-shrink-0">
-                      {/* Image du modèle */}
+                  <div 
+                    key={item.id} 
+                    className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow"
+                  >
+                    <div className="flex gap-6">
+                      {/* Product Image */}
                       {productImage && (
-                        <div className="w-32 h-32 relative rounded-lg overflow-hidden bg-gray-100">
-                          <Image
-                            src={productImage}
-                            alt={item.productName}
-                            fill
-                            className="object-cover"
-                            sizes="128px"
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Image de la toile si disponible */}
-                      {fabricImage && (
-                        <div className="w-32 h-20 relative rounded-lg overflow-hidden bg-gray-100 border-2 border-gray-200">
-                          <Image
-                            src={fabricImage}
-                            alt="Toile sélectionnée"
-                            fill
-                            className="object-cover"
-                            sizes="128px"
-                          />
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1 py-0.5 text-center">
-                            Toile
+                        <div className="flex-shrink-0">
+                          <div className="w-40 h-40 relative rounded-lg overflow-hidden bg-gray-100 border-2 border-gray-200">
+                            <Image
+                              src={productImage}
+                              alt={item.productName || 'Produit'}
+                              fill
+                              className="object-cover"
+                              sizes="160px"
+                            />
                           </div>
                         </div>
                       )}
-                    </div>
 
-                    {/* Product info */}
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">{item.productName}</h3>
-                      <p className="text-sm text-gray-600 mb-4">Type: {item.productType}</p>
+                      {/* Product info */}
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                              {item.productName || 'Store Banne'}
+                            </h3>
+                            <p className="text-sm text-gray-700 bg-blue-50 inline-block px-3 py-1 rounded-full font-semibold">
+                              {item.productType || 'Store'}
+                            </p>
+                          </div>
+                        </div>
 
-                    {/* Configuration display */}
-                    {item.configuration && Object.keys(item.configuration).length > 0 && (
-                      <div className="bg-blue-50 border border-blue-200 p-4 rounded mb-4 text-sm">
-                        <p className="font-semibold text-gray-800 mb-3">Options choisies:</p>
-                        <ul className="space-y-2">
-                          {Object.entries(item.configuration).map(([key, value]) => {
-                            // Format key to readable label
-                            let label = key
-                              .replace(/([A-Z])/g, ' $1')
-                              .replace(/_/g, ' ')
-                              .charAt(0)
-                              .toUpperCase() + key.slice(1);
+                        {/* Configuration */}
+                        {item.configuration && Object.keys(item.configuration).length > 0 && (
+                          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 p-4 rounded-lg mb-4">
+                            <p className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                              ⚙️ Configuration
+                            </p>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                              {Object.entries(item.configuration).map(([key, value]) => {
+                                if (!value || key === 'id') return null;
+                                return (
+                                  <div key={key} className="flex justify-between items-center">
+                                    <span className="text-gray-700">{formatConfigKey(key)}:</span>
+                                    <span className="font-semibold text-gray-900">
+                                      {formatConfigValue(key, value)}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Aperçu visuel */}
+                        <div className="bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-200 p-4 rounded-lg mb-4">
+                          <p className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                            🎨 Aperçu visuel
+                          </p>
+                          <div className="flex gap-4 flex-wrap">
+                            {/* Couleur coffre */}
+                            {item.configuration?.frameColor && (() => {
+                              const frameColor = FRAME_COLORS.find(c => c.id === item.configuration.frameColor);
+                              return frameColor ? (
+                                <div key="frame" className="flex flex-col items-center gap-2">
+                                  <div className="w-20 h-20 rounded-lg border-2 border-gray-300 shadow-md" style={{ backgroundColor: frameColor.hex }}></div>
+                                  <span className="text-xs text-gray-700 text-center font-medium max-w-[80px]">
+                                    Coffre<br/>{frameColor.name.split('(')[0].trim()}
+                                  </span>
+                                </div>
+                              ) : null;
+                            })()}
                             
-                            // Convert dimensions from mm to cm for display
-                            let displayValue = String(value);
-                            if (key === 'width' && typeof value === 'number') {
-                              displayValue = `${(value / 10).toFixed(1)}cm`;
-                              label = 'Largeur';
-                            } else if (key === 'projection' && typeof value === 'number') {
-                              displayValue = `${(value / 10).toFixed(1)}cm`;
-                              label = 'Avancée';
-                            } else if (key === 'motorSide') {
-                              label = 'Côté sortie moteur';
-                              displayValue = value === 'gauche' ? 'Gauche (vue extérieure)' : value === 'droite' ? 'Droite (vue extérieure)' : String(value);
-                            } else if (key === 'lambrequin_fabric_id' && value) {
-                              label = 'Toile lambrequin';
-                              displayValue = String(value).includes('SOL-86') ? 'Soltis 86' : String(value).includes('SOL-92') ? 'Soltis 92' : String(value);
-                            } else {
-                              displayValue = String(value).charAt(0).toUpperCase() + String(value).slice(1);
-                            }
-                            
-                            return (
-                              <li key={key} className="flex justify-between text-gray-700">
-                                <span className="font-medium">{label}:</span>
-                                <span className="text-gray-900 font-semibold">
-                                  {displayValue}
-                                </span>
-                              </li>
-                            );
-                          })}
-                        </ul>
+                            {/* Couleur toile */}
+                            {item.configuration?.fabricColor && (() => {
+                              const fabric = FABRICS.find(f => f.id === item.configuration.fabricColor);
+                              return fabric ? (
+                                <div key="fabric" className="flex flex-col items-center gap-2">
+                                  <div className="w-20 h-20 rounded-lg border-2 border-gray-300 shadow-md bg-gray-100 relative overflow-hidden">
+                                    <Image 
+                                      src={`${fabric.folder}/${fabric.ref}.jpg`} 
+                                      alt={fabric.name} 
+                                      fill 
+                                      className="object-cover"
+                                      sizes="80px"
+                                      onError={(e) => {
+                                        // Fallback en cas d'erreur de chargement
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="text-xs text-gray-700 text-center font-medium max-w-[80px]">
+                                    Toile<br/>{fabric.name}
+                                  </span>
+                                </div>
+                              ) : null;
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* Informations de pose */}
+                        {(item.configuration?.terraceLength || item.configuration?.terraceWidth || 
+                          item.configuration?.environment || item.configuration?.orientation || 
+                          item.configuration?.installHeight || item.configuration?.cableExit || 
+                          item.configuration?.obstacles) && (
+                          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 p-4 rounded-lg mb-4">
+                            <p className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                              📋 Informations de pose
+                            </p>
+                            <div className="space-y-2 text-sm">
+                              {item.configuration.terraceLength && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">Longueur terrasse:</span>
+                                  <span className="font-semibold text-gray-900">
+                                    {(item.configuration.terraceLength / 100).toFixed(2)} m
+                                  </span>
+                                </div>
+                              )}
+                              {item.configuration.terraceWidth && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">Largeur terrasse:</span>
+                                  <span className="font-semibold text-gray-900">
+                                    {(item.configuration.terraceWidth / 100).toFixed(2)} m
+                                  </span>
+                                </div>
+                              )}
+                              {item.configuration.environment && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">Environnement:</span>
+                                  <span className="font-semibold text-gray-900">{item.configuration.environment}</span>
+                                </div>
+                              )}
+                              {item.configuration.orientation && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">Orientation:</span>
+                                  <span className="font-semibold text-gray-900">{item.configuration.orientation}</span>
+                                </div>
+                              )}
+                              {item.configuration.installHeight && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">Hauteur de pose:</span>
+                                  <span className="font-semibold text-gray-900">
+                                    {Number(item.configuration.installHeight).toFixed(2)} m
+                                  </span>
+                                </div>
+                              )}
+                              {item.configuration.cableExit && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">Sortie de câble:</span>
+                                  <span className="font-semibold text-gray-900">{item.configuration.cableExit}</span>
+                                </div>
+                              )}
+                              {item.configuration.obstacles && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">Obstacles:</span>
+                                  <span className="font-semibold text-gray-900">{item.configuration.obstacles}</span>
+                                </div>
+                              )}
+                              {(item.configuration.ledArms || item.configuration.ledBox) && (
+                                <div className="pt-2 border-t border-blue-200">
+                                  <span className="text-gray-700 font-semibold">Options éclairage:</span>
+                                  <ul className="mt-1 space-y-1 ml-4">
+                                    {item.configuration.ledArms && (
+                                      <li className="text-gray-900">✓ LED intégré dans les bras</li>
+                                    )}
+                                    {item.configuration.ledBox && (
+                                      <li className="text-gray-900">✓ LED coffre</li>
+                                    )}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Garanties */}
+                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 p-4 rounded-lg mb-4">
+                          <p className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                            🛡️ Garanties incluses
+                          </p>
+                          <ul className="space-y-2 text-sm text-gray-700">
+                            <li className="flex items-center gap-2">
+                              <span className="text-green-600 font-bold">✓</span>
+                              <span><strong>Structure:</strong> 12 ans</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <span className="text-green-600 font-bold">✓</span>
+                              <span><strong>Motorisation:</strong> 5 ans</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <span className="text-green-600 font-bold">✓</span>
+                              <span><strong>Toile:</strong> 5 ans</span>
+                            </li>
+                          </ul>
+                        </div>
+
+                        {/* Prix et quantité */}
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                          {/* Prix */}
+                          <div>
+                            <p className="text-sm text-gray-700 font-medium">Prix unitaire</p>
+                            <p className="text-2xl font-bold text-blue-600">
+                              {Number(item.pricePerUnit).toFixed(2)}€
+                            </p>
+                          </div>
+
+                          {/* Quantité */}
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                              disabled={isLoading || item.quantity <= 1}
+                              className="w-10 h-10 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xl transition"
+                            >
+                              −
+                            </button>
+                            <input
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value) || 1;
+                                if (val > 0) handleQuantityChange(item.id, val);
+                              }}
+                              disabled={isLoading}
+                              className="w-20 h-10 text-center text-gray-900 border-2 border-gray-300 rounded-lg font-bold text-lg focus:border-blue-500 focus:outline-none"
+                            />
+                            <button
+                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                              disabled={isLoading}
+                              className="w-10 h-10 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xl transition"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          {/* Total */}
+                          <div className="text-right">
+                            <p className="text-sm text-gray-700 font-medium">Total</p>
+                            <p className="text-2xl font-bold text-gray-900">
+                              {Number(item.totalPrice).toFixed(2)}€
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end">
+                          <button
+                            onClick={() => handleRemove(item.id)}
+                            disabled={isLoading}
+                            className="text-red-600 hover:text-red-800 hover:underline disabled:opacity-50 font-semibold flex items-center gap-2 transition"
+                          >
+                            🗑️ Supprimer
+                          </button>
+                        </div>
                       </div>
-                    )}
-
-                    {/* Prix unitaire */}
-                    <p className="text-lg font-bold text-blue-600">
-                      {(Number(item.pricePerUnit)).toFixed(2)}€ /unité
-                    </p>
-                  </div>
-
-                  {/* Quantité et actions */}
-                  <div className="flex flex-col items-end justify-between">
-                    {/* Quantité */}
-                    <div className="flex items-center gap-2 mb-6">
-                      <button
-                        onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                        disabled={isLoading}
-                        className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          handleQuantityChange(item.id, parseInt(e.target.value) || 1)
-                        }
-                        disabled={isLoading}
-                        className="w-16 text-center border border-gray-300 rounded px-2 py-1"
-                      />
-                      <button
-                        onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                        disabled={isLoading}
-                        className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-                      >
-                        +
-                      </button>
                     </div>
-
-                    {/* Prix total */}
-                    <div className="text-right mb-4">
-                      <p className="text-2xl font-bold text-gray-900">
-                        {Number(item.totalPrice).toFixed(2)}€
-                      </p>
-                    </div>
-
-                    {/* Supprimer */}
-                    <button
-                      onClick={() => handleRemove(item.id)}
-                      disabled={isLoading}
-                      className="text-red-600 hover:text-red-800 hover:underline disabled:opacity-50"
-                    >
-                      Supprimer
-                    </button>
                   </div>
-                </div>
                 );
               })}
             </div>
 
             {/* Résumé */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow p-6 sticky top-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Résumé</h2>
+              <div className="bg-white rounded-xl shadow-lg p-6 sticky top-4">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  📋 Résumé
+                </h2>
 
-                <div className="space-y-3 mb-6 pb-6 border-b border-gray-200">
-                  <div className="flex justify-between text-gray-700">
-                    <span>Sous-total:</span>
-                    <span className="font-semibold">{Number(cart.totalPrice).toFixed(2)}€</span>
+                <div className="space-y-4 mb-6 pb-6 border-b-2 border-gray-200">
+                  <div className="flex justify-between items-center text-gray-700">
+                    <span className="text-lg">Sous-total:</span>
+                    <span className="font-bold text-xl">{Number(cart.totalPrice).toFixed(2)}€</span>
                   </div>
-                  <div className="flex justify-between text-gray-700">
-                    <span>Articles:</span>
-                    <span className="font-semibold">{cart.totalItems}</span>
+                  <div className="flex justify-between items-center text-gray-700">
+                    <span className="text-lg">Articles:</span>
+                    <span className="font-bold text-xl">{cart.totalItems}</span>
                   </div>
                 </div>
 
-                <div className="flex justify-between text-2xl font-bold text-gray-900 mb-6">
+                <div className="flex justify-between items-center text-3xl font-bold text-gray-900 mb-8 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg px-4">
                   <span>Total:</span>
                   <span className="text-blue-600">{Number(cart.totalPrice).toFixed(2)}€</span>
                 </div>
 
-                <Link href="/checkout">
-                  <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition mb-3">
-                    Procéder au paiement
-                  </button>
-                </Link>
+                <div className="space-y-3">
+                  <Link href="/checkout" className="block">
+                    <button className="w-full bg-gradient-to-r from-green-600 to-emerald-700 text-white py-4 rounded-lg font-bold hover:shadow-xl transition text-lg">
+                      ✓ Procéder au paiement
+                    </button>
+                  </Link>
 
-                <button
-                  onClick={handleClearCart}
-                  disabled={isClearing || isLoading}
-                  className="w-full bg-red-500 text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50"
-                >
-                  Vider le panier
-                </button>
-
-                <Link href="/">
-                  <button className="w-full mt-3 bg-gray-200 text-gray-800 py-2 rounded-lg font-semibold hover:bg-gray-300 transition">
-                    Continuer les achats
+                  <button
+                    onClick={handleClearCart}
+                    disabled={isClearing || isLoading}
+                    className="w-full bg-red-500 text-white py-3 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50"
+                  >
+                    🗑️ Vider le panier
                   </button>
-                </Link>
+
+                  <Link href="/assistant" className="block">
+                    <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                      🤖 Continuer la configuration
+                    </button>
+                  </Link>
+
+                  <Link href="/" className="block">
+                    <button className="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-300 transition">
+                      🏠 Retour à l'accueil
+                    </button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

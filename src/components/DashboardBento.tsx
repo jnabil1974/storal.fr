@@ -3,12 +3,18 @@
 import { useShowroom } from '@/contexts/ShowroomContext';
 import { STORE_MODELS, FRAME_COLORS, FABRICS, type Fabric, type FrameColor } from '@/lib/catalog-data';
 import { useEffect, useState } from 'react';
+import { useCart } from '@/contexts/CartContext';
+import { useRouter } from 'next/navigation';
+import type { ProductType } from '@/types/products';
 
 export default function DashboardBento() {
   const { showroomState } = useShowroom();
+  const { addItem } = useCart();
+  const router = useRouter();
   const [highlightedTile, setHighlightedTile] = useState<string | null>(null);
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayType, setOverlayType] = useState<'color' | 'fabric' | 'model' | null>(null);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   // Déterminer quelle tuile illuminer selon le contexte
   useEffect(() => {
@@ -666,20 +672,105 @@ export default function DashboardBento() {
         {/* Bouton de validation - Visible uniquement quand les offres sont affichées */}
         {(showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc || showroomState.singleOfferCalc) && (
           <div className="col-span-2 mt-4">
-            <a
-              href="/panier"
-              className="block w-full bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white text-center font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+            <button
+              onClick={async () => {
+                console.log('🔵 handleValidateConfiguration (DashboardBento) appelée');
+                setIsAddingToCart(true);
+                
+                try {
+                  // Récupérer la configuration depuis localStorage (où ChatAssistant la sauvegarde dans 'storal-cart')
+                  const storedCartJson = localStorage.getItem('storal-cart');
+                  console.log('📦 storal-cart raw:', storedCartJson);
+                  
+                  const storedConfig = storedCartJson ? JSON.parse(storedCartJson) : null;
+                  console.log('📦 storedConfig keys:', Object.keys(storedConfig || {}));
+                  console.log('📦 modelId:', storedConfig?.modelId);
+                  console.log('📦 modelName:', storedConfig?.modelName);
+                  console.log('📦 colorId:', storedConfig?.colorId);
+                  console.log('📦 fabricId:', storedConfig?.fabricId);
+
+                  if (!storedConfig || !storedConfig.modelId) {
+                    console.error('❌ Missing modelId in storedConfig');
+                    alert('⚠️ Configuration non trouvée. Veuillez configurer votre store dans le chatbot.');
+                    setIsAddingToCart(false);
+                    return;
+                  }
+
+                  console.log('✅ Configuration found, searching for model');
+
+                  // Récupérer les données du modèle (STORE_MODELS est un objet, pas un tableau)
+                  const modelsList = Object.values(STORE_MODELS);
+                  console.log('📋 STORE_MODELS count:', modelsList.length);
+                  console.log('🔍 Looking for modelId:', storedConfig.modelId);
+                  
+                  const modelData = modelsList.find((m: any) => m.id === storedConfig.modelId);
+                  console.log('🔍 Found modelData:', modelData?.name || 'NOT FOUND');
+                  
+                  if (!modelData) {
+                    console.error('❌ Model not found:', storedConfig.modelId);
+                    alert('⚠️ Modèle non trouvé. Veuillez configurer votre store dans le chatbot.');
+                    setIsAddingToCart(false);
+                    return;
+                  }
+
+                  // Construire la configuration pour le panier
+                  const configuration = {
+                    width: storedConfig.width || 0,
+                    depth: storedConfig.projection || 0,
+                    motorized: storedConfig.withMotor ?? false,
+                    fabric: 'acrylique' as const,
+                    fabricColor: storedConfig.fabricId || 'non définie',
+                    frameColor: (storedConfig.colorId || 'blanc') as 'blanc' | 'gris' | 'noir' | 'bronze' | 'inox',
+                    armType: 'coffre' as const,
+                    windSensor: false,
+                    rainSensor: false,
+                    avec_pose: storedConfig.avec_pose ?? false,
+                  };
+
+                  // Construire le payload
+                  const payload = {
+                    productId: storedConfig.modelId,
+                    productType: 'store_banne' as ProductType,
+                    productName: storedConfig.modelName || modelData.name,
+                    basePrice: storedConfig.storeHT || 0,
+                    configuration,
+                    quantity: 1,
+                    pricePerUnit: storedConfig.selectedPrice || storedConfig.storeHT || 0,
+                  };
+
+                  console.log('🛒 Ajout au panier (DashboardBento):', payload);
+                  const addedItem = await addItem(payload);
+                  console.log('✅ Article ajouté (DashboardBento):', addedItem);
+                  console.log('🔀 Redirection vers /cart...');
+                  router.push('/cart');
+                  console.log('✅ Commande de redirection exécutée');
+                } catch (error) {
+                  console.error('❌ Erreur lors de l\'ajout au panier:', error);
+                  alert('❌ Erreur lors de l\'ajout au panier. Vérifiez la console pour plus de détails.');
+                } finally {
+                  setIsAddingToCart(false);
+                }
+              }}
+              disabled={isAddingToCart}
+              className="block w-full bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white text-center font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:hover:scale-100"
             >
               <div className="flex items-center justify-center gap-3">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-lg">Valider ma Configuration</span>
+                {isAddingToCart ? (
+                  <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                )}
+                <span className="text-lg">{isAddingToCart ? 'Ajout en cours...' : 'Valider ma Configuration'}</span>
               </div>
               <p className="text-xs text-green-100 mt-2">
                 Ajoutez votre store au panier et finalisez votre commande
               </p>
-            </a>
+            </button>
           </div>
         )}
 

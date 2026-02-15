@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau des Options - Stores Storal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .legend {
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .legend h2 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .legend-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .legend-item strong {
+            display: block;
+            color: #2c3e50;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .legend-item span {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+
+        .price-table {
+            padding: 20px;
+            background: #fff;
+        }
+
+        .price-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .price-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .price-card strong {
+            display: block;
+            color: #2c3e50;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .price-card span {
+            color: #e74c3c;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .table-wrapper {
+            padding: 40px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.9rem;
+        }
+
+        thead {
+            background: #2c3e50;
+            color: white;
+        }
+
+        thead th {
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        thead th:first-child {
+            border-radius: 10px 0 0 0;
+            padding-left: 20px;
+        }
+
+        thead th:last-child {
+            border-radius: 0 10px 0 0;
+        }
+
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafbfc;
+        }
+
+        tbody td {
+            padding: 15px 10px;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        tbody td:first-child {
+            text-align: left;
+            font-weight: 700;
+            color: #2c3e50;
+            padding-left: 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-promo {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .badge-coffre {
+            background: #3498db;
+            color: white;
+        }
+
+        .badge-monobloc {
+            background: #f39c12;
+            color: white;
+        }
+
+        .badge-traditionnel {
+            background: #27ae60;
+            color: white;
+        }
+
+        .badge-specialite {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .check {
+            color: #27ae60;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .cross {
+            color: #e74c3c;
+            font-size: 1.2rem;
+            font-weight: 900;
+        }
+
+        .model-name {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        .footer p {
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .table-wrapper {
+                padding: 20px;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+
+            thead th, tbody td {
+                padding: 10px 5px;
+            }
+
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .price-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏠 Options Disponibles par Modèle</h1>
+            <p>Catalogue complet des stores bannes Storal - Compatibilités et tarifs 2026</p>
+        </div>
+
+        <!-- Légende des Options -->
+        <div class="legend">
+            <h2>📋 Options Principales</h2>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <strong>💡 LED Bras</strong>
+                    <span>Éclairage intégré dans les bras - 873€ à 2 273€ TTC selon avancée et nombre de bras</span>
+                </div>
+                <div class="legend-item">
+                    <strong>✨ LED Coffre</strong>
+                    <span>Éclairage intégré dans le coffre - 716€ TTC</span>
+                </div>
+                <div class="legend-item">
+                    <strong>📐 Lambrequin Fixe</strong>
+                    <span>Protection latérale fixe (droit/vague) - 99€ TTC</span>
+                </div>
+                <div class="legend-item">
+                    <strong>🎭 Lambrequin Enroulable</strong>
+                    <span>Protection enroulable motorisée - 707€ à 1 660€ TTC</span>
+                </div>
+                <div class="legend-item">
+                    <strong>⬆️ Pose Plafond</strong>
+                    <span>Fixation au plafond - Prix variable selon modèle</span>
+                </div>
+            </div>
+
+            <h2 style="margin-top: 30px;">💰 Tarifs Options Principales (TTC avec TVA réduite 10%)*</h2>
+            <div class="price-row">
+                <div class="price-card">
+                    <strong>LED Bras (2 bras)</strong>
+                    <span>873€ - 1 269€ TTC</span>
+                </div>
+                <div class="price-card">
+                    <strong>LED Bras (4 bras)</strong>
+                    <span>1 427€ - 2 273€ TTC</span>
+                </div>
+                <div class="price-card">
+                    <strong>LED Coffre</strong>
+                    <span>716€ TTC</span>
+                </div>
+                <div class="price-card">
+                    <strong>Lambrequin Fixe</strong>
+                    <span>99€ TTC</span>
+                </div>
+            </div>
+            <div class="price-row">
+                <div class="price-card">
+                    <strong>Lambrequin Enroulable Manuel</strong>
+                    <span>707€ - 1 254€ TTC</span>
+                </div>
+                <div class="price-card">
+                    <strong>Lambrequin Enroulable Motorisé</strong>
+                    <span>1 026€ - 1 660€ TTC</span>
+                </div>
+                <div class="price-card">
+                    <strong>RAL Spécifique</strong>
+                    <span>273€ TTC</span>
+                </div>
+                <div class="price-card">
+                    <strong>Auvent (Monobloc)</strong>
+                    <span>89€ TTC/mètre</span>
+                </div>
+            </div>
+            <p style="font-size: 0.85rem; color: #7f8c8d; margin-top: 15px; font-style: italic;">
+                * TVA réduite 10% applicable pour pose par nos experts et maison de plus de 2 ans. 
+                TVA normale 20% pour travaux sans pose professionnelle.
+            </p>
+        </div>
+
+        <!-- Tableau de compatibilité -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Modèle</th>
+                        <th>Type</th>
+                        <th>💡 LED Bras</th>
+                        <th>✨ LED Coffre</th>
+                        <th>📐 Lambrequin Fixe</th>
+                        <th>🎭 Lambrequin Enroulable</th>
+                        <th>⬆️ Pose Plafond</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- COFFRES -->
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>KISSIMY</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 4.83m - Coffre compact</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>KISSIMY PROMO</strong> <span class="badge badge-promo">PROMO</span></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 4.83m - Série limitée</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>KITANGUY</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 5.85m - Best-seller</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>KITANGUY 2</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 5.85m - LED Coffre</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>HELIOM</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 6m - Design carré</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>HELIOM PLUS</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 6m - Grande avancée 4m</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>KALY'O</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 6m - Nouveauté 2026</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>DYNASTA</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 12m - Grande largeur</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>DYNASTA PROMO</strong> <span class="badge badge-promo">PROMO</span></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 6m - Prix réduit</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>BELHARRA</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 12m - Haut de gamme</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>BELHARRA PROMO</strong> <span class="badge badge-promo">PROMO</span></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 6m - Prix réduit</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>BELHARRA 2</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 12m - Full LED</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-coffre">Coffre</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+
+                    <!-- MONOBLOCS -->
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>MADRID</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 12m - Monobloc standard</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-monobloc">Monobloc</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>BERLIN</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 12m - Poids lourd 4.5m</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-monobloc">Monobloc</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+
+                    <!-- TRADITIONNELS -->
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>GÈNES</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 6m - Économique</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-traditionnel">Traditionnel</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>MONTRÉAL</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 12m - Grande largeur</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-traditionnel">Traditionnel</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+
+                    <!-- SPÉCIALITÉ -->
+                    <tr>
+                        <td>
+                            <div class="model-name">
+                                <span><strong>BRAS CROISÉS</strong></span>
+                                <span style="font-size: 0.75rem; color: #7f8c8d;">Max 4m - Balcons étroits</span>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-specialite">Spécialité</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>STORAL</strong> - Stores bannes sur mesure</p>
+            <p>Tarifs TTC avec TVA réduite 10% (pose professionnelle + maison >2 ans) - 2026</p>
+            <p>📞 01 85 09 34 46 | 📧 contact@storal.fr</p>
+        </div>
+    </div>
+</body>
+</html>

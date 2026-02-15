@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "icons": "node scripts/generate-icons.js",
-    "export-catalog": "tsx scripts/export-catalog-data.ts"
+    "export-catalog": "tsx scripts/export-catalog-data.ts",
+    "generate:catalogs": "tsx scripts/generate-catalog-files.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.24",

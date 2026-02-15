@@ -3,6 +3,66 @@
 // ==========================================
 // 1. TYPES & INTERFACES
 // ==========================================
+
+// ==========================================
+// HELPERS - Prix et Dimensions
+// ==========================================
+
+/**
+ * Calcule le prix minimum d'un modèle (prix de base TTC avec TVA 10%)
+ * Prend la configuration la plus petite (avancée min, largeur min)
+ */
+export function getMinimumPrice(model: StoreModel): number {
+  // Trouver l'avancée minimale disponible
+  const projections = Object.keys(model.buyPrices).map(Number).sort((a, b) => a - b);
+  if (projections.length === 0) return 0;
+  
+  const minProjection = projections[0];
+  const priceGrid = model.buyPrices[minProjection];
+  
+  if (!priceGrid || priceGrid.length === 0) return 0;
+  
+  // Prendre le premier palier (largeur la plus petite)
+  const minPriceHT = priceGrid[0].priceHT;
+  
+  // Appliquer le coefficient du modèle (ou COEFF_MARGE par défaut)
+  const coeff = model.salesCoefficient ?? 1.8; // COEFF_MARGE sera défini plus bas
+  const priceVenteHT = minPriceHT * coeff;
+  
+  // Appliquer TVA réduite 10%
+  const priceTTC = priceVenteHT * 1.10;
+  
+  return Math.round(priceTTC);
+}
+
+/**
+ * Extrait les dimensions min/max d'un modèle
+ */
+export function getModelDimensions(model: StoreModel): {
+  minWidth: number;
+  maxWidth: number;
+  minProjection: number;
+  maxProjection: number;
+} {
+  // Avancées disponibles
+  const projections = Object.keys(model.buyPrices).map(Number).sort((a, b) => a - b);
+  const minProjection = projections.length > 0 ? projections[0] : 0;
+  const maxProjection = model.compatibility?.max_projection || (projections.length > 0 ? projections[projections.length - 1] : 0);
+  
+  // Largeur min : prendre la plus petite largeur min parmi toutes les avancées
+  const minWidthValues = Object.values(model.minWidths || {});
+  const minWidth = minWidthValues.length > 0 ? Math.min(...minWidthValues) : 0;
+  
+  // Largeur max : depuis compatibility
+  const maxWidth = model.compatibility?.max_width || 0;
+  
+  return {
+    minWidth,
+    maxWidth,
+    minProjection,
+    maxProjection
+  };
+}
 export interface FrameColor {
   id: string;
   name: string;
@@ -42,6 +102,8 @@ export interface StoreModel {
   features: string[];
   compatibility: StoreModelCompatibility;
   image: string;
+  // Types de toiles compatibles (codes: ORCH, ORCH_MAX, SATTLER)
+  compatible_toile_types?: string[];
   // Logique pour déterminer le nombre de bras (impacte le prix LED)
   armLogic: 'standard_2' | 'force_2_3_4' | 'couples_4_6';
   // Largeur Minimale de fabrication pour chaque avancée { 1500: 1840 }
@@ -55,6 +117,8 @@ export interface StoreModel {
     manual: { maxW: number, price: number }[];
     motorized: { maxW: number, price: number }[];
   };
+  // Coefficient de vente spécifique au modèle (si absent, utilise COEFF_MARGE par défaut)
+  salesCoefficient?: number;
 }
 
 // ==========================================
@@ -66,6 +130,25 @@ export const CATALOG_SETTINGS = {
   TVA_REDUIT: 1.10,
   promoCode: 'BIENVENUE2026',
   promoDiscount: 0.05,
+  
+  // Coefficients par type d'option (marges différenciées)
+  OPTIONS_COEFFICIENTS: {
+    LED_ARMS: 2.0,           // 100% de marge sur technologie LED bras
+    LED_CASSETTE: 2.0,       // 100% de marge sur LED coffre
+    LAMBREQUIN_FIXE: 1.5,    // 50% de marge sur accessoire basique
+    LAMBREQUIN_ENROULABLE: 1.8, // 80% de marge sur lambrequin motorisé
+    CEILING_MOUNT: 1.6,      // 60% de marge sur pose plafond
+    AUVENT: 1.7,             // 70% de marge sur auvent
+    FABRIC: 1.4,             // 40% de marge sur toile (commodité)
+    FRAME_COLOR_CUSTOM: 1.8, // 80% de marge sur RAL spécifique
+    INSTALLATION: 1.3,       // 30% de marge sur main d'œuvre
+  },
+  
+  // Frais de transport pour stores de grande dimension
+  TRANSPORT: {
+    SEUIL_LARGEUR_MM: 3650,  // Seuil de déclenchement en millimètres de largeur
+    FRAIS_HT: 150,           // Frais de transport en € HT (appliqués si largeur > seuil)
+  }
 };
 
 // ==========================================
@@ -114,12 +197,22 @@ export const FABRIC_FAMILIES = {
 // ==========================================
 // 4. COULEURS & TOILES
 // ==========================================
+
+// Import depuis les catalogues générés automatiquement
+import { MATEST_COLORS, STANDARD_COLORS as MATEST_STANDARD_COLORS, getColorByRAL } from './catalog-couleurs';
+import { TOILE_TYPES, getCompatibleToileTypes, getToilesSummaryForChatbot } from './catalog-toiles';
+
+// Adapter le format pour la compatibilité avec le code existant
 export const FRAME_COLORS: FrameColor[] = [
   { id: '9016', name: 'Blanc (RAL 9016)', hex: '#FFFFFF', price: 0, category: 'standard' },
   { id: '1015', name: 'Beige (RAL 1015)', hex: '#F3E5AB', price: 0, category: 'standard' },
   { id: '7016', name: 'Gris Anthracite (RAL 7016)', hex: '#383E42', price: 0, category: 'standard' },
   { id: 'custom', name: 'Autre RAL (Hors Nuancier)', hex: '#cccccc', price: 138, category: 'custom' }
 ];
+
+// Pour accéder au catalogue complet Matest depuis le chatbot
+export { MATEST_COLORS, STANDARD_COLORS, getColorByRAL } from './catalog-couleurs';
+export { TOILE_TYPES, getCompatibleToileTypes, getToilesSummaryForChatbot } from './catalog-toiles';
 
 export const FABRICS: Fabric[] = [
   { id: 'orc_0001', ref: '0001', name: 'Écru', folder: '/images/Toiles/DICKSON/DICKSON ORCHESTREA UNI', category: 'uni', price: 0 },
@@ -152,6 +245,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Le coffre compact sur mesure, idéal pour les balcons.",
     features: ["Design doux", "Compact", "Éclairage Bras"],
     image: "/images/stores/KISSIMY.png",
+    compatible_toile_types: ['ORCH', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 4830, max_projection: 3000 },
     armLogic: 'standard_2',
     minWidths: { 1500: 1835, 1750: 2085, 2000: 2335, 2500: 2835, 3000: 3355 },
@@ -161,7 +255,8 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       2000: [{ maxW: 2470, priceHT: 1164 }, { maxW: 3650, priceHT: 1246 }, { maxW: 4830, priceHT: 1356 }],
       2500: [{ maxW: 2470, priceHT: 1295 }, { maxW: 3650, priceHT: 1425 }, { maxW: 4830, priceHT: 1676 }],
       3000: [{ maxW: 2470, priceHT: 1354 }, { maxW: 3650, priceHT: 1495 }, { maxW: 4830, priceHT: 1760 }]
-    }
+    },
+    salesCoefficient: 1.0  // Coefficient de test pour vérification
   },
 
   // --- 2. KISSIMY PROMO (Page 34) ---
@@ -174,6 +269,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "L'essentiel du store coffre à prix serré. Moteur Sunea iO inclus.",
     features: ["PRIX PROMO", "Moteur Sunea iO", "Option LED Bras"],
     image: "/images/stores/KISSIMY.png",
+    compatible_toile_types: ['ORCH'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 4830, max_projection: 3000, allowed_colors: ['9016', '1015', '7016'] },
     armLogic: 'standard_2',
     minWidths: { 1500: 1835, 1750: 2085, 2000: 2335, 2500: 2835, 3000: 3355 },
@@ -183,7 +279,8 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       2000: [{ maxW: 2470, priceHT: 1064 }, { maxW: 3650, priceHT: 1116 }, { maxW: 4830, priceHT: 1156 }],
       2500: [{ maxW: 2470, priceHT: 1165 }, { maxW: 3650, priceHT: 1225 }, { maxW: 4830, priceHT: 1577 }],
       3000: [{ maxW: 2470, priceHT: 1224 }, { maxW: 3650, priceHT: 1295 }, { maxW: 4830, priceHT: 1649 }]
-    }
+    },
+    salesCoefficient: 1.0  // Coefficient de test pour vérification
   },
 
   // --- 3. KITANGUY (Page 34-35) ---
@@ -196,6 +293,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Le best-seller polyvalent jusqu'à 3.25m d'avancée.",
     features: ["Robuste", "Polyvalent", "Sur mesure"],
     image: "/images/stores/KITANGUY.png",
+    compatible_toile_types: ['ORCH', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 5850, max_projection: 3250 },
     armLogic: 'standard_2',
     minWidths: { 1500: 1895, 1750: 2145, 2000: 2395, 2500: 2895, 3000: 3415, 3250: 3645 },
@@ -223,6 +321,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Design premium avec éclairage LED intégré au coffre.",
     features: ["Nouveau Design", "LED Coffre", "Finition Luxe"],
     image: "/images/stores/KITANGUY_2.png",
+    compatible_toile_types: ['ORCH', 'SATT'],
     compatibility: { led_arms: true, led_box: true, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 5850, max_projection: 3250 },
     armLogic: 'standard_2',
     minWidths: { 1500: 1910, 1750: 2160, 2000: 2410, 2500: 2910, 3000: 3410, 3250: 3660 },
@@ -250,6 +349,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Design cubique ultra-tendance pour architecture moderne.",
     features: ["Coffre Carré", "Design épuré", "Avancée 3.5m"],
     image: "/images/stores/HELIOM.png",
+    compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: true, lambrequin_fixe: false, lambrequin_enroulable: false, max_width: 6000, max_projection: 3500 },
     armLogic: 'standard_2',
     minWidths: { 1500: 2340, 2000: 2840, 2500: 3340, 2750: 3590, 3000: 3840, 3250: 4090, 3500: 4340 },
@@ -278,6 +378,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Version renforcée jusqu'à 4m d'avancée avec option lambrequin.",
     features: ["Avancée 4m", "Lambrequin Enroulable", "Bras Renforcés"],
     image: "/images/stores/HELIOM.png",
+    compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: true, lambrequin_fixe: false, lambrequin_enroulable: true, max_width: 6000, max_projection: 4000 },
     armLogic: 'standard_2',
     minWidths: { 2500: 3420, 2750: 3670, 3000: 3920, 3250: 4170, 3500: 4420, 4000: 4920 },
@@ -321,6 +422,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "La nouveauté 2026. Polyvalent avec option lambrequin enroulable.",
     features: ["Nouveauté", "Lambrequin Optionnel", "Éclairage Bras"],
     image: "/images/stores/KALY_O.png",
+    compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 6000, max_projection: 3500 },
     armLogic: 'standard_2',
     minWidths: { 1500: 2160, 2000: 2660, 2500: 3160, 2750: 3410, 3000: 3720, 3250: 3970, 3500: 4220 },
@@ -365,6 +467,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Le géant des terrasses, jusqu'à 12m de large.",
     features: ["Jusqu'à 12m", "Bras Renforcés", "Idéal CHR"],
     image: "/images/stores/DYNASTA.png",
+    compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 4000 },
     armLogic: 'couples_4_6',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3250: 3880, 3500: 4130, 4000: 4630 },
@@ -386,7 +489,8 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       { maxW: 10620, price: 1036 },
       { maxW: 11220, price: 1184 },
       { maxW: 12000, price: 1250 }
-    ]
+    ],
+    salesCoefficient: 1.0  // Coefficient de test pour vérification
   },
 
   // --- 9. DYNASTA PROMO (Page 40) ---
@@ -399,6 +503,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "La robustesse du Dynasta à prix promo (limité à 6m). Moteur Sunea iO.",
     features: ["PRIX PROMO", "Largeur Max 6m", "Option LED Bras"],
     image: "/images/stores/DYNASTA.png",
+    compatible_toile_types: ['ORCH'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 6000, max_projection: 4000, allowed_colors: ['9016', '1015', '7016'] },
     armLogic: 'force_2_3_4',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3500: 4130, 4000: 4630 },
@@ -419,7 +524,8 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       { maxW: 10620, price: 1036 },
       { maxW: 11220, price: 1184 },
       { maxW: 12000, price: 1250 }
-    ]
+    ],
+    salesCoefficient: 1.0  // Coefficient de test pour vérification
   },
 
   // --- 10. BELHARRA (Page 40) ---
@@ -432,6 +538,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Le haut de gamme absolu jusqu'à 12m. Design fluide.",
     features: ["Jusqu'à 12m", "Finition Luxe", "Lambrequin Enroulable"],
     image: "/images/stores/BELHARRA.png",
+    compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 12000, max_projection: 4000 },
     armLogic: 'couples_4_6',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3250: 3880, 3500: 4130, 4000: 4630 },
@@ -482,6 +589,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Le design Belharra à prix promo (limité à 6m). Moteur Sunea iO.",
     features: ["PRIX PROMO", "Design Premium", "Option LED Bras"],
     image: "/images/stores/BELHARRA.png",
+    compatible_toile_types: ['ORCH'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 6000, max_projection: 4000, allowed_colors: ['9016', '1015', '7016'] },
     armLogic: 'force_2_3_4',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3500: 4130, 4000: 4630 },
@@ -531,6 +639,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Le Belharra ultime avec éclairage LED dans les bras ET le coffre.",
     features: ["LED Coffre + Bras", "Design Luxe", "Lambrequin Enroulable"],
     image: "/images/stores/BELHARRA_2.png",
+    compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: true, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 12000, max_projection: 4000 },
     armLogic: 'couples_4_6',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3250: 3880, 3500: 4130, 4000: 4630 },
@@ -580,6 +689,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Store monobloc sans coffre avec tube carré 40×40. Idéal pour hauteur de pose réduite.",
     features: ["Encombrement réduit", "Tube carré 40×40", "Option Auvent"],
     image: "/images/stores/store_monobloc.png",
+    compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 4000 },
     armLogic: 'couples_4_6',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3050, 3000: 3550, 3500: 4050, 4000: 4550 },
@@ -607,6 +717,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Store monobloc renforcé avec bras XXL jusqu'à 4.5m d'avancée. Certifié Classe 3 vent.",
     features: ["Bras XXL 4.5m", "Classe 3 Vent", "Supports renforcés", "Option Auvent"],
     image: "/images/stores/store_traditionnel.png",
+    compatible_toile_types: ['ORCH'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 4500 },
     armLogic: 'couples_4_6',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3050, 3000: 3550, 3500: 4050, 4000: 4550, 4500: 5050 },
@@ -635,6 +746,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Le store traditionnel par excellence, idéal pour les balcons et budgets serrés.",
     features: ["Prix économique", "Installation simple", "Option Auvent"],
     image: "/images/stores/store_traditionnel.png",
+    compatible_toile_types: ['ORCH'],
     compatibility: { led_arms: false, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 6000, max_projection: 3000 },
     armLogic: 'standard_2',
     minWidths: { 1500: 1800, 2000: 2300, 2500: 2800, 3000: 3300 },
@@ -659,6 +771,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Version renforcée du store traditionnel pour couvrir de grandes largeurs à prix maîtrisé.",
     features: ["Jusqu'à 12m", "Supports renforcés", "Prix maîtrisé", "Option Auvent"],
     image: "/images/stores/store_traditionnel.png",
+    compatible_toile_types: ['ORCH'],
     compatibility: { led_arms: false, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 3500 },
     armLogic: 'couples_4_6',
     minWidths: { 1500: 1800, 2000: 2300, 2500: 2800, 3000: 3300, 3500: 3800 },
@@ -685,6 +798,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "La solution exclusive pour les terrasses et balcons étroits où l'avancée est supérieure à la largeur. Bras superposés avec mécanique spéciale.",
     features: ["Configuration Unique", "Bras Superposés", "Avancée > Largeur", "Option Auvent"],
     image: "/images/stores/store_monobloc.png",
+    compatible_toile_types: ['ORCH', 'SATT'],
     compatibility: { led_arms: false, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 4000, max_projection: 3500 },
     armLogic: 'standard_2',
     minWidths: { 1500: 1100, 2000: 1600, 2500: 2100, 3000: 2600, 3500: 3100 },
@@ -966,12 +1080,97 @@ export function calculateFinalPrice(config: {
     }
   }
 
-  // 4. Prix de Vente
-  const prixVenteHT = totalAchatHT * CATALOG_SETTINGS.COEFF_MARGE;
+  // 4. Application des coefficients différenciés
+  // Séparer le prix de base du store (tier.priceHT) des options déjà ajoutées
+  const prixStoreBaseAchatHT = tier.priceHT;
+  const prixOptionsAchatHT = totalAchatHT - prixStoreBaseAchatHT;
+  
+  // Appliquer coefficient spécifique au store (ou COEFF_MARGE par défaut)
+  const coeffStore = model.salesCoefficient ?? CATALOG_SETTINGS.COEFF_MARGE;
+  let totalVenteHT = prixStoreBaseAchatHT * coeffStore;
+  
+  // Pour les options, on recalcule avec les coefficients appropriés
+  // LED Bras
+  if (config.options.ledArms && model.compatibility.led_arms) {
+    let nbBras = 2;
+    try {
+      nbBras = calculateArmsForLargeWidth(config.modelId, config.width, config.projection);
+    } catch (error) {
+      // Déjà géré ci-dessus
+    }
+    const ledGrid = OPTIONS_PRICES.LED_ARMS[usedProjection];
+    if (ledGrid) {
+      const ledPriceAchatHT = ledGrid[nbBras] || ledGrid[2] || 0;
+      totalVenteHT += ledPriceAchatHT * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.LED_ARMS;
+    }
+  }
+  
+  // LED Coffre
+  if (config.options.ledBox && model.compatibility.led_box) {
+    totalVenteHT += OPTIONS_PRICES.LED_CASSETTE * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.LED_CASSETTE;
+  }
+  
+  // RAL spécifique
+  if (config.options.isCustomColor) {
+    totalVenteHT += OPTIONS_PRICES.FRAME_SPECIFIC_RAL * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.FRAME_COLOR_CUSTOM;
+  }
+  
+  // Pose plafond
+  if (config.options.isPosePlafond) {
+    const ceilingGrid = model.ceilingMountPrices;
+    if (ceilingGrid && ceilingGrid.length > 0) {
+      const tier = ceilingGrid.find(t => config.width <= t.maxW);
+      if (tier) {
+        totalVenteHT += tier.price * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.CEILING_MOUNT;
+      }
+    }
+  }
+  
+  // Lambrequin Fixe
+  if (config.options.lambrequinFixe && model.compatibility.lambrequin_fixe) {
+    totalVenteHT += OPTIONS_PRICES.LAMBREQUIN_FIXE * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.LAMBREQUIN_FIXE;
+  }
+  
+  // Lambrequin Déroulant
+  if (config.options.lambrequinEnroulable && model.compatibility.lambrequin_enroulable) {
+    if (config.modelId === 'kalyo' && config.projection > 3250) {
+      // Restriction technique KALY'O
+    } else {
+      const grid = model.lambrequinEnroulablePrices;
+      const tiers = config.options.lambrequinMotorized ? grid?.motorized : grid?.manual;
+      if (tiers && tiers.length > 0) {
+        const tier = tiers.find(t => config.width <= t.maxW && t.maxW <= 6000);
+        if (tier) {
+          totalVenteHT += tier.price * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.LAMBREQUIN_ENROULABLE;
+        }
+      }
+    }
+  }
+  
+  // 5. Application de la TVA
   const tauxTva = config.options.isPosePro ? CATALOG_SETTINGS.TVA_REDUIT : CATALOG_SETTINGS.TVA_NORMAL;
+  let totalVenteTTC = totalVenteHT * tauxTva;
+  
+  // 6. Frais de transport basés sur la dimension (largeur > 3650mm)
+  let transportHT = 0;
+  let transportTTC = 0;
+  const transportApplicable = config.width > CATALOG_SETTINGS.TRANSPORT.SEUIL_LARGEUR_MM;
+  
+  if (transportApplicable) {
+    transportHT = CATALOG_SETTINGS.TRANSPORT.FRAIS_HT;
+    transportTTC = transportHT * tauxTva;
+    totalVenteHT += transportHT;
+    totalVenteTTC += transportTTC;
+  }
   
   return {
-    ttc: Math.round(prixVenteHT * tauxTva),
-    ht: Math.round(prixVenteHT)
+    ttc: Math.round(totalVenteTTC),
+    ht: Math.round(totalVenteHT),
+    transport: {
+      applicable: transportApplicable,
+      montantHT: Math.round(transportHT),
+      montantTTC: Math.round(transportTTC),
+      raison: transportApplicable ? `Largeur ${config.width}mm > ${CATALOG_SETTINGS.TRANSPORT.SEUIL_LARGEUR_MM}mm` : null
+    }
   };
 }

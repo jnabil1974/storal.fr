@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, Dispatch, SetStateAction } from 'react';
+import { useState, useRef, useEffect, Dispatch, SetStateAction } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useChat } from '@ai-sdk/react';
@@ -114,16 +114,6 @@ interface Cart {
   sousCoffrePrice?: number;
   poseHT?: number;
   tvaAmount?: number;
-  // Informations terrasse et environnement
-  terraceLength?: number | null; // Longueur terrasse en cm
-  terraceWidth?: number | null; // Largeur terrasse en cm
-  environment?: string | null; // Environnement (bord de mer, ville, etc.)
-  orientation?: string | null; // Nord, Sud, Est, Ouest
-  installHeight?: number | null; // Hauteur de pose en m
-  cableExit?: string | null; // Sortie de câble (Gauche/Droite)
-  ledArms?: boolean; // LED bras
-  ledBox?: boolean; // LED coffre
-  obstacles?: string | null; // Obstacles éventuels
 }
 
 interface ChatAssistantProps {
@@ -139,7 +129,7 @@ const ProductModal = ({ model, onClose }: { model: StoreModel | null; onClose: (
     <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         <header className="p-4 border-b flex justify-between items-center"><h2 className="text-2xl font-bold">{model.name}</h2><button onClick={onClose} className="text-gray-500 hover:text-gray-900 text-3xl">&times;</button></header>
-        <div className="overflow-y-auto p-6"><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="relative w-full h-80 rounded-lg overflow-hidden"><Image src={`/images/models/${model.id.toUpperCase()}.png`} alt={model.name} fill className="object-cover" /></div><div><h3 className="text-xl font-semibold mb-3">Détails Techniques</h3><ul className="space-y-2 text-gray-700">{model.features.map((feature, idx) => (<li key={idx} className="flex items-start"><span className="text-blue-600 mr-2 font-bold">✓</span>{feature}</li>))}<li><span className="text-blue-600 mr-2 font-bold">✓</span>Armature en aluminium extrudé</li><li><span className="text-blue-600 mr-2 font-bold">✓</span>Visserie d'assemblage en inox</li><li><span className="text-blue-600 mr-2 font-bold">✓</span>Garantie structure : 12 ans</li></ul></div></div></div>
+        <div className="overflow-y-auto p-6"><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="relative w-full h-80 rounded-lg overflow-hidden"><Image src={`/images/models/${model.id.toUpperCase()}.png`} alt={model.name} fill className="object-cover" /></div><div><h3 className="text-xl font-semibold mb-3">Détails Techniques</h3><ul className="space-y-2 text-gray-700">{model.features.map((feature, idx) => (<li key={idx} className="flex items-start"><span className="text-blue-600 mr-2 font-bold">✓</span>{feature}</li>))}<li><span className="text-blue-600 mr-2 font-bold">✓</span>Armature en aluminium extrudé</li><li><span className="text-blue-600 mr-2 font-bold">✓</span>Visserie d'assemblage en inox</li><li><span className="text-blue-600 mr-2 font-bold">✓</span>Garantie structure : 5 ans</li></ul></div></div></div>
         <footer className="p-4 bg-gray-50 border-t rounded-b-2xl text-right"><button onClick={onClose} className="px-6 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300">Fermer</button></footer>
       </div>
     </div>
@@ -186,7 +176,6 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
   const [persistedSingleOfferCalc, setPersistedSingleOfferCalc] = useState<any>(null); // Persiste l'offre unique même après fermeture de l'outil
   const [persistedAvecPose, setPersistedAvecPose] = useState<boolean>(false); // Persiste avec_pose
   const [honeypot, setHoneypot] = useState(''); // 🍯 Honeypot anti-bot
-  const [waitingForResponse, setWaitingForResponse] = useState(false); // Attente après validation d'un outil
 
   // Fonction pour sauvegarder dans localStorage
   const saveToCart = (updates: Partial<Cart>) => {
@@ -197,16 +186,14 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
   };
 
   // 🛒 Fonction pour ajouter au panier Supabase via API
-  const handleAddToCart = useCallback(async () => {
-    console.log('🔵 handleAddToCart appelée');
-    
+  const handleAddToCart = async () => {
     if (!cart) {
       alert('⚠️ Veuillez configurer un store avant d\'ajouter au panier');
       return;
     }
 
     try {
-      const modelData = Object.values(STORE_MODELS).find(m => m.id === cart.modelId);
+      const modelData = STORE_MODELS.find(m => m.id === cart.modelId);
       if (!modelData) {
         alert('⚠️ Modèle non trouvé');
         return;
@@ -227,16 +214,6 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
           armType: 'coffre' as const,
           windSensor: false,
           rainSensor: false,
-          // Informations terrasse et environnement
-          terraceLength: cart.terraceLength,
-          terraceWidth: cart.terraceWidth,
-          environment: cart.environment,
-          orientation: cart.orientation,
-          installHeight: cart.installHeight,
-          cableExit: cart.cableExit,
-          obstacles: cart.obstacles,
-          ledArms: cart.ledArms,
-          ledBox: cart.ledBox,
         },
         quantity: 1,
         pricePerUnit: cart.selectedPrice || cart.priceStandard || cart.storeHT || 0,
@@ -247,14 +224,12 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
       console.log('✅ Article ajouté:', addedItem);
       
       // Redirection vers la page panier
-      console.log('🔀 Redirection vers /cart...');
       router.push('/cart');
-      console.log('✅ Commande de redirection exécutée');
     } catch (error) {
       console.error('❌ Erreur ajout panier:', error);
       alert('❌ Erreur lors de l\'ajout au panier. Vérifiez la console pour plus de détails.');
     }
-  }, [cart, addItem, router]);
+  };
 
   // 🔥 Calcul dynamique de la pose selon la largeur en cm
   const calculateInstallationCost = (widthCm: number): number => {
@@ -269,35 +244,6 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
 
   // 🔥 Sauvegarder automatiquement la configuration quand l'outil change
   useEffect(() => {
-    // 🚀 Gérer la redirection vers le formulaire de contact pré-rempli
-    if (activeTool?.toolName === 'redirect_to_contact') {
-      const input = (activeTool.input as Record<string, unknown>) || {};
-      const largeur = input.largeur as string || '';
-      const avancee = input.avancee as string || '';
-      const reason = input.reason as string || '';
-      
-      const preFilledMessage = `Demande de configuration technique avancée via Agent Storal
-
-Projet : Store banne avec grande avancée
-
-📐 Dimensions souhaitées :
-- Largeur : ${largeur}m
-- Avancée : ${avancee}m
-
-Raison de la demande : ${reason}
-
-Je souhaite être contacté par votre bureau d'études pour valider la faisabilité technique de ce projet et obtenir un devis personnalisé.`;
-
-      const contactUrl = `/contact?subject=${encodeURIComponent('Configuration technique avancée')}&title=${encodeURIComponent('Projet store banne > 4m avancée')}&message=${encodeURIComponent(preFilledMessage)}`;
-      
-      // Rediriger après un court délai pour que l'utilisateur voie le message
-      setTimeout(() => {
-        window.location.href = contactUrl;
-      }, 2000);
-      
-      return; // Sortir de useEffect
-    }
-    
     if (activeTool?.toolName === 'open_model_selector') {
       const input = (activeTool.input as Record<string, unknown>) || {};
       const width = input.width as number || null;
@@ -388,15 +334,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         includes_awning = false, awning_price_ht = 0,
         includes_sous_coffre = false, sous_coffre_price_ht = 0,
         selected_model, model_name, width, depth, frame_color, frame_color_name, fabric_color, fabric_name, exposure, with_motor,
-        taux_tva = 20, montant_pose_ht = 0, avec_pose = false,
-        // Informations terrasse et environnement
-        terrace_length,
-        terrace_width,
-        environment,
-        orientation,
-        install_height,
-        cable_exit,
-        obstacles
+        taux_tva = 20, montant_pose_ht = 0, avec_pose = false
       } = input;
       
       // Calculer le total des options choisies
@@ -452,17 +390,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         colorId: frame_color || cart?.colorId,
         fabricId: fabric_color || cart?.fabricId,
         exposure: exposure || cart?.exposure,
-        withMotor: with_motor !== undefined ? with_motor : cart?.withMotor,
-        // Informations terrasse et environnement
-        terraceLength: terrace_length,
-        terraceWidth: terrace_width,
-        environment,
-        orientation,
-        installHeight: install_height,
-        cableExit: cable_exit,
-        obstacles,
-        ledArms: includes_led_arms,
-        ledBox: includes_led_box,
+        withMotor: with_motor !== undefined ? with_motor : cart?.withMotor
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -548,7 +476,6 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         setSelectedColorId(colorId);
         saveToCart({ colorId });
         if (activeTool?.toolName === 'open_color_selector') {
-          setWaitingForResponse(true); // Démarrer l'attente
           addToolResult({ toolCallId: activeTool.toolCallId, result: { frame_color_id: colorId, frame_color_name: colorName, validated: true } } as any);
           sendMessage({ text: `J'ai choisi l'armature ${colorName}` });
         }
@@ -557,7 +484,6 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         setSelectedFabricId(fabricId);
         saveToCart({ fabricId });
         if (activeTool?.toolName === 'open_fabric_selector') {
-          setWaitingForResponse(true); // Démarrer l'attente
           addToolResult({ toolCallId: activeTool.toolCallId, result: { fabric_id: fabricId, fabric_name: fabricName, validated: true } } as any);
           sendMessage({ text: `J'ai choisi la toile ${fabricName}` });
         }
@@ -566,7 +492,6 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         setSelectedModelId(modelId);
         saveToCart({ modelId, modelName, priceEco: undefined, priceStandard: undefined, pricePremium: undefined, selectedPrice: undefined, priceType: undefined, storeHT: undefined, ledArmsPrice: undefined, ledBoxPrice: undefined, lambrequinPrice: undefined, poseHT: undefined, tvaAmount: undefined });
         if (activeTool?.toolName === 'open_model_selector') {
-          setWaitingForResponse(true); // Démarrer l'attente
           addToolResult({ toolCallId: activeTool.toolCallId, result: { model_id: modelId, model_name: modelName, validated: true } } as any);
           sendMessage({ text: `Je veux configurer le ${modelName}` });
         }
@@ -574,41 +499,29 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       onSelectEco: (priceHT) => {
         saveToCart({ priceEco: priceHT, selectedPrice: priceHT, priceType: 'eco' });
         if (activeTool?.toolName === 'display_triple_offer') {
-          setWaitingForResponse(true); // Démarrer l'attente
           addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'eco', price_ttc: priceHT, validated: true } } as any);
           sendMessage({ text: `Je sélectionne l'offre Eco à ${priceHT}€ TTC` });
-          // Ajouter au panier puis rediriger
-          setTimeout(() => handleAddToCart(), 500);
         }
       },
       onSelectStandard: (priceHT) => {
         saveToCart({ priceStandard: priceHT, selectedPrice: priceHT, priceType: 'standard' });
         if (activeTool?.toolName === 'display_triple_offer') {
-          setWaitingForResponse(true); // Démarrer l'attente
           addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'standard', price_ttc: priceHT, validated: true } } as any);
           sendMessage({ text: `Je sélectionne l'offre Standard à ${priceHT}€ TTC` });
-          // Ajouter au panier puis rediriger
-          setTimeout(() => handleAddToCart(), 500);
         }
       },
       onSelectPremium: (priceHT) => {
         saveToCart({ pricePremium: priceHT, selectedPrice: priceHT, priceType: 'premium' });
         if (activeTool?.toolName === 'display_triple_offer') {
-          setWaitingForResponse(true); // Démarrer l'attente
           addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_selected: 'premium', price_ttc: priceHT, validated: true } } as any);
           sendMessage({ text: `Je sélectionne l'offre Premium à ${priceHT}€ TTC` });
-          // Ajouter au panier puis rediriger
-          setTimeout(() => handleAddToCart(), 500);
         }
       },
       onSelectOffer: (priceTTC) => {
         saveToCart({ selectedPrice: priceTTC, priceType: 'custom' });
         if (activeTool?.toolName === 'display_single_offer') {
-          setWaitingForResponse(true); // Démarrer l'attente
           addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_validated: true, price_ttc: priceTTC } } as any);
           sendMessage({ text: `Je valide cette configuration à ${priceTTC}€ TTC` });
-          // Ajouter au panier puis rediriger
-          setTimeout(() => handleAddToCart(), 500);
         }
       },
       onTerraceChange: (dims) => {
@@ -626,7 +539,6 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
     persistedSingleOfferCalc,
     persistedAvecPose,
     setShowroomState,
-    handleAddToCart,
   ]);
 
   // UTILISATION NATIVE DU SDK - Méthode la plus stable avec sendMessage
@@ -638,13 +550,11 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
     onToolCall: ({ toolCall }: any) => {
       console.log('🔧 Tool appelé:', toolCall);
       setActiveTool(toolCall);
-      setWaitingForResponse(false); // Nouveau tool reçu, arrêter l'attente
       // 🔥 Ajouter à l'historique des outils (ne pas nettoyer l'ancien)
       setToolHistory(prev => [...prev, toolCall]);
     },
     onFinish: (data: any) => {
       console.log('✅ Réponse terminée, messages:', data.messages?.length || 0);
-      setWaitingForResponse(false); // Réponse terminée, arrêter l'attente
     },
     onError: (err: any) => {
       console.error('❌ Erreur:', err);
@@ -850,20 +760,10 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         {allToolsToRender.map((tool, idx) => {
           const isCurrent = tool === activeTool;
           
-          console.log('🎨 Rendu outil:', tool.toolName, 'isCurrent:', isCurrent, 'toolCallId:', tool.toolCallId);
-          
-          // ⚠️ Les sélecteurs de couleur et toile ne doivent disparaître QUE si une sélection a été faite
+          // ⚠️ Les sélecteurs de couleur et toile doivent disparaître une fois complétés
           const isColorOrFabricSelector = tool.toolName === 'open_color_selector' || tool.toolName === 'open_fabric_selector';
-          
-          // Ne masquer les anciens sélecteurs que s'ils ont été validés (détecté via selectedColorId/selectedFabricId)
           if (isColorOrFabricSelector && !isCurrent) {
-            const hasBeenValidated = 
-              (tool.toolName === 'open_color_selector' && selectedColorId) ||
-              (tool.toolName === 'open_fabric_selector' && selectedFabricId);
-            
-            if (hasBeenValidated) {
-              return null; // Ne pas afficher les anciens sélecteurs validés
-            }
+            return null; // Ne pas afficher les anciens sélecteurs
           }
           
           return (
@@ -894,16 +794,6 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       taux_tva = 20,
       montant_pose_ht = 0,
       avec_pose = false,
-      // Informations terrasse et environnement
-      terrace_length,
-      terrace_width,
-      environment,
-      orientation,
-      install_height,
-      cable_exit,
-      obstacles,
-      includes_led_arms = false,
-      includes_led_box = false,
       // Backward compatibility with old parameter names
       eco_price, standard_price, premium_price
     } = input;
@@ -964,21 +854,6 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       comparisonData
     });
     
-    // Informations supplémentaires à sauvegarder dans le panier
-    const extraInfo = {
-      width,
-      projection: depth,
-      terraceLength: terrace_length,
-      terraceWidth: terrace_width,
-      environment,
-      orientation,
-      installHeight: install_height,
-      cableExit: cable_exit,
-      obstacles,
-      ledArms: includes_led_arms,
-      ledBox: includes_led_box,
-    };
-    
     return (
         <div className={`p-6 rounded-xl border-2 ${isCurrent ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
             <h3 className={`text-center mb-6 ${isCurrent ? 'text-2xl font-bold text-gray-900' : 'text-lg font-semibold text-gray-700'}`}>
@@ -989,17 +864,6 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
                 Configuration : {width}cm × {depth}cm {selected_model ? `| Modèle: ${selected_model}` : ''}
               </p>
             )}
-            
-            {/* 📸 Photo du store configuré */}
-            {isCurrent && selected_model && (() => {
-              const model = STORE_MODELS.find(m => m.id === selected_model || m.name.toLowerCase().includes(selected_model.toLowerCase()));
-              return model ? (
-                <div className="mb-6 relative w-full h-64 md:h-80 rounded-lg overflow-hidden shadow-lg">
-                  <Image src={model.image} alt={model.name} fill className="object-cover" />
-                </div>
-              ) : null;
-            })()}
-            
             <div className={`grid gap-4 ${isCurrent ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-3'}`}>
                 {/* 💚 ECO OFFER */}
                 <button 
@@ -1010,7 +874,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
                       setTripleOfferTimeoutId(null);
                     }
                     setTripleOfferDisplayed(false);
-                    saveToCart({ priceEco: ecoCalc.totalTTC, selectedPrice: ecoCalc.totalTTC, priceType: 'eco', storeHT: ecoCalc.storeHT, poseHT: ecoCalc.poseHT, tvaAmount: ecoCalc.tvaMontant, ...extraInfo });
+                    saveToCart({ priceEco: ecoCalc.totalTTC, selectedPrice: ecoCalc.totalTTC, priceType: 'eco', storeHT: ecoCalc.storeHT, poseHT: ecoCalc.poseHT, tvaAmount: ecoCalc.tvaMontant });
                   }} 
                   className={`p-6 rounded-xl text-center transition-all ${isCurrent ? 'bg-white border-2 border-gray-200 hover:border-blue-500 hover:shadow-lg' : 'bg-gray-100 border border-gray-300'}`} 
                   disabled={!isCurrent}
@@ -1037,7 +901,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
                       setTripleOfferTimeoutId(null);
                     }
                     setTripleOfferDisplayed(false);
-                    saveToCart({ priceStandard: standardCalc.totalTTC, selectedPrice: standardCalc.totalTTC, priceType: 'standard', storeHT: standardCalc.storeHT, poseHT: standardCalc.poseHT, tvaAmount: standardCalc.tvaMontant, lambrequinPrice: (standardCalc.storeHT || 0) > (ecoCalc?.storeHT || 0) ? (standardCalc.storeHT || 0) - (ecoCalc?.storeHT || 0) : 0, ...extraInfo });
+                    saveToCart({ priceStandard: standardCalc.totalTTC, selectedPrice: standardCalc.totalTTC, priceType: 'standard', storeHT: standardCalc.storeHT, poseHT: standardCalc.poseHT, tvaAmount: standardCalc.tvaMontant, lambrequinPrice: (standardCalc.storeHT || 0) > (ecoCalc?.storeHT || 0) ? (standardCalc.storeHT || 0) - (ecoCalc?.storeHT || 0) : 0 });
                   }} 
                   className={`p-6 rounded-xl text-center transition-all relative ${isCurrent ? 'bg-white border-4 border-blue-600 shadow-xl hover:shadow-2xl' : 'bg-gray-100 border border-gray-300'}`} 
                   disabled={!isCurrent}
@@ -1065,7 +929,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
                       setTripleOfferTimeoutId(null);
                     }
                     setTripleOfferDisplayed(false);
-                    saveToCart({ pricePremium: premiumCalc.totalTTC, selectedPrice: premiumCalc.totalTTC, priceType: 'premium', storeHT: premiumCalc.storeHT, poseHT: premiumCalc.poseHT, tvaAmount: premiumCalc.tvaMontant, ...extraInfo });
+                    saveToCart({ pricePremium: premiumCalc.totalTTC, selectedPrice: premiumCalc.totalTTC, priceType: 'premium', storeHT: premiumCalc.storeHT, poseHT: premiumCalc.poseHT, tvaAmount: premiumCalc.tvaMontant });
                   }} 
                   className={`p-6 rounded-xl text-center transition-all ${isCurrent ? 'bg-white border-2 border-gray-200 hover:border-purple-500 hover:shadow-lg' : 'bg-gray-100 border border-gray-300'}`} 
                   disabled={!isCurrent}
@@ -1084,6 +948,18 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
                 </button>
             </div>
             
+            {/* � BOUTON AJOUTER AU PANIER */}
+            {isCurrent && cart?.selectedPrice && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={isCartLoading}
+                  className="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold text-lg rounded-xl hover:shadow-2xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed celestial-glow"
+                >
+                  {isCartLoading ? '⏳ Ajout en cours...' : '🛒 Ajouter au panier'}
+                </button>
+              </div>
+            )}
             
             {/* �💡 SECTION COMPARATIF TVA - Affichée si store >= 3500€ + TVA 10% */}
             {isCurrent && comparisonData && (
@@ -1433,7 +1309,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
             );
           })}
           
-          {(isLoading || waitingForResponse) && !activeTool && (
+          {isLoading && !activeTool && (
             (() => {
               // Détecter le contexte de chargement en regardant le dernier message
               const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;

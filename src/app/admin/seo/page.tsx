@@ -181,7 +181,7 @@ export default function AdminSEOPage() {
           {/* Liste des pages */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold mb-4">Pages</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Pages</h2>
               <input
                 type="text"
                 placeholder="Rechercher..."
@@ -212,7 +212,7 @@ export default function AdminSEOPage() {
           <div className="lg:col-span-2">
             {selectedPage ? (
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-lg font-semibold mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">
                   Éditer: <span className="text-blue-600">{selectedPage.slug}</span>
                 </h2>
 

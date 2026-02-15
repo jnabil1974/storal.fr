@@ -25,12 +25,17 @@ function ContactFormContent() {
   useEffect(() => {
     const email = searchParams.get('email');
     const orderId = searchParams.get('orderId');
+    const subject = searchParams.get('subject');
+    const title = searchParams.get('title');
+    const message = searchParams.get('message');
     
-    if (email || orderId) {
+    if (email || orderId || subject || title || message) {
       setFormData(prev => ({
         ...prev,
         email: email || prev.email,
-        title: orderId ? `Commande ${orderId}` : prev.title,
+        subject: subject || prev.subject,
+        title: title || (orderId ? `Commande ${orderId}` : prev.title),
+        message: message || prev.message,
       }));
     }
   }, [searchParams]);
@@ -107,7 +112,7 @@ function ContactFormContent() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                   placeholder="Jean Dupont"
                 />
               </div>
@@ -122,7 +127,7 @@ function ContactFormContent() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                   placeholder="jean@example.com"
                 />
               </div>
@@ -138,7 +143,7 @@ function ContactFormContent() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                   placeholder="01 85 09 34 46"
                 />
               </div>
@@ -151,7 +156,7 @@ function ContactFormContent() {
                   name="subject"
                   value={formData.subject}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                 >
                   <option value="">Sélectionner un sujet</option>
                   <option value="Devis">Demande de devis</option>
@@ -172,7 +177,7 @@ function ContactFormContent() {
                 value={formData.title}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                 placeholder="Ex: Demande de devis pour store banne"
               />
             </div>
@@ -190,7 +195,7 @@ function ContactFormContent() {
                 onChange={handleChange}
                 required
                 rows={6}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                 placeholder="Décrivez votre demande..."
               />
             </div>

@@ -17,9 +17,15 @@ const CartContext = createContext<CartContextType | null>(null);
 function getOrCreateSessionId(): string {
   if (typeof window === 'undefined') return '';
   let sessionId = localStorage.getItem('cart_session_id');
-  if (!sessionId) {
-    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  // Valider le format UUID (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  
+  if (!sessionId || !uuidRegex.test(sessionId)) {
+    // Générer un UUID valide (format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx)
+    sessionId = crypto.randomUUID();
     localStorage.setItem('cart_session_id', sessionId);
+    console.log('🆔 Nouveau sessionId généré:', sessionId);
   }
   return sessionId;
 }
@@ -43,35 +49,54 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const loadCart = async (sid: string) => {
     if (!sid) return;
+    console.log('🔵 loadCart called with sessionId:', sid);
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/cart?sessionId=${encodeURIComponent(sid)}`);
+      const url = `/api/cart?sessionId=${encodeURIComponent(sid)}`;
+      console.log('📡 Fetching cart from:', url);
+      
+      const res = await fetch(url);
+      console.log('📡 Response status:', res.status, res.statusText);
+      
       if (res.ok) {
         const data = await res.json();
-        setCart({
-          items: data.items.map((item: any) => ({
-            id: item.id,
-            sessionId: item.session_id,
-            productId: item.product_id,
-            productType: item.product_type,
-            productName: item.product_name,
-            basePrice: item.base_price,
-            configuration: item.configuration,
-            quantity: item.quantity,
-            pricePerUnit: item.price_per_unit,
-            totalPrice: item.total_price,
-            addedAt: new Date(item.added_at),
-            updatedAt: new Date(item.updated_at),
-          })),
+        console.log('📦 Raw cart data from API:', data);
+        console.log('📦 Items count:', data.items?.length || 0);
+        
+        const mappedItems = data.items.map((item: any) => ({
+          id: item.id,
+          sessionId: item.session_id,
+          productId: item.product_id,
+          productType: item.product_type,
+          productName: item.product_name,
+          basePrice: item.base_price,
+          configuration: item.configuration,
+          quantity: item.quantity,
+          pricePerUnit: item.price_per_unit,
+          totalPrice: item.total_price,
+          addedAt: new Date(item.added_at || item.created_at),
+          updatedAt: new Date(item.updated_at),
+        }));
+        
+        console.log('📦 Mapped items:', mappedItems);
+        
+        const newCart = {
+          items: mappedItems,
           totalItems: data.totalItems,
           totalPrice: data.totalPrice,
           lastUpdated: new Date(),
-        });
+        };
+        
+        console.log('✅ Setting cart state:', newCart);
+        setCart(newCart);
+      } else {
+        console.error('❌ Failed to load cart:', res.status, res.statusText);
       }
     } catch (err) {
-      console.error('Error loading cart:', err);
+      console.error('❌ Error loading cart:', err);
     } finally {
       setIsLoading(false);
+      console.log('🏁 loadCart finished');
     }
   };
 

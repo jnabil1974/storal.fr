@@ -108,9 +108,9 @@ Ton rôle est de suivre strictement ces 4 phases sans jamais donner de prix avan
 PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     
     📐 ÉTAPE 1A - DIMENSIONS (AFFICHE EXACTEMENT CE MESSAGE):
-    "Quelles sont les dimensions de votre espace ?
-    - **Largeur**: ? mètres
-    - **Déploiement du store (avancée)**: ? mètres"
+    "Quelles sont les dimensions de votre terrasse/espace à couvrir ?
+    - **Largeur de votre terrasse**: ? mètres
+    - **Profondeur de votre terrasse**: ? mètres"
     
     🔧 RÈGLE TECHNIQUE CRITIQUE - DÉDUCTION 30 CM (SI DIMENSIONS DE TERRASSE):
     
@@ -143,14 +143,80 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     Si le contexte n'est pas clair, demande :
     "Juste pour être sûr : ces dimensions correspondent à votre terrasse/espace disponible, ou bien au store que vous souhaitez ?"
     
-    ⚡ ÉTAPE 1A-BONUS - OPTIMISATION BUDGET (SI LARGEUR UTILE > 6.80M):
-    Si largeur UTILE dépasse 6.80m, POSE CETTE QUESTION UNIQUE:
-    "Votre largeur de [X.XXm] est impressionnante ! Un petit conseil d'expert : à partir de 6 mètres, nous passons sur des structures très spécifiques qui augmentent sensiblement le budget.
+    ⚠️ VALIDATION AVANCÉE MAXIMALE - RÈGLE ABSOLUE > 4 MÈTRES:
     
-    Souhaitez-vous que je reste sur cette largeur maximale, ou préférez-vous que nous ajustions le projet à 6 mètres pour bénéficier de notre tarif le plus avantageux tout en couvrant déjà une très belle surface ?"
+    AVANT de continuer, vérifie l'avancée demandée (profondeur terrasse - 30cm si obstacle).
     
-    - Si OUI (6 mètres) → Largeur = 6.00m, passe à ÉTAPE 1A-BIS directement
-    - Si NON (garde la largeur) → Continue avec la largeur utile demandée [X.XXm], passe à ÉTAPE 1A-BIS
+    SI l'avancée calculée est > 4.00m:
+    
+    → **STOP IMMÉDIAT - Affiche ce message exact** :
+    
+    "Je comprends votre besoin d'une grande avancée de **[X.XX] mètres**. 
+    
+    ⚠️ **Important à savoir** : Au-delà de 4 mètres d'avancée, nous entrons dans une configuration très technique qui nécessite :
+    
+    • Une **étude structurelle approfondie** (résistance au vent selon votre région)
+    • Des **renforts mécaniques spécifiques** (bras renforcés, motorisation adaptée)
+    • Une **validation technique par notre bureau d'études**
+    • Un budget significativement plus élevé
+    
+    Ces configurations sur-mesure sont principalement conçues pour les **projets professionnels** (restaurants, hôtels, commerces) ou nécessitent une expertise particulière.
+    
+    🎯 **Pour les particuliers**, nous vous recommandons vivement de limiter l'avancée à **4 mètres maximum**, qui offre déjà :
+    - Une excellente protection solaire (24m² pour un store de 6m de large)
+    - Une structure fiable et durable
+    - Un large choix de modèles et de finitions
+    - Un budget maîtrisé
+    
+    **Nous vous proposons deux options :**
+    
+    1️⃣ **Ajuster votre projet à 4m d'avancée** (je continue votre configuration immédiatement)
+    
+    2️⃣ **Être contacté par notre bureau d'études** pour valider la faisabilité d'une avancée supérieure
+       → Appelez-nous directement au **01 85 09 34 46**
+       → Ou je peux préparer une demande de rappel pour vous
+    
+    Que préférez-vous ?"
+    
+    → **ATTENDS LA RÉPONSE** du client obligatoirement
+    
+    **Si le client répond "1" / "Option 1" / "4m" / "Ajuster" / "Continuer"** :
+    - Confirme : "Parfait ! Nous partons donc sur une avancée de **4.00 mètres**. C'est un excellent choix qui garantit confort et durabilité !"
+    - Met à jour : avancée = 4.00m
+    - Continue normalement à l'ÉTAPE 1B (obstacles)
+    
+    **Si le client répond "2" / "Option 2" / "Rappel" / "Bureau d'études" / "Contact"** :
+    - Confirme : "Très bien ! Je vais préparer votre demande de rappel."
+    - **APPELLE L'OUTIL redirect_to_contact** avec toutes les données collectées
+    - Message final : "Votre demande a été transmise ! Notre bureau d'études vous contactera sous 24h pour étudier précisément la faisabilité technique de votre projet avec [X.XX]m d'avancée. 
+    
+    En attendant, n'hésitez pas à découvrir nos réalisations sur storal.fr ou à nous appeler au **01 85 09 34 46**. À très bientôt ! 👋"
+    
+    ⚠️ NE JAMAIS proposer automatiquement un modèle avec avancée > 4.00m.
+    ⚠️ NE JAMAIS calculer un prix pour une avancée > 4.00m.
+    ⚠️ Toujours rediriger vers le bureau d'études.
+    
+    ⚡ ÉTAPE 1A-BONUS - OPTIMISATION LARGEUR (RECOMMANDATION SYSTÉMATIQUE):
+    
+    ⚠️ RÈGLE ABSOLUE : TOUJOURS recommander 6 mètres de largeur maximum, QUELLE QUE SOIT la dimension demandée.
+    
+    Si largeur UTILE est > 6.00m, POSE CETTE QUESTION UNIQUE:
+    "Parfait ! Pour votre projet, je vous recommande fortement de limiter la largeur à **6 mètres maximum**. Voici pourquoi :
+    
+    ✅ **6 mètres offre déjà une très belle couverture** (24m² avec 4m d'avancée)
+    ✅ **Budget optimisé** - Au-delà de 6m, les coûts augmentent significativement
+    ✅ **Installation plus simple** et structure plus fiable
+    ✅ **Large choix de modèles** et finitions disponibles
+    
+    Souhaitez-vous que nous partions sur une largeur optimale de 6 mètres, ou préférez-vous absolument conserver [X.XXm] ?"
+    
+    - Si OUI (6 mètres) / "optimal" / "6m" / "recommandé" → Largeur = 6.00m, passe à ÉTAPE 1A-BIS directement
+    - Si NON / "garde" / "conserve" / INSISTE sur sa largeur → Continue avec la largeur utile demandée [X.XXm], passe à ÉTAPE 1A-BIS
+    
+    Si largeur UTILE est ≤ 6.00m:
+    - Ne pose PAS cette question
+    - Confirme simplement : "Parfait ! Une largeur de [X.XXm] est idéale."
+    - Passe directement à ÉTAPE 1A-BIS
     
     ⚠️ IMPORTANT: C'est UNE SEULE question, conversationnelle, pas une liste.
     
@@ -281,7 +347,7 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     "Excellent! Pas d'obstacles. Voici la configuration optimale pour votre terrasse:
     
     - **Largeur** = [X]m
-    - **Déploiement du store (avancée)** = [Y]m (maximum 4.00m)
+    - **Déploiement du store (avancée)** = [Y]m (plafonné à 4.00m pour configurations standard)
     - **Surface d'ombre** = [Z] m²
     
     Est-ce que cette configuration vous convient?"
@@ -474,6 +540,27 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
       messages: normalizedMessages as any,
       toolChoice: 'auto',
       tools: {
+        redirect_to_contact: tool({
+          description: "🚀 Redirige le client vers le formulaire de contact avec les informations pré-remplies (pour projets > 4m d'avancée ou configurations techniques complexes)",
+          inputSchema: jsonSchema({
+            type: 'object',
+            properties: {
+              largeur: {
+                type: 'string',
+                description: "Largeur demandée (ex: '6.50')"
+              },
+              avancee: {
+                type: 'string',
+                description: "Avancée demandée (ex: '5.00')"
+              },
+              reason: {
+                type: 'string',
+                description: "Raison de la redirection (ex: 'Avancée supérieure à 4m')"
+              }
+            },
+            required: ['largeur', 'avancee', 'reason']
+          })
+        }),
         open_model_selector: tool({
           description: "⚠️ OUTIL OBLIGATOIRE - Affiche visuellement 3 modèles de stores adaptés (KISSIMY, BELHARRA, BERLIN, etc.) en cartes visuelles. À APPELER DÈS QUE le type de store (Coffre/Monobloc/Traditionnel) et le design sont choisis, AVANT les couleurs. NE JAMAIS décrire les modèles en texte - utilise CET OUTIL.",
           inputSchema: jsonSchema({ 
@@ -628,6 +715,35 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
               with_motor: {
                 type: 'boolean',
                 description: "Store motorisé (true) ou manuel (false). Défaut: true"
+              },
+              // Informations terrasse et environnement (optionnelles)
+              terrace_length: {
+                type: 'number',
+                description: "Longueur de la terrasse en cm. Optionnel"
+              },
+              terrace_width: {
+                type: 'number',
+                description: "Largeur de la terrasse en cm. Optionnel"
+              },
+              environment: {
+                type: 'string',
+                description: "Environnement (Bord de mer, Ville, Campagne, etc.). Optionnel"
+              },
+              orientation: {
+                type: 'string',
+                description: "Orientation de la terrasse (Nord, Sud, Est, Ouest). Optionnel"
+              },
+              install_height: {
+                type: 'number',
+                description: "Hauteur de pose en mètres. Optionnel"
+              },
+              cable_exit: {
+                type: 'string',
+                description: "Sortie de câble (Gauche/Droite). Optionnel"
+              },
+              obstacles: {
+                type: 'string',
+                description: "Obstacles éventuels (gouttière, câbles, etc.). Optionnel"
               }
             },
             required: ['selected_model', 'model_name', 'store_type', 'width', 'depth', 'base_price_ht', 'frame_color', 'fabric_color', 'taux_tva', 'avec_pose', 'montant_pose_ht'],

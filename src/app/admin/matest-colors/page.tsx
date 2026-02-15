@@ -320,12 +320,12 @@ export default function MatestColorsAdmin() {
 
   return (
     <div className="container mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-8">Gestion Nuancier Matest</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Gestion Nuancier Matest</h1>
       
       {/* Gestion des types */}
       <div className="bg-white p-4 rounded-lg shadow mb-6 border border-purple-300">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold">Types de finition ({finishTypes.length})</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Types de finition ({finishTypes.length})</h3>
           <button
             onClick={() => setShowTypeForm(!showTypeForm)}
             className="px-3 py-1 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"
@@ -338,11 +338,11 @@ export default function MatestColorsAdmin() {
         {showTypeForm && (
           <form onSubmit={handleAddType} className="flex flex-wrap gap-2 items-end mb-4 pb-4 border-b">
             <div className="flex-1 min-w-[150px]">
-              <label className="block text-xs font-medium mb-1">Nom du type *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Nom du type *</label>
               <select
                 value={newType.name}
                 onChange={(e) => setNewType({ ...newType, name: e.target.value })}
-                className="w-full px-2 py-1.5 border rounded text-sm"
+                className="w-full px-2 py-1.5 border rounded text-sm text-gray-900 bg-white"
                 required
               >
                 <option value="">-- Sélectionner --</option>
@@ -358,25 +358,25 @@ export default function MatestColorsAdmin() {
             </div>
 
             <div className="w-20">
-              <label className="block text-xs font-medium mb-1">Icône</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Icône</label>
               <input
                 type="text"
                 value={newType.icon}
                 onChange={(e) => setNewType({ ...newType, icon: e.target.value })}
                 placeholder="🎨"
                 maxLength={3}
-                className="w-full px-2 py-1.5 border rounded text-sm text-center"
+                className="w-full px-2 py-1.5 border rounded text-sm text-gray-900 bg-white text-center"
               />
             </div>
 
             <div className="flex-1 min-w-[120px]">
-              <label className="block text-xs font-medium mb-1">Couleur (hex)</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Couleur (hex)</label>
               <input
                 type="text"
                 value={newType.color}
                 onChange={(e) => setNewType({ ...newType, color: e.target.value })}
                 placeholder="#ff6b6b"
-                className="w-full px-2 py-1.5 border rounded text-sm"
+                className="w-full px-2 py-1.5 border rounded text-sm text-gray-900 bg-white"
               />
             </div>
 
@@ -421,11 +421,11 @@ export default function MatestColorsAdmin() {
                 <div className="p-4 bg-purple-50 border-2 border-purple-400 rounded">
                   <div className="flex flex-wrap gap-2 items-end mb-3">
                     <div className="flex-1 min-w-[150px]">
-                      <label className="block text-xs font-medium mb-1">Nom</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Nom</label>
                       <select
                         value={editType.name}
                         onChange={(e) => setEditType({ ...editType, name: e.target.value })}
-                        className="w-full px-2 py-1.5 border rounded text-sm"
+                        className="w-full px-2 py-1.5 border rounded text-sm text-gray-900 bg-white"
                       >
                         <option value="">-- Sélectionner --</option>
                         <option value="brillant">Brillant</option>
@@ -439,21 +439,21 @@ export default function MatestColorsAdmin() {
                       </select>
                     </div>
                     <div className="w-20">
-                      <label className="block text-xs font-medium mb-1">Icône</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Icône</label>
                       <input
                         type="text"
                         value={editType.icon || ''}
                         onChange={(e) => setEditType({ ...editType, icon: e.target.value })}
-                        className="w-full px-2 py-1.5 border rounded text-sm text-center"
+                        className="w-full px-2 py-1.5 border rounded text-sm text-gray-900 bg-white text-center"
                       />
                     </div>
                     <div className="flex-1 min-w-[120px]">
-                      <label className="block text-xs font-medium mb-1">Couleur</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Couleur</label>
                       <input
                         type="text"
                         value={editType.color || ''}
                         onChange={(e) => setEditType({ ...editType, color: e.target.value })}
-                        className="w-full px-2 py-1.5 border rounded text-sm"
+                        className="w-full px-2 py-1.5 border rounded text-sm text-gray-900 bg-white"
                       />
                     </div>
                     <button
@@ -498,7 +498,7 @@ export default function MatestColorsAdmin() {
                 <div className="px-3 py-2 bg-purple-50 border border-purple-200 rounded text-sm flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {type.icon && <span className="text-lg">{type.icon}</span>}
-                    <span className="font-medium capitalize">{type.name}</span>
+                    <span className="font-medium text-gray-900 capitalize">{type.name}</span>
                     {type.product_slugs && type.product_slugs.length > 0 && (
                       <span className="text-xs text-gray-500">
                         ({type.product_slugs.length} produit{type.product_slugs.length > 1 ? 's' : ''})
@@ -534,36 +534,36 @@ export default function MatestColorsAdmin() {
 
       {/* Formulaire d'ajout compact */}
       <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <h2 className="text-lg font-semibold mb-3">Ajouter une couleur</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Ajouter une couleur</h2>
         <form onSubmit={handleSubmit} className="flex flex-wrap gap-2 items-end">
           <div className="flex-1 min-w-[120px]">
-            <label className="block text-xs font-medium mb-1">Code RAL</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Code RAL</label>
             <input
               type="text"
               value={newColor.ral_code}
               onChange={(e) => setNewColor({ ...newColor, ral_code: e.target.value })}
               placeholder="9016"
-              className="w-full px-2 py-1.5 border rounded text-sm"
+              className="w-full px-2 py-1.5 border rounded text-sm text-gray-900 bg-white"
             />
           </div>
           
           <div className="flex-1 min-w-[150px]">
-            <label className="block text-xs font-medium mb-1">Nom</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Nom</label>
             <input
               type="text"
               value={newColor.name}
               onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
               placeholder="Blanc"
-              className="w-full px-2 py-1.5 border rounded text-sm"
+              className="w-full px-2 py-1.5 border rounded text-sm text-gray-900 bg-white"
             />
           </div>
           
           <div className="w-32">
-            <label className="block text-xs font-medium mb-1">Type</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
             <select
               value={newColor.finish}
               onChange={(e) => setNewColor({ ...newColor, finish: e.target.value })}
-              className="w-full px-2 py-1.5 border rounded text-sm"
+              className="w-full px-2 py-1.5 border rounded text-sm text-gray-900 bg-white"
             >
               {finishTypes.map(type => (
                 <option key={type.id} value={type.name}>
@@ -583,12 +583,12 @@ export default function MatestColorsAdmin() {
           </div>
           
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-medium mb-1">Image</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Image</label>
             <input
               type="file"
               accept="image/*"
               onChange={(e) => setNewImageFile(e.target.files?.[0] || null)}
-              className="w-full px-2 py-1 border rounded text-xs"
+              className="w-full px-2 py-1 border rounded text-xs text-gray-900 bg-white"
             />
           </div>
           
@@ -604,13 +604,13 @@ export default function MatestColorsAdmin() {
       
       {/* Statistiques */}
       <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="flex flex-wrap gap-4 text-sm">
-          <div><span className="font-semibold">Total:</span> {colors.length}</div>
-          <div><span className="font-semibold">Brillant:</span> {colors.filter(c => c.finish === 'brillant').length}</div>
-          <div><span className="font-semibold">Sablé:</span> {colors.filter(c => c.finish === 'sablé').length}</div>
-          <div><span className="font-semibold">Mat:</span> {colors.filter(c => c.finish === 'mat').length}</div>
-          <div><span className="font-semibold">Promo:</span> {colors.filter(c => c.finish === 'promo').length}</div>
-          <div><span className="font-semibold">Spéciale:</span> {colors.filter(c => c.finish === 'spéciale').length}</div>
+        <div className="flex flex-wrap gap-4 text-sm text-gray-900">
+          <div><span className="font-semibold text-gray-900">Total:</span> {colors.length}</div>
+          <div><span className="font-semibold text-gray-900">Brillant:</span> {colors.filter(c => c.finish === 'brillant').length}</div>
+          <div><span className="font-semibold text-gray-900">Sablé:</span> {colors.filter(c => c.finish === 'sablé').length}</div>
+          <div><span className="font-semibold text-gray-900">Mat:</span> {colors.filter(c => c.finish === 'mat').length}</div>
+          <div><span className="font-semibold text-gray-900">Promo:</span> {colors.filter(c => c.finish === 'promo').length}</div>
+          <div><span className="font-semibold text-gray-900">Spéciale:</span> {colors.filter(c => c.finish === 'spéciale').length}</div>
         </div>
       </div>
       
@@ -623,7 +623,7 @@ export default function MatestColorsAdmin() {
         
         return (
           <div key={finishType} className="mb-6 bg-white p-4 rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-3 capitalize">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3 capitalize">
               {typeInfo?.icon && <span className="mr-2">{typeInfo.icon}</span>}
               {finishType} ({finishColors.length})
             </h2>
@@ -646,19 +646,19 @@ export default function MatestColorsAdmin() {
                     value={editColor.ral_code}
                     onChange={(e) => setEditColor({ ...editColor, ral_code: e.target.value })}
                     placeholder="Code RAL"
-                    className="w-full px-2 py-1 border rounded text-xs"
+                    className="w-full px-2 py-1 border rounded text-xs text-gray-900 bg-white"
                   />
                   <input
                     type="text"
                     value={editColor.name}
                     onChange={(e) => setEditColor({ ...editColor, name: e.target.value })}
                     placeholder="Nom"
-                    className="w-full px-2 py-1 border rounded text-xs"
+                    className="w-full px-2 py-1 border rounded text-xs text-gray-900 bg-white"
                   />
                   <select
                     value={editColor.finish}
                     onChange={(e) => setEditColor({ ...editColor, finish: e.target.value })}
-                    className="w-full px-2 py-1 border rounded text-xs"
+                    className="w-full px-2 py-1 border rounded text-xs text-gray-900 bg-white"
                   >
                     {finishTypes.map(type => (
                       <option key={type.id} value={type.name}>
@@ -680,14 +680,14 @@ export default function MatestColorsAdmin() {
                     value={editColor.image_url || ''}
                     onChange={(e) => setEditColor({ ...editColor, image_url: e.target.value })}
                     placeholder="URL de l'image"
-                    className="w-full px-2 py-1 border rounded text-xs"
+                    className="w-full px-2 py-1 border rounded text-xs text-gray-900 bg-white"
                   />
                   <div>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={(e) => setEditImageFile(e.target.files?.[0] || null)}
-                      className="w-full px-2 py-1 border rounded text-xs"
+                      className="w-full px-2 py-1 border rounded text-xs text-gray-900 bg-white"
                     />
                     {editImageFile && (
                       <p className="text-xs text-gray-500 mt-1">
@@ -715,7 +715,7 @@ export default function MatestColorsAdmin() {
                 </div>
               ) : (
                 <>
-                  <div className="font-bold">{color.ral_code ? `RAL ${color.ral_code}` : color.name}</div>
+                  <div className="font-bold text-gray-900">{color.ral_code ? `RAL ${color.ral_code}` : color.name}</div>
                   <div className="text-gray-600">{color.name || '—'}</div>
                   <div className="text-xs text-gray-500">{color.finish}</div>
                   <div className="mt-2 flex gap-2">

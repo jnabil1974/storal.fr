@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ChatAssistant from '@/components/ChatAssistant';
 import DashboardBento from '@/components/DashboardBento';
 import { ShowroomProvider, useShowroom } from '@/contexts/ShowroomContext';
@@ -38,6 +39,8 @@ interface Cart {
 
 function AssistantContent() {
   const [cart, setCart] = useState<Cart | null>(null);
+  const searchParams = useSearchParams();
+  const initialMessage = searchParams.get('msg');
 
   return (
       <div 
@@ -61,6 +64,7 @@ function AssistantContent() {
               <ChatAssistant 
                 cart={cart} 
                 setCart={setCart}
+                initialMessage={initialMessage}
               />
             </div>
 
@@ -78,7 +82,9 @@ function AssistantContent() {
 export default function AssistantPage() {
   return (
     <ShowroomProvider>
-      <AssistantContent />
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-100">Chargement...</div>}>
+        <AssistantContent />
+      </Suspense>
     </ShowroomProvider>
   );
 }

@@ -42,6 +42,7 @@ export async function GET(request: Request) {
       }
     );
   } catch (error) {
+    console.error('❌ GET /api/cart error:', error);
     return new Response(JSON.stringify({ error: 'Server error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },

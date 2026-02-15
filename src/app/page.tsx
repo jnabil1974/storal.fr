@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { STORE_MODELS } from '@/lib/catalog-data';
+import { STORE_MODELS, getMinimumPrice, getModelDimensions } from '@/lib/catalog-data';
 
 // Fonts Google (Epilogue comme AstroTalky)
 import { Epilogue } from 'next/font/google';
@@ -53,6 +53,9 @@ export default function HomePage() {
         if (activeFilter === 'monobloc') return model.type === 'monobloc';
         if (activeFilter === 'specialite') return model.type === 'specialite';
         if (activeFilter === 'promo') return model.is_promo === true;
+        if (activeFilter === 'balcon') return (model.compatibility?.max_width || 0) <= 5000;
+        if (activeFilter === 'large') return (model.compatibility?.max_width || 0) > 6000 && (model.compatibility?.max_width || 0) <= 12000;
+        if (activeFilter === 'xlarge') return (model.compatibility?.max_width || 0) > 12000 && (model.compatibility?.max_width || 0) <= 18000;
         return true;
       });
 
@@ -311,6 +314,24 @@ export default function HomePage() {
               </div>
 
               <div
+                onClick={() => setActiveFilter('balcon')}
+                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
+              >
+                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
+                  activeFilter === 'balcon' 
+                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
+                    : 'border-2 border-gray-200 bg-white'
+                }`}>
+                  <span className="text-4xl">🏛️</span>
+                </div>
+                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
+                  activeFilter === 'balcon' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
+                }`}>
+                  Balcon
+                </span>
+              </div>
+
+              <div
                 onClick={() => setActiveFilter('coffre')}
                 className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
               >
@@ -363,6 +384,42 @@ export default function HomePage() {
                   Monobloc
                 </span>
               </div>
+
+              <div
+                onClick={() => setActiveFilter('large')}
+                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
+              >
+                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
+                  activeFilter === 'large' 
+                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
+                    : 'border-2 border-gray-200 bg-white'
+                }`}>
+                  <span className="text-4xl">📏</span>
+                </div>
+                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
+                  activeFilter === 'large' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
+                }`}>
+                  Jusqu'à 12m
+                </span>
+              </div>
+
+              <div
+                onClick={() => setActiveFilter('xlarge')}
+                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
+              >
+                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
+                  activeFilter === 'xlarge' 
+                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
+                    : 'border-2 border-gray-200 bg-white'
+                }`}>
+                  <span className="text-4xl">📐</span>
+                </div>
+                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
+                  activeFilter === 'xlarge' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
+                }`}>
+                  Jusqu'à 18m
+                </span>
+              </div>
             </div>
           </div>
 
@@ -397,11 +454,6 @@ export default function HomePage() {
                       <span className="text-6xl">🏠</span>
                     </div>
                   )}
-                  {model.is_promo && (
-                    <div className="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-tighter text-[#2c3e50]">
-                      EN PROMO
-                    </div>
-                  )}
                 </div>
 
                 {/* Contenu de la carte */}
@@ -425,12 +477,81 @@ export default function HomePage() {
                     ))}
                   </div>
 
+                  {/* Options Disponibles */}
+                  <div className="border-t border-gray-100 pt-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">Options Disponibles</p>
+                    <div className="flex flex-wrap gap-2">
+                      {model.compatibility.led_arms && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded-lg">
+                          <span className="text-base">💡</span>
+                          <span className="text-[9px] font-bold text-blue-700">LED Bras</span>
+                        </div>
+                      )}
+                      {model.compatibility.led_box && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-purple-50 border border-purple-200 rounded-lg">
+                          <span className="text-base">✨</span>
+                          <span className="text-[9px] font-bold text-purple-700">LED Coffre</span>
+                        </div>
+                      )}
+                      {model.compatibility.lambrequin_fixe && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-green-50 border border-green-200 rounded-lg">
+                          <span className="text-base">📐</span>
+                          <span className="text-[9px] font-bold text-green-700">Lambrequin</span>
+                        </div>
+                      )}
+                      {model.compatibility.lambrequin_enroulable && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-orange-50 border border-orange-200 rounded-lg">
+                          <span className="text-base">🎭</span>
+                          <span className="text-[9px] font-bold text-orange-700">Enroulable</span>
+                        </div>
+                      )}
+                      {model.ceilingMountPrices && model.ceilingMountPrices.length > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg">
+                          <span className="text-base">⬆️</span>
+                          <span className="text-[9px] font-bold text-gray-700">Pose Plafond</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Dimensions */}
+                  <div className="border-t border-gray-100 pt-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">Dimensions</p>
+                    <div className="grid grid-cols-2 gap-2 text-[10px]">
+                      <div className="bg-gray-50 px-2 py-1 rounded">
+                        <span className="text-gray-500 font-semibold">Largeur:</span>
+                        <span className="text-gray-700 font-bold ml-1">
+                          {(() => {
+                            const dims = getModelDimensions(model);
+                            return `${(dims.minWidth / 1000).toFixed(1)}-${(dims.maxWidth / 1000).toFixed(1)}m`;
+                          })()}
+                        </span>
+                      </div>
+                      <div className="bg-gray-50 px-2 py-1 rounded">
+                        <span className="text-gray-500 font-semibold">Avancée:</span>
+                        <span className="text-gray-700 font-bold ml-1">
+                          {(() => {
+                            const dims = getModelDimensions(model);
+                            return `${(dims.minProjection / 1000).toFixed(1)}-${(dims.maxProjection / 1000).toFixed(1)}m`;
+                          })()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Prix et CTA */}
                   <div className="flex items-center justify-between border-t border-gray-100 pt-4">
                     <div className="text-sm font-black text-gray-500">
-                      À partir de<span className="block text-lg text-[#2c3e50]">1 490€</span>
+                      À partir de<span className="block text-lg text-[#2c3e50]">{getMinimumPrice(model).toLocaleString('fr-FR')}€</span>
+                      <span className="text-[9px] font-semibold text-gray-400">TTC (TVA 10%)</span>
                     </div>
-                    <button className="bg-[#2c3e50] text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleQuickSuggestion(`Je veux configurer un store ${model.name} (modèle: ${model.id}). Peux-tu me donner un devis personnalisé ?`);
+                      }}
+                      className="bg-[#2c3e50] text-white w-10 h-10 rounded-xl flex items-center justify-center hover:scale-110 transition-transform"
+                    >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                       </svg>

@@ -45,6 +45,7 @@ export default function AdminToilesPage() {
   const [filterType, setFilterType] = useState('');
   
   const [loading, setLoading] = useState(true);
+  const [regenerating, setRegenerating] = useState(false);
 
   const colorFamilies = ['Blanc', 'Noir', 'Gris', 'Bleu', 'Vert', 'Rouge', 'Rose', 'Orange', 'Jaune', 'Violet', 'Marron', 'Beige', 'Neutre'];
 
@@ -80,7 +81,31 @@ export default function AdminToilesPage() {
       console.error('Erreur chargement couleurs:', error);
     }
   };
+  const handleRegenerateCatalogs = async () => {
+    if (!confirm('Régénérer les catalogues statiques depuis Supabase ?\\n\\nCela va mettre à jour catalog-toiles.ts et catalog-couleurs.ts avec les dernières données.')) {
+      return;
+    }
 
+    setRegenerating(true);
+    try {
+      const response = await fetch('/api/admin/generate-catalogs', {
+        method: 'POST',
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ Catalogues régénérés avec succès !\\n\\nFichiers mis à jour :\\n${result.files.join('\\n')}`);
+      } else {
+        alert(`❌ Erreur lors de la régénération :\\n${result.error}`);
+      }
+    } catch (error: any) {
+      console.error('Erreur régénération:', error);
+      alert(`❌ Erreur : ${error.message}`);
+    } finally {
+      setRegenerating(false);
+    }
+  };
   const handleDeleteType = async (id: number) => {
     if (!confirm('Supprimer ce type de toile ?')) return;
     
@@ -129,42 +154,67 @@ export default function AdminToilesPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl">Chargement...</p>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-6"></div>
+          <p className="text-xl font-bold text-[#2c3e50] uppercase tracking-wider">Chargement...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Gestion des Toiles</h1>
-          <p className="text-gray-600 mt-2">
-            {toileTypes.length} type(s) • {toileColors.length} couleur(s)
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-black text-[#2c3e50] uppercase tracking-tight">Gestion des Toiles</h1>
+            <p className="text-gray-600 mt-2 font-semibold">
+              {toileTypes.length} type(s) • {toileColors.length} couleur(s)
+            </p>
+          </div>
+          
+          {/* Bouton de régénération des catalogues */}
+          <button
+            onClick={handleRegenerateCatalogs}
+            disabled={regenerating}
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all celestial-glow flex items-center gap-3 hover:scale-105 uppercase tracking-wider text-sm"
+            title="Régénérer les fichiers catalog-toiles.ts et catalog-couleurs.ts depuis Supabase"
+          >
+            {regenerating ? (
+              <>
+                <span className="animate-spin text-xl">⚙️</span>
+                <span>Génération...</span>
+              </>
+            ) : (
+              <>
+                <span className="text-xl">🔄</span>
+                <span>Régénérer Catalogues</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-md mb-6">
-          <div className="border-b border-gray-200">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg mb-6 border border-gray-100">
+          <div className="border-b border-gray-200/50">
             <nav className="flex">
               <button
                 onClick={() => setActiveTab('types')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 ${
+                className={`px-8 py-5 text-sm font-bold border-b-4 transition-all uppercase tracking-wider ${
                   activeTab === 'types'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50/50'
                 }`}
               >
                 🏷️ Types de Toiles ({toileTypes.length})
               </button>
               <button
                 onClick={() => setActiveTab('colors')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 ${
+                className={`px-8 py-5 text-sm font-bold border-b-4 transition-all uppercase tracking-wider ${
                   activeTab === 'colors'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-blue-600 text-blue-600 bg-blue-50/50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50/50'
                 }`}
               >
                 🎨 Couleurs ({toileColors.length})
@@ -313,8 +363,8 @@ function TypesTab({ types, onDelete, onRefresh }: any) {
 
   if (isAdding || editingType) {
     return (
-      <div className="bg-gray-50 p-6 rounded-lg border">
-        <h3 className="text-lg font-bold mb-4">{editingType ? 'Modifier le type' : 'Ajouter un type'}</h3>
+      <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl border border-gray-200 shadow-sm">
+        <h3 className="text-xl font-black text-[#2c3e50] mb-6 uppercase tracking-wider">{editingType ? 'Modifier le type' : 'Ajouter un type'}</h3>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <input
             placeholder="Nom"
@@ -326,20 +376,20 @@ function TypesTab({ types, onDelete, onRefresh }: any) {
             placeholder="Fabricant"
             value={formData.manufacturer}
             onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
-            className="px-4 py-2 border rounded-md"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
           />
           <input
             placeholder="Code"
             value={formData.code}
             onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-            className="px-4 py-2 border rounded-md"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
           />
           <input
             type="number"
             placeholder="Prix HT"
             value={formData.purchase_price_ht}
             onChange={(e) => setFormData({ ...formData, purchase_price_ht: parseFloat(e.target.value) })}
-            className="px-4 py-2 border rounded-md"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
           />
           <input
             type="number"
@@ -347,25 +397,25 @@ function TypesTab({ types, onDelete, onRefresh }: any) {
             step="0.1"
             value={formData.sales_coefficient}
             onChange={(e) => setFormData({ ...formData, sales_coefficient: parseFloat(e.target.value) })}
-            className="px-4 py-2 border rounded-md"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
           />
         </div>
 
         {/* Cases à cocher pour les produits compatibles */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">
             Produits compatibles (stores)
           </label>
-          <div className="grid grid-cols-2 gap-3 p-4 bg-white border rounded-md">
+          <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg">
             {availableProducts.map((product) => (
-              <label key={product.slug} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+              <label key={product.slug} className="flex items-center space-x-2 cursor-pointer hover:bg-white p-2 rounded">
                 <input
                   type="checkbox"
                   checked={formData.compatible_categories.includes(product.slug)}
                   onChange={() => toggleCategory(product.slug)}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <span className="text-sm">{product.label}</span>
+                <span className="text-sm text-gray-900 font-semibold">{product.label}</span>
               </label>
             ))}
           </div>
@@ -423,10 +473,10 @@ function TypesTab({ types, onDelete, onRefresh }: any) {
           <tbody className="divide-y divide-gray-200">
             {types.map((type: ToileType) => (
               <tr key={type.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-semibold">{type.name}</td>
-                <td className="px-4 py-3">{type.manufacturer}</td>
-                <td className="px-4 py-3">{type.purchase_price_ht} €</td>
-                <td className="px-4 py-3">×{type.sales_coefficient}</td>
+                <td className="px-4 py-3 font-bold text-[#2c3e50]">{type.name}</td>
+                <td className="px-4 py-3 text-gray-700">{type.manufacturer}</td>
+                <td className="px-4 py-3 text-gray-700">{type.purchase_price_ht} €</td>
+                <td className="px-4 py-3 text-gray-700">×{type.sales_coefficient}</td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-1 text-xs rounded ${type.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {type.is_active ? 'Actif' : 'Inactif'}
@@ -535,13 +585,13 @@ function ColorsTab({ colors, types, onDelete, onRefresh, searchTerm, setSearchTe
 
   if (isAdding || editingColor) {
     return (
-      <div className="bg-gray-50 p-6 rounded-lg border">
-        <h3 className="text-lg font-bold mb-4">{editingColor ? 'Modifier la couleur' : 'Ajouter une couleur'}</h3>
+      <div className="bg-white/80 backdrop-blur-sm p-6 rounded-xl border border-gray-200 shadow-sm">
+        <h3 className="text-lg font-black text-[#2c3e50] mb-4 uppercase tracking-wider">{editingColor ? 'Modifier la couleur' : 'Ajouter une couleur'}</h3>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <select
             value={formData.toile_type_id}
             onChange={(e) => setFormData({ ...formData, toile_type_id: e.target.value })}
-            className="px-4 py-2 border rounded-md"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
           >
             <option value="">Sélectionner un type</option>
             {types.map((type: ToileType) => (
@@ -552,24 +602,24 @@ function ColorsTab({ colors, types, onDelete, onRefresh, searchTerm, setSearchTe
             placeholder="Référence"
             value={formData.ref}
             onChange={(e) => setFormData({ ...formData, ref: e.target.value })}
-            className="px-4 py-2 border rounded-md"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
           />
           <input
             placeholder="Nom"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="px-4 py-2 border rounded-md"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
           />
           <input
             placeholder="Collection"
             value={formData.collection}
             onChange={(e) => setFormData({ ...formData, collection: e.target.value })}
-            className="px-4 py-2 border rounded-md"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
           />
           <select
             value={formData.color_family}
             onChange={(e) => setFormData({ ...formData, color_family: e.target.value })}
-            className="px-4 py-2 border rounded-md"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
           >
             <option value="">Famille de couleur</option>
             {colorFamilies.map((family: string) => (
@@ -580,7 +630,7 @@ function ColorsTab({ colors, types, onDelete, onRefresh, searchTerm, setSearchTe
             placeholder="URL de l'image"
             value={formData.image_url}
             onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-            className="px-4 py-2 border rounded-md col-span-2"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 col-span-2"
           />
         </div>
         <div className="flex gap-2">
@@ -654,7 +704,7 @@ function ColorsTab({ colors, types, onDelete, onRefresh, searchTerm, setSearchTe
       {/* Grille de couleurs */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {colors.map((color: ToileColor) => (
-          <div key={color.id} className="bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+          <div key={color.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all hover:scale-[1.02] celestial-glow">
             <img
               src={color.image_url}
               alt={color.name}
@@ -665,10 +715,10 @@ function ColorsTab({ colors, types, onDelete, onRefresh, searchTerm, setSearchTe
               }}
             />
             <div className="p-3">
-              <p className="font-mono font-bold text-sm">{color.ref}</p>
-              <p className="text-xs text-gray-600 truncate">{color.name}</p>
+              <p className="font-mono font-black text-sm text-[#2c3e50]">{color.ref}</p>
+              <p className="text-xs text-gray-600 truncate font-semibold mt-1">{color.name}</p>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-xs px-2 py-1 bg-gray-100 rounded">{color.color_family}</span>
+                <span className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-full font-bold">{color.color_family}</span>
                 <div className="flex gap-1">
                   <button
                     onClick={() => handleEdit(color)}
@@ -690,7 +740,7 @@ function ColorsTab({ colors, types, onDelete, onRefresh, searchTerm, setSearchTe
       </div>
 
       {colors.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-gray-500 font-semibold">
           Aucune couleur trouvée
         </div>
       )}

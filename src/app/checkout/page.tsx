@@ -297,14 +297,25 @@ function CheckoutPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Paiement</h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-8 shadow-lg">
+        <div className="max-w-6xl mx-auto px-4">
+          <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+            💳 Paiement
+          </h1>
+          <p className="text-blue-100 text-lg">Finalisez votre commande en toute sécurité</p>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 py-8">
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Formulaire */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Informations de livraison</h2>
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              📦 Informations de livraison
+            </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
@@ -680,17 +691,19 @@ function CheckoutPageContent() {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-700 text-white py-4 rounded-lg font-bold hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-lg"
               >
-                {isProcessing ? 'Traitement...' : paymentMethod === 'stripe' ? 'Continuer vers le paiement' : 'Valider la commande'}
+                {isProcessing ? '⏳ Traitement...' : paymentMethod === 'stripe' ? '✓ Continuer vers le paiement' : '✓ Valider la commande'}
               </button>
             </form>
           </div>
 
           {/* Résumé commande */}
           <div>
-            <div className="bg-white rounded-lg shadow p-6 sticky top-4">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Résumé de la commande</h2>
+            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-4 hover:shadow-2xl transition-shadow">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                📋 Résumé de la commande
+              </h2>
 
               <div className="space-y-4 mb-6 pb-6 border-b border-gray-200">
                 {cart.items.map((item) => (
@@ -717,9 +730,9 @@ function CheckoutPageContent() {
                 </div>
               </div>
 
-              <a href="/cart">
-                <button className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg font-semibold hover:bg-gray-300 transition">
-                  Retour au panier
+              <a href="/cart" className="block">
+                <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                  🛒 Retour au panier
                 </button>
               </a>
             </div>
