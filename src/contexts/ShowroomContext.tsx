@@ -33,6 +33,7 @@ export interface ShowroomState {
   ecoCalc?: any;
   standardCalc?: any;
   premiumCalc?: any;
+  singleOfferCalc?: any; // Nouvelle offre unique personnalisée
   avec_pose?: boolean;
   
   // Statut conversation
@@ -46,6 +47,7 @@ export interface ShowroomState {
   onSelectEco?: (priceHT: number) => void;
   onSelectStandard?: (priceHT: number) => void;
   onSelectPremium?: (priceHT: number) => void;
+  onSelectOffer?: (priceTTC: number) => void; // Pour l'offre unique
   onTerraceChange?: (dims: TerraceState) => void;
 }
 

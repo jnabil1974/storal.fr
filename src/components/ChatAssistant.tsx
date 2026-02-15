@@ -81,6 +81,7 @@ interface ChatAssistantProps {
   modelToConfig?: string | null;
   cart: Cart | null;
   setCart: Dispatch<SetStateAction<Cart | null>>;
+  initialMessage?: string | null;
 }
 
 const ProductModal = ({ model, onClose }: { model: StoreModel | null; onClose: () => void }) => {
@@ -96,7 +97,7 @@ const ProductModal = ({ model, onClose }: { model: StoreModel | null; onClose: (
   );
 };
 
-export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssistantProps) {
+export default function ChatAssistant({ modelToConfig, cart, setCart, initialMessage }: ChatAssistantProps) {
   const [input, setInput] = useState('');
   const { setShowroomState } = useShowroom();
   
@@ -126,10 +127,13 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
   const [proposedStoreHeight, setProposedStoreHeight] = useState<number | undefined>();
   const [showVideoHint, setShowVideoHint] = useState(false);
   const [initialMessageSent, setInitialMessageSent] = useState(false);
+  const initialMessageSentRef = useRef(false); // Persiste entre les remontages
   const [isExpertMode, setIsExpertMode] = useState(false);
   const [expertModeActivated, setExpertModeActivated] = useState(false);
   const [tripleOfferTimeoutId, setTripleOfferTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [tripleOfferDisplayed, setTripleOfferDisplayed] = useState(false);
+  const [persistedSingleOfferCalc, setPersistedSingleOfferCalc] = useState<any>(null); // Persiste l'offre unique même après fermeture de l'outil
+  const [persistedAvecPose, setPersistedAvecPose] = useState<boolean>(false); // Persiste avec_pose
   const [honeypot, setHoneypot] = useState(''); // 🍯 Honeypot anti-bot
 
   // Fonction pour sauvegarder dans localStorage
@@ -231,6 +235,77 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
         withMotor: with_motor !== undefined ? with_motor : cart?.withMotor
       });
     }
+    
+    // Support pour display_single_offer (nouvelle version avec 1 seule offre)
+    if (activeTool?.toolName === 'display_single_offer') {
+      const input = activeTool.input as any;
+      const {
+        base_price_ht,
+        includes_led_arms = false, led_arms_price_ht = 0,
+        includes_led_box = false, led_box_price_ht = 0,
+        includes_lambrequin = false, lambrequin_price_ht = 0,
+        includes_awning = false, awning_price_ht = 0,
+        includes_sous_coffre = false, sous_coffre_price_ht = 0,
+        selected_model, model_name, width, depth, frame_color, frame_color_name, fabric_color, fabric_name, exposure, with_motor,
+        taux_tva = 20, montant_pose_ht = 0, avec_pose = false
+      } = input;
+      
+      // Calculer le total des options choisies
+      const totalOptionsHT =
+        (includes_led_arms ? led_arms_price_ht : 0) +
+        (includes_led_box ? led_box_price_ht : 0) +
+        (includes_lambrequin ? lambrequin_price_ht : 0) +
+        (includes_awning ? awning_price_ht : 0) +
+        (includes_sous_coffre ? sous_coffre_price_ht : 0);
+      
+      const storeHT = base_price_ht + totalOptionsHT;
+      const poseHT = avec_pose ? montant_pose_ht : 0;
+      const totalHT = storeHT + poseHT;
+      const tvaAmount = Math.round(totalHT * (taux_tva / 100));
+      const totalTTC = Math.round(totalHT + tvaAmount);
+      
+      // Persister le calcul de l'offre unique pour affichage dans les tuiles
+      setPersistedSingleOfferCalc({
+        basePrice: base_price_ht,
+        optionsPrice: totalOptionsHT,
+        storeHT,
+        poseHT,
+        totalHT,
+        tva: tvaAmount,
+        totalTTC,
+        options: {
+          ledArms: includes_led_arms ? led_arms_price_ht : 0,
+          ledBox: includes_led_box ? led_box_price_ht : 0,
+          lambrequin: includes_lambrequin ? lambrequin_price_ht : 0,
+          awning: includes_awning ? awning_price_ht : 0,
+          sousCoffre: includes_sous_coffre ? sous_coffre_price_ht : 0
+        }
+      });
+      
+      // Persister avec_pose pour affichage des tuiles
+      setPersistedAvecPose(avec_pose);
+      
+      saveToCart({
+        selectedPrice: totalTTC,
+        priceType: 'custom',
+        storeHT: base_price_ht,
+        ledArmsPrice: includes_led_arms ? led_arms_price_ht : 0,
+        ledBoxPrice: includes_led_box ? led_box_price_ht : 0,
+        lambrequinPrice: includes_lambrequin ? lambrequin_price_ht : 0,
+        awningPrice: includes_awning ? awning_price_ht : 0,
+        sousCoffrePrice: includes_sous_coffre ? sous_coffre_price_ht : 0,
+        poseHT: poseHT,
+        tvaAmount: tvaAmount,
+        modelId: selected_model || cart?.modelId,
+        modelName: model_name || cart?.modelName,
+        width: width || cart?.width,
+        projection: depth || cart?.projection,
+        colorId: frame_color || cart?.colorId,
+        fabricId: fabric_color || cart?.fabricId,
+        exposure: exposure || cart?.exposure,
+        withMotor: with_motor !== undefined ? with_motor : cart?.withMotor
+      });
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTool]);
 
@@ -250,6 +325,50 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
       const { premium_price_ht = 0, taux_tva = 20 } = input;
       return { totalHT: premium_price_ht, tva: (premium_price_ht * taux_tva) / 100, totalTTC: premium_price_ht * (1 + taux_tva / 100) };
     };
+    
+    const calculateSingleOffer = (input: any) => {
+      const {
+        base_price_ht = 0,
+        includes_led_arms = false, led_arms_price_ht = 0,
+        includes_led_box = false, led_box_price_ht = 0,
+        includes_lambrequin = false, lambrequin_price_ht = 0,
+        includes_awning = false, awning_price_ht = 0,
+        includes_sous_coffre = false, sous_coffre_price_ht = 0,
+        taux_tva = 20,
+        montant_pose_ht = 0,
+        avec_pose = false
+      } = input;
+      
+      const totalOptionsHT =
+        (includes_led_arms ? led_arms_price_ht : 0) +
+        (includes_led_box ? led_box_price_ht : 0) +
+        (includes_lambrequin ? lambrequin_price_ht : 0) +
+        (includes_awning ? awning_price_ht : 0) +
+        (includes_sous_coffre ? sous_coffre_price_ht : 0);
+      
+      const storeHT = base_price_ht + totalOptionsHT;
+      const poseHT = avec_pose ? montant_pose_ht : 0;
+      const totalHT = storeHT + poseHT;
+      const tvaAmount = Number(((totalHT * taux_tva) / 100).toFixed(2));
+      const totalTTC = Number((totalHT + tvaAmount).toFixed(2));
+      
+      return {
+        basePrice: base_price_ht,
+        optionsPrice: totalOptionsHT,
+        storeHT,
+        poseHT,
+        totalHT,
+        tva: tvaAmount,
+        totalTTC,
+        options: {
+          ledArms: includes_led_arms ? led_arms_price_ht : 0,
+          ledBox: includes_led_box ? led_box_price_ht : 0,
+          lambrequin: includes_lambrequin ? lambrequin_price_ht : 0,
+          awning: includes_awning ? awning_price_ht : 0,
+          sousCoffre: includes_sous_coffre ? sous_coffre_price_ht : 0
+        }
+      };
+    };
 
     setShowroomState({
       activeTool,
@@ -263,7 +382,8 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
       ecoCalc: activeTool?.toolName === 'display_triple_offer' ? calculateEcoOffer(activeTool.input) : undefined,
       standardCalc: activeTool?.toolName === 'display_triple_offer' ? calculateStandardOffer(activeTool.input) : undefined,
       premiumCalc: activeTool?.toolName === 'display_triple_offer' ? calculatePremiumOffer(activeTool.input) : undefined,
-      avec_pose: activeTool?.toolName === 'display_triple_offer' ? (activeTool.input as any)?.avec_pose : false,
+      singleOfferCalc: persistedSingleOfferCalc || (activeTool?.toolName === 'display_single_offer' ? calculateSingleOffer(activeTool.input) : undefined),
+      avec_pose: persistedAvecPose || ((activeTool?.toolName === 'display_triple_offer' || activeTool?.toolName === 'display_single_offer') ? (activeTool.input as any)?.avec_pose : false),
       // Callbacks
       onSelectColor: (colorId, colorName) => {
         setSelectedColorId(colorId);
@@ -310,6 +430,13 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
           sendMessage({ text: `Je sélectionne l'offre Premium à ${priceHT}€ TTC` });
         }
       },
+      onSelectOffer: (priceTTC) => {
+        saveToCart({ selectedPrice: priceTTC, priceType: 'custom' });
+        if (activeTool?.toolName === 'display_single_offer') {
+          addToolResult({ toolCallId: activeTool.toolCallId, result: { offer_validated: true, price_ttc: priceTTC } } as any);
+          sendMessage({ text: `Je valide cette configuration à ${priceTTC}€ TTC` });
+        }
+      },
       onTerraceChange: (dims) => {
         setTerraceState(dims);
       },
@@ -322,6 +449,8 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
     proposedStoreWidth,
     proposedStoreHeight,
     showVideoHint,
+    persistedSingleOfferCalc,
+    persistedAvecPose,
     setShowroomState,
   ]);
 
@@ -401,9 +530,21 @@ export default function ChatAssistant({ modelToConfig, cart, setCart }: ChatAssi
     }
   }, [messages]);
   
+  // Auto-send du message initial depuis l'URL (prioritaire)
   useEffect(() => {
-    if (modelToConfig && !initialMessageSent) {
+    if (initialMessage && !initialMessageSentRef.current) {
+      sendMessage({ text: initialMessage });
+      initialMessageSentRef.current = true;
+      setInitialMessageSent(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMessage]);
+
+  // Auto-send pour configuration d'un modèle spécifique
+  useEffect(() => {
+    if (modelToConfig && !initialMessageSentRef.current) {
       sendMessage({ text: `Je souhaite configurer le modèle ${modelToConfig}` });
+      initialMessageSentRef.current = true;
       setInitialMessageSent(true);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

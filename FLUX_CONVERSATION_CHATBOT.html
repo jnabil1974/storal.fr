@@ -1,0 +1,480 @@
+open<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flux de Conversation - Chatbot Storal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .phase {
+            margin: 30px 0;
+            padding: 25px;
+            border-radius: 15px;
+            position: relative;
+        }
+        
+        .phase-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .phase-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+        .phase-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+        .phase-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; }
+        
+        .phase-header {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .phase-number {
+            background: rgba(255,255,255,0.3);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+        
+        .step {
+            background: rgba(255,255,255,0.15);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid rgba(255,255,255,0.5);
+        }
+        
+        .step-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        
+        .step-content {
+            font-size: 0.95em;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+        
+        .decision-box {
+            background: rgba(255,255,255,0.25);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 2px dashed rgba(255,255,255,0.6);
+        }
+        
+        .decision-title {
+            font-weight: bold;
+            font-size: 1.15em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        
+        .decision-options {
+            margin-left: 20px;
+        }
+        
+        .option {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            border-left: 3px solid rgba(255,255,255,0.7);
+        }
+        
+        .arrow {
+            text-align: center;
+            font-size: 2em;
+            color: #95a5a6;
+            margin: 10px 0;
+        }
+        
+        .highlight {
+            background: rgba(255,255,255,0.3);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .warning {
+            background: rgba(255,193,7,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        
+        .success {
+            background: rgba(76,175,80,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #4caf50;
+            margin: 15px 0;
+        }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 20px;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Flux de Conversation - Chatbot Storal</h1>
+        <p class="subtitle">Diagramme complet du processus de configuration d'un store banne</p>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                <span><strong>Phase 1:</strong> Environnement (Diagnostic)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                <span><strong>Phase 2:</strong> Validation du Projet</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                <span><strong>Phase 3:</strong> Esthétique (Style)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
+                <span><strong>Phase 4:</strong> Récapitulatif & Offre</span>
+            </div>
+        </div>
+
+        <!-- PHASE 1 -->
+        <div class="phase phase-1">
+            <div class="phase-header">
+                <div class="phase-number">1</div>
+                <div>PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)</div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">📐 ÉTAPE 1A - DIMENSIONS</div>
+                <div class="step-content">
+                    Question : "Quelles sont les dimensions de votre espace ? (Largeur × Déploiement du store (avancée))"
+                    <br>→ Déduction 30cm si dimensions de TERRASSE (pas si dimensions de STORE)
+                    <br>→ Si largeur > 6.80m : Proposition d'optimiser à 6m (budget avantageux)
+                </div>
+            </div>
+            
+            <div class="decision-box">
+                <div class="decision-title">⚠️ ÉTAPE 1A-BIS - VALIDATION MODÈLE PRÉ-SÉLECTIONNÉ (CRITIQUE)</div>
+                <div class="decision-options">
+                    <div class="option">
+                        <strong>✅ SI MODÈLE MENTIONNÉ AU DÉPART</strong> (ex: "Je veux un KISSIMY")
+                        <br>1. Identifier le modèle + son type (coffre/monobloc/traditionnel)
+                        <br>2. Consulter largeur max et avancée max
+                        <br>3. Comparer avec dimensions demandées
+                        <br><br>
+                        <div class="warning">
+                            <strong>📏 Si écart < 50cm :</strong> Proposer d'ajuster OU changer
+                            <br>"Vous demandez Xm, max possible Y.YYm. Écart = Zcm."
+                            <br>• Option 1 : Conserver et ajuster à Y.YYm
+                            <br>• Option 2 : Voir modèles alternatifs (MÊME TYPE uniquement)
+                        </div>
+                        <div class="warning">
+                            <strong>❌ Si écart ≥ 50cm :</strong> Proposer directement des alternatives (MÊME TYPE)
+                        </div>
+                        <div class="success">
+                            <strong>✅ Si compatible :</strong> Confirmer et continuer
+                        </div>
+                    </div>
+                    <div class="option">
+                        <strong>➡️ SI AUCUN MODÈLE MENTIONNÉ</strong>
+                        <br>Continuer normalement à l'ÉTAPE 1B
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">📌 ÉTAPE 1B - OBSTACLES</div>
+                <div class="step-content">
+                    "Y a-t-il des obstacles (mur, arbre, poteau) ?" (Oui/Non)
+                    <br>→ Si dimensions > 6m × 4m : Vérification PRÉCISE
+                    <br>→ Adapter rectangle si obstacles présents
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">🧭 ÉTAPE 1C - ORIENTATION & RISQUES</div>
+                <div class="step-content">
+                    "Vers quelle direction : Nord, Sud, Est ou Ouest ?"
+                    <br>→ Si Ouest/Est : Recommander Lambrequin Enroulable
+                    <br>→ "Êtes-vous en bord de mer ?" (Certifications Qualimarine/Qualicoat)
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">📏 ÉTAPE 1D - HAUTEUR & ÉLECTRICITÉ</div>
+                <div class="step-content">
+                    "À quelle hauteur souhaitez-vous installer le store ?"
+                    <br>"De quel côté la sortie de câble électrique ? (Gauche/Droite)"
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">💡 ÉTAPE 1E - ÉCLAIRAGE</div>
+                <div class="step-content">
+                    "Pensez-vous utiliser le store le soir ?"
+                    <br>→ Si oui : Proposer LED Bras ou LED Coffre
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">💳 ÉTAPE 1F - POSE & TVA</div>
+                <div class="step-content">
+                    "Installation par vous-même ou nos experts ?"
+                    <br>→ Si maison > 2 ans + pose Storal : TVA 10% (au lieu de 20%)
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow">⬇️</div>
+
+        <!-- PHASE 2 -->
+        <div class="phase phase-2">
+            <div class="phase-header">
+                <div class="phase-number">2</div>
+                <div>PHASE 2 : VALIDATION DU PROJET (Le Verrouillage)</div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">📋 RÉCAPITULATIF TECHNIQUE</div>
+                <div class="step-content">
+                    Afficher un résumé complet :
+                    <br>• Dimensions (largeur × déploiement du store (avancée))
+                    <br>• Orientation & Environnement
+                    <br>• Hauteur de pose & Sortie câble
+                    <br>• Options : LED, Pose Storal, TVA
+                    <br><br>
+                    <span class="highlight">⚠️ NE PAS mentionner de modèle spécifique ici</span>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">✅ QUESTION DE VALIDATION</div>
+                <div class="step-content">
+                    "Ce diagnostic technique vous semble-t-il complet pour passer à la personnalisation ?"
+                    <br>→ Si NON : Reposer les questions nécessaires
+                    <br>→ Si OUI : Passer à PHASE 3
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow">⬇️</div>
+
+        <!-- PHASE 3 -->
+        <div class="phase phase-3">
+            <div class="phase-header">
+                <div class="phase-number">3</div>
+                <div>PHASE 3 : ESTHÉTIQUE (Le Style)</div>
+            </div>
+            
+            <div class="decision-box">
+                <div class="decision-title">⚠️ DÉTECTION PRÉALABLE RENFORCÉE (3 CAS POSSIBLES)</div>
+                <div class="decision-options">
+                    <div class="option">
+                        <strong>CAS A - Modèle VALIDÉ en ÉTAPE 1A-BIS</strong>
+                        <br>Le client a mentionné un modèle ET accepté le résultat de la vérification dimensions
+                        <br>Réponses positives : "Oui", "Oui ça me va", "D'accord", "Option 1", etc.
+                        <br><br>
+                        <div class="success">
+                            <strong>→ ACTION :</strong> SKIP complètement <span class="highlight">open_model_selector</span>
+                            <br>→ Passer DIRECTEMENT à <span class="highlight">open_color_selector</span>
+                            <br>Le modèle est déjà finalisé, inutile de proposer des alternatives ✅
+                        </div>
+                    </div>
+                    
+                    <div class="option">
+                        <strong>CAS B - Modèle mentionné MAIS pas validé</strong>
+                        <br>Modèle cité mais ÉTAPE 1A-BIS pas franchie OU client a choisi "Option 2"
+                        <br><br>
+                        <div class="warning">
+                            <strong>→ ACTION :</strong> SKIP questions Type/Design
+                            <br>→ APPELER <span class="highlight">open_model_selector</span> avec :
+                            <br>&nbsp;&nbsp;• Ce modèle mentionné
+                            <br>&nbsp;&nbsp;• + 2 alternatives du MÊME TYPE (coffre/monobloc/traditionnel)
+                        </div>
+                    </div>
+                    
+                    <div class="option">
+                        <strong>CAS C - Aucun modèle mentionné</strong>
+                        <br>Le client arrive sans pré-sélection de modèle
+                        <br><br>
+                        <strong>→ ACTION :</strong>
+                        <br>1. Poser questions "Type de store ?" et "Design ?"
+                        <br>2. APPELER <span class="highlight">open_model_selector</span> avec 3 modèles compatibles
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">🎨 ÉTAPE 3A - COULEUR ARMATURE</div>
+                <div class="step-content">
+                    APPELER <span class="highlight">open_color_selector</span> pour afficher les pastilles RAL
+                    <br>→ NE JAMAIS décrire les couleurs en texte
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">🎨 ÉTAPE 3B - CHOIX TOILE</div>
+                <div class="step-content">
+                    APPELER <span class="highlight">open_fabric_selector</span> pour afficher les toiles disponibles
+                    <br>→ NE JAMAIS décrire les toiles en texte
+                </div>
+            </div>
+        </div>
+
+        <div class="arrow">⬇️</div>
+
+        <!-- PHASE 4 -->
+        <div class="phase phase-4">
+            <div class="phase-header">
+                <div class="phase-number">4</div>
+                <div>PHASE 4 : RÉCAPITULATIF & OFFRE (La Conclusion)</div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">📋 RÉCAPITULATIF COMPLET</div>
+                <div class="step-content">
+                    Afficher TOUS les choix du client :
+                    <br>• Modèle + Dimensions
+                    <br>• Couleurs (armature + toile)
+                    <br>• Options (LED, Lambrequin, Auvent, etc.)
+                    <br>• Pose + TVA
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">✅ VALIDATION FINALE</div>
+                <div class="step-content">
+                    "Est-ce que cette configuration correspond exactement à votre projet ?"
+                    <br>→ Si NON : Ajuster les éléments nécessaires
+                    <br>→ Si OUI : Générer le devis personnalisé
+                </div>
+            </div>
+            
+            <div class="decision-box">
+                <div class="decision-title">💰 GÉNÉRATION DU DEVIS PERSONNALISÉ</div>
+                <div class="step-content">
+                    APPELER <span class="highlight">display_single_offer</span> (1 SEULE offre)
+                    <br><br>
+                    <strong>Contenu du devis :</strong>
+                    <br>• Prix de base du store (HT)
+                    <br>• + Prix des options choisies par le client (LED, Lambrequin, etc.)
+                    <br>• + Pose (si choisie)
+                    <br>• + TVA (10% ou 20%)
+                    <br>• = PRIX TOTAL TTC
+                    <br><br>
+                    <span class="highlight">⚠️ NE PLUS proposer 3 offres (Eco/Standard/Premium)</span>
+                    <br>Afficher UNIQUEMENT ce que le client a demandé ✅
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">🔄 SI CLIENT VEUT MODIFIER</div>
+                <div class="step-content">
+                    Si "c'est trop cher" ou "je veux enlever X" :
+                    <br>→ Proposer de retirer des options (LED, Lambrequin)
+                    <br>→ Recalculer et afficher nouveau devis
+                    <br>→ NE PAS changer de type de store sauf si demandé explicitement
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; padding: 30px; background: #ecf0f1; border-radius: 15px; text-align: center;">
+            <h2 style="color: #2c3e50; margin-bottom: 15px;">🎯 Points Clés du Flux</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; text-align: left;">
+                <div style="background: white; padding: 20px; border-radius: 10px;">
+                    <strong style="color: #e74c3c;">1️⃣ Vérification immédiate</strong>
+                    <p style="margin-top: 10px; color: #7f8c8d;">Si modèle pré-sélectionné, vérifier compatibilité dimensions AVANT toutes les autres questions</p>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 10px;">
+                    <strong style="color: #3498db;">2️⃣ Respect du choix client</strong>
+                    <p style="margin-top: 10px; color: #7f8c8d;">Si modèle validé en ÉTAPE 1A-BIS, ne PAS reproposer 3 modèles en PHASE 3</p>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 10px;">
+                    <strong style="color: #2ecc71;">3️⃣ Cohérence du type</strong>
+                    <p style="margin-top: 10px; color: #7f8c8d;">Alternatives toujours du MÊME TYPE : coffre→coffre, monobloc→monobloc</p>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 10px;">
+                    <strong style="color: #f39c12;">4️⃣ Une seule offre</strong>
+                    <p style="margin-top: 10px; color: #7f8c8d;">Afficher uniquement les options choisies par le client, pas 3 offres pré-définies</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: #34495e; color: white; border-radius: 10px; text-align: center;">
+            <p><strong>📅 Dernière mise à jour :</strong> 15 février 2026</p>
+            <p style="margin-top: 10px; opacity: 0.8;">Ce diagramme reflète la logique complète du prompt du chatbot Storal</p>
+        </div>
+    </div>
+</body>
+</html>

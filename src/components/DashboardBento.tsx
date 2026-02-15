@@ -19,7 +19,7 @@ export default function DashboardBento() {
 
     const toolName = showroomState.activeTool.toolName;
     
-    if (toolName === 'display_triple_offer' || showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc) {
+    if (toolName === 'display_triple_offer' || toolName === 'display_single_offer' || showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc || showroomState.singleOfferCalc) {
       setHighlightedTile('prix');
     } else if (toolName === 'open_model_selector' || showroomState.selectedModelId) {
       setHighlightedTile('modele');
@@ -449,27 +449,39 @@ export default function DashboardBento() {
             </div>
           </div>
           
-          {(showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc) ? (
+          {(showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc || showroomState.singleOfferCalc) ? (
             <div className="space-y-1">
-              {showroomState.standardCalc?.ledArmsPrice > 0 && (
+              {(showroomState.standardCalc?.ledArmsPrice > 0 || showroomState.singleOfferCalc?.options?.ledArms > 0) && (
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-green-600">✓</span>
                   <span className="text-gray-700">LED Bras</span>
                 </div>
               )}
-              {showroomState.standardCalc?.ledBoxPrice > 0 && (
+              {(showroomState.standardCalc?.ledBoxPrice > 0 || showroomState.singleOfferCalc?.options?.ledBox > 0) && (
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-green-600">✓</span>
                   <span className="text-gray-700">LED Coffre</span>
                 </div>
               )}
-              {showroomState.standardCalc?.lambrequinPrice > 0 && (
+              {(showroomState.standardCalc?.lambrequinPrice > 0 || showroomState.singleOfferCalc?.options?.lambrequin > 0) && (
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-green-600">✓</span>
                   <span className="text-gray-700">Lambrequin</span>
                 </div>
               )}
-              {(!showroomState.standardCalc?.ledArmsPrice && !showroomState.standardCalc?.ledBoxPrice && !showroomState.standardCalc?.lambrequinPrice) && (
+              {(showroomState.singleOfferCalc?.options?.awning > 0) && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-green-600">✓</span>
+                  <span className="text-gray-700">Auvent</span>
+                </div>
+              )}
+              {(showroomState.singleOfferCalc?.options?.sousCoffre > 0) && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-green-600">✓</span>
+                  <span className="text-gray-700">Sous-coffre</span>
+                </div>
+              )}
+              {(!showroomState.standardCalc?.ledArmsPrice && !showroomState.standardCalc?.ledBoxPrice && !showroomState.standardCalc?.lambrequinPrice && !showroomState.singleOfferCalc?.options?.ledArms && !showroomState.singleOfferCalc?.options?.ledBox && !showroomState.singleOfferCalc?.options?.lambrequin && !showroomState.singleOfferCalc?.options?.awning && !showroomState.singleOfferCalc?.options?.sousCoffre) && (
                 <div className="text-center py-4 text-gray-400">
                   <p className="text-xs">Aucune option</p>
                 </div>
@@ -496,7 +508,72 @@ export default function DashboardBento() {
             </div>
           </div>
           
-          {showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc ? (
+          {showroomState.singleOfferCalc ? (
+            <div className="flex justify-center">
+              <button 
+                onClick={() => showroomState.onSelectOffer?.(showroomState.singleOfferCalc.totalTTC)}
+                className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-6 border-2 border-emerald-300 hover:border-emerald-500 hover:shadow-2xl transition-all cursor-pointer transform hover:scale-105 w-full max-w-md"
+              >
+                <p className="text-sm text-emerald-700 font-bold mb-3">💎 Votre Devis Personnalisé</p>
+                <p className="text-4xl font-black text-emerald-900 mb-2">{showroomState.singleOfferCalc.totalTTC?.toFixed(2) || '—'}€</p>
+                <p className="text-sm text-emerald-700 font-semibold mb-4">TTC</p>
+                
+                <div className="bg-white/60 rounded-lg p-3 mb-3 text-left space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">Store de base</span>
+                    <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.basePrice?.toFixed(2)}€ HT</span>
+                  </div>
+                  {showroomState.singleOfferCalc.options?.ledArms && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">💡 LED Bras</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.ledArms.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  {showroomState.singleOfferCalc.options?.ledBox && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">💡 LED Coffre</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.ledBox.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  {showroomState.singleOfferCalc.options?.lambrequin && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">🎨 Lambrequin</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.lambrequin.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  {showroomState.singleOfferCalc.options?.awning && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">☂️ Auvent</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.awning.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  {showroomState.singleOfferCalc.options?.sousCoffre && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">📦 Sous-coffre</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.sousCoffre.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  {showroomState.singleOfferCalc.poseHT > 0 && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">🔧 Installation</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.poseHT?.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  <div className="border-t border-emerald-200 pt-1 mt-1"></div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">Total HT</span>
+                    <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.totalHT?.toFixed(2)}€</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">TVA ({showroomState.avec_pose ? '10' : '20'}%)</span>
+                    <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.tva?.toFixed(2)}€</span>
+                  </div>
+                </div>
+                
+                <p className="text-xs text-emerald-600 font-semibold">👆 Cliquez pour valider</p>
+              </button>
+            </div>
+          ) : showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc ? (
             <div className="grid grid-cols-3 gap-3">
               {showroomState.ecoCalc && (
                 <button 
@@ -566,7 +643,7 @@ export default function DashboardBento() {
             <div className="bg-gray-50 rounded-lg p-3">
               <p className="text-xs text-gray-500 mb-1">Étape</p>
               <p className="text-sm font-semibold text-gray-900">
-                {showroomState.ecoCalc ? 'Devis prêt' : 
+                {showroomState.ecoCalc || showroomState.singleOfferCalc ? 'Devis prêt' : 
                  showroomState.selectedModelId ? 'Configuration' :
                  'Sélection modèle'}
               </p>
@@ -587,7 +664,7 @@ export default function DashboardBento() {
         </div>
 
         {/* Bouton de validation - Visible uniquement quand les offres sont affichées */}
-        {(showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc) && (
+        {(showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc || showroomState.singleOfferCalc) && (
           <div className="col-span-2 mt-4">
             <a
               href="/panier"
