@@ -546,8 +546,8 @@ export default function ConfirmationPage() {
             </h3>
             <div className="space-y-6">
               {order.items && order.items.map((item: any, idx: number) => {
-                // Extraire le modèle depuis l'item
-                const modelId = item.productId || item.configuration?.modelId;
+                // Extraire le modèle depuis l'item - priorité à configuration.modelId
+                const modelId = item.configuration?.modelId || item.productId;
                 const modelData = modelId && STORE_MODELS[modelId as keyof typeof STORE_MODELS] 
                   ? STORE_MODELS[modelId as keyof typeof STORE_MODELS]
                   : null;
@@ -619,18 +619,15 @@ export default function ConfirmationPage() {
                           {/* Couleur toile */}
                           {item.configuration?.fabricColor && (() => {
                             const fabric = FABRICS.find(f => f.id === item.configuration.fabricColor);
-                            return fabric ? (
+                            return fabric && fabric.image_url ? (
                               <div key="fabric" className="flex flex-col items-center gap-2">
                                 <div className="w-20 h-20 rounded-lg border-2 border-gray-400 shadow-md bg-gray-100 relative overflow-hidden">
                                   <Image 
-                                    src={`${fabric.folder}/${fabric.ref}.jpg`} 
+                                    src={fabric.image_url} 
                                     alt={fabric.name} 
                                     fill 
                                     className="object-cover"
                                     sizes="80px"
-                                    onError={(e) => {
-                                      (e.target as HTMLImageElement).style.display = 'none';
-                                    }}
                                   />
                                 </div>
                                 <span className="text-xs text-gray-700 text-center font-medium max-w-[80px]">

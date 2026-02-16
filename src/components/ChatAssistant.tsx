@@ -279,12 +279,17 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
         return;
       }
 
+      console.log('📦 cart.modelId:', cart.modelId);
+      console.log('📦 cart.modelName:', cart.modelName);
+      console.log('📦 modelData:', modelData);
+      
       const payload = {
         productId: cart.modelId || 'unknown',
         productType: 'store_banne' as ProductType,
         productName: cart.modelName || modelData.name,
         basePrice: cart.storeHT || 0,
         configuration: {
+          modelId: cart.modelId || '',  // 🔑 Sauvegarder l'ID original pour retrouver le modèle
           width: cart.width || 0,
           depth: cart.projection || 0,
           motorized: cart.withMotor || false,
@@ -407,6 +412,9 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       const standardHT = standard_price_ht || confort || 0;
       const premiumHT = premium_price_ht || premium || 0;
       
+      // ✅ Fix: Utiliser cart.fabricId au lieu de fabric_color de l'IA
+      const actualFabricId = cart.fabricId || fabric_color;
+      
       // Calculate installation cost
       const poseActuelle = width && avec_pose ? calculateInstallationCost(width) : 0;
       
@@ -438,7 +446,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         width: width || cart?.width,
         projection: depth || cart?.projection,
         colorId: frame_color || cart?.colorId,
-        fabricId: fabric_color || cart?.fabricId,
+        fabricId: actualFabricId,  // ✅ Utiliser la valeur corrigée
         exposure: exposure || cart?.exposure,
         withMotor: with_motor !== undefined ? with_motor : cart?.withMotor
       });
@@ -465,6 +473,9 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         cable_exit,
         obstacles
       } = input;
+      
+      // ✅ Fix: Utiliser cart.fabricId au lieu de fabric_color de l'IA
+      const actualFabricId = cart.fabricId || fabric_color;
       
       // Calculer le total des options choisies
       const totalOptionsHT =
@@ -517,7 +528,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         width: width || cart?.width,
         projection: depth || cart?.projection,
         colorId: frame_color || cart?.colorId,
-        fabricId: fabric_color || cart?.fabricId,
+        fabricId: actualFabricId,  // ✅ Utiliser la valeur corrigée
         exposure: exposure || cart?.exposure,
         withMotor: with_motor !== undefined ? with_motor : cart?.withMotor,
         // Informations terrasse et environnement
@@ -993,12 +1004,13 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
           
           console.log('🎨 Rendu outil:', tool.toolName, 'isCurrent:', isCurrent, 'toolCallId:', tool.toolCallId);
           
-          // ⚠️ Les sélecteurs de couleur et toile ne doivent disparaître QUE si une sélection a été faite
-          const isColorOrFabricSelector = tool.toolName === 'open_color_selector' || tool.toolName === 'open_fabric_selector';
+          // ⚠️ Les sélecteurs ne doivent disparaître QUE si une sélection a été faite
+          const isSelector = tool.toolName === 'open_model_selector' || tool.toolName === 'open_color_selector' || tool.toolName === 'open_fabric_selector';
           
-          // Ne masquer les anciens sélecteurs que s'ils ont été validés (détecté via selectedColorId/selectedFabricId)
-          if (isColorOrFabricSelector && !isCurrent) {
+          // Ne masquer les anciens sélecteurs que s'ils ont été validés
+          if (isSelector && !isCurrent) {
             const hasBeenValidated = 
+              (tool.toolName === 'open_model_selector' && selectedModelId) ||
               (tool.toolName === 'open_color_selector' && selectedColorId) ||
               (tool.toolName === 'open_fabric_selector' && selectedFabricId);
             

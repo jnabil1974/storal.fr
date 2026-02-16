@@ -407,9 +407,27 @@ Design : Pour un store coffre, préfère-t-il un design Carré (moderne) ou Galb
 
 ⚠️ MODÈLES - UTILISATION OBLIGATOIRE DE L'OUTIL VISUEL :
 APPELLE L'OUTIL open_model_selector pour afficher 3 modèles compatibles en cartes visuelles (ex: KISSIMY, BELHARRA, BERLIN). NE JAMAIS décrire les modèles en texte - utilise CET OUTIL.
-⚠️ COULEURS - UTILISATION OBLIGATOIRE DES OUTILS VISUELS :
-1. APPELLE L'OUTIL open_color_selector pour afficher les couleurs d'armature disponibles (ne jamais les décrire en texte)
-2. Après sélection de la couleur d'armature, APPELLE L'OUTIL open_fabric_selector pour afficher les toiles disponibles (ne jamais les décrire en texte)
+
+⚠️ COULEURS & TOILES - FLUX OBLIGATOIRE EN 2 ÉTAPES :
+
+ÉTAPE 1 - COULEUR D'ARMATURE (Coffre et Bras) :
+→ APPELLE TOUJOURS open_color_selector pour afficher visuellement les couleurs RAL disponibles
+→ ATTENDS que l'utilisateur clique sur une couleur
+→ Confirme la sélection (ex: "Excellent choix, le Gris Anthracite est très moderne !")
+
+ÉTAPE 2 - TOILE (IMMÉDIATEMENT APRÈS COULEUR) :
+⚠️ RÈGLE ABSOLUE : DÈS QUE la couleur d'armature est validée, tu DOIS IMMÉDIATEMENT :
+1. Envoyer un message court de transition personnalisé selon ce que l'utilisateur a choisi (ex : "Passons maintenant à la toile, qui définira l'ambiance de votre terrasse.")
+2. APPELER open_fabric_selector dans LA MÊME RÉPONSE (ne pas attendre un nouveau message utilisateur)
+
+⚠️ NE JAMAIS :
+- Décrire les toiles en texte
+- Attendre que l'utilisateur demande "les toiles" ou "toile" - tu dois l'appeler automatiquement
+- Passer à PHASE 4 sans avoir appelé open_fabric_selector
+- Dire "Votre configuration est terminée" avant d'avoir montré les toiles
+
+SÉQUENCE OBLIGATOIRE :
+open_color_selector → [Utilisateur clique] → Message transition + open_fabric_selector → [Utilisateur clique] → PHASE 4
 
 PHASE 4 : RÉCAPITULATIF & OFFRE (La Conclusion)
 Affiche le récapitulatif complet (Dimensions, Orientation, Hauteur, Options LED, Type de store, Design, Couleurs, Pose).
@@ -634,11 +652,11 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
               },
               fabric_color: {
                 type: 'string',
-                description: "Couleur de la toile choisie"
+                description: "ID de la toile sélectionnée (ex: 'orch_8203'). ⚠️ LAISSER VIDE - sera récupéré automatiquement depuis la configuration"
               },
               fabric_name: {
                 type: 'string',
-                description: "Nom complet de la toile"
+                description: "Nom complet de la toile (visible pour l'utilisateur)"
               },
               
               // Prix de base
@@ -746,7 +764,7 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
                 description: "Obstacles éventuels (gouttière, câbles, etc.). Optionnel"
               }
             },
-            required: ['selected_model', 'model_name', 'store_type', 'width', 'depth', 'base_price_ht', 'frame_color', 'fabric_color', 'taux_tva', 'avec_pose', 'montant_pose_ht'],
+            required: ['selected_model', 'model_name', 'store_type', 'width', 'depth', 'base_price_ht', 'frame_color', 'taux_tva', 'avec_pose', 'montant_pose_ht'],
           }),
         }),
         open_color_selector: tool({
@@ -762,7 +780,7 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
           }),
         }),
         open_fabric_selector: tool({
-          description: "⚠️ OUTIL OBLIGATOIRE - Affiche visuellement les options de toiles disponibles (uni, rayé, goldies). À APPELER DÈS QUE la couleur d'armature est choisie. NE JAMAIS décrire les toiles en texte - utilise CET OUTIL.",
+          description: "🔴 OUTIL CRITIQUE OBLIGATOIRE 🔴 - Affiche visuellement le sélecteur de toiles avec vignettes cliquables (unis, rayés, texturés). À APPELER AUTOMATIQUEMENT ET IMMÉDIATEMENT après que l'utilisateur ait choisi une couleur d'armature. NE JAMAIS attendre que l'utilisateur demande 'les toiles' - c'est TON RÔLE de l'appeler. NE JAMAIS décrire les toiles en texte - UTILISE CET OUTIL SYSTÉMATIQUEMENT. Si tu ne l'appelles pas, la configuration est INCOMPLÈTE et l'utilisateur ne pourra pas commander.",
           inputSchema: jsonSchema({
             type: 'object',
             properties: {

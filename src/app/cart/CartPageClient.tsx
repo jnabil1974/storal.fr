@@ -133,14 +133,24 @@ export default function CartPageClient() {
             {/* Articles */}
             <div className="lg:col-span-2 space-y-6">
               {cart.items.map((item, index) => {
-                // Extraire le modèle depuis le productId (qui contient directement le modelId)
-                const modelId = item.productId as string;
+                // 🔧 Récupérer modelId depuis configuration.modelId (ID original) ou fallback sur productId
+                const modelId = item.configuration?.modelId || item.productId as string;
+                console.log('🔍 Item productId:', item.productId);
+                console.log('🔍 configuration.modelId:', item.configuration?.modelId);
+                console.log('🔍 Using modelId:', modelId);
+                console.log('🔍 STORE_MODELS keys:', Object.keys(STORE_MODELS));
+                
                 const modelData = modelId && STORE_MODELS[modelId as keyof typeof STORE_MODELS] 
                   ? STORE_MODELS[modelId as keyof typeof STORE_MODELS]
                   : null;
                 const productImage = modelData?.image;
                 
-                console.log('🖼️ Cart item:', { modelId, hasModelData: !!modelData, productImage });
+                console.log('🖼️ Cart item debug:', { 
+                  modelId, 
+                  hasModelData: !!modelData, 
+                  productImage,
+                  modelName: modelData?.name
+                });
 
                 return (
                   <div 
@@ -149,7 +159,7 @@ export default function CartPageClient() {
                   >
                     <div className="flex gap-6">
                       {/* Product Image */}
-                      {productImage && (
+                      {productImage ? (
                         <div className="flex-shrink-0">
                           <div className="w-40 h-40 relative rounded-lg overflow-hidden bg-gray-100 border-2 border-gray-200">
                             <Image
@@ -163,6 +173,12 @@ export default function CartPageClient() {
                                 (e.target as HTMLImageElement).style.display = 'none';
                               }}
                             />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex-shrink-0">
+                          <div className="w-40 h-40 relative rounded-lg overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 border-2 border-gray-200 flex items-center justify-center">
+                            <span className="text-gray-500 text-4xl">📦</span>
                           </div>
                         </div>
                       )}
@@ -243,7 +259,9 @@ export default function CartPageClient() {
                             
                             {/* Couleur toile */}
                             {item.configuration?.fabricColor && (() => {
+                              console.log('🧵 fabricColor dans config:', item.configuration.fabricColor);
                               const fabric = FABRICS.find(f => f.id === item.configuration.fabricColor);
+                              console.log('🧵 Toile trouvée:', fabric?.name, 'Image:', fabric?.image_url);
                               return fabric && fabric.image_url ? (
                                 <div key="fabric" className="flex flex-col items-center gap-2">
                                   <div className="w-20 h-20 rounded-lg border-2 border-gray-300 shadow-md bg-gray-100 relative overflow-hidden">
@@ -254,6 +272,7 @@ export default function CartPageClient() {
                                       className="object-cover"
                                       sizes="80px"
                                       onError={(e) => {
+                                        console.error('❌ Erreur chargement image toile:', fabric.image_url);
                                         // Fallback en cas d'erreur de chargement
                                         (e.target as HTMLImageElement).style.display = 'none';
                                       }}
