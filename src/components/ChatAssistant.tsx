@@ -202,7 +202,6 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
     
     if (cart) {
       if (cart.modelId && !selectedModelId) {
-        console.log('✅ Restauration modelId depuis cart:', cart.modelId);
         setSelectedModelId(cart.modelId);
         // 🔥 Synchroniser avec ShowroomContext pour que DashboardBento affiche le bon modèle
         setShowroomState((prev: any) => ({
@@ -278,10 +277,6 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
         alert('⚠️ Modèle non trouvé');
         return;
       }
-
-      console.log('📦 cart.modelId:', cart.modelId);
-      console.log('📦 cart.modelName:', cart.modelName);
-      console.log('📦 modelData:', modelData);
       
       const payload = {
         productId: cart.modelId || 'unknown',
@@ -1021,17 +1016,10 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
           
           return (
             <div key={`${tool.toolCallId}-${idx}`} className={`transition-all ${!isCurrent ? 'opacity-70 scale-95 mb-4' : ''}`}>
-              {(() => {
-                console.log(`🔍 Rendering tool: ${tool.toolName}, isCurrent: ${isCurrent}`);
-                return null;
-              })()}
               {tool.toolName === 'display_triple_offer' && renderTripleOfferTool(tool, isCurrent)}
               {tool.toolName === 'open_model_selector' && renderModelSelectorTool(tool, isCurrent)}
               {tool.toolName === 'open_color_selector' && renderColorSelectorTool(tool, isCurrent)}
-              {tool.toolName === 'open_fabric_selector' && (() => {
-                console.log(`🧵 About to call renderFabricSelectorTool`);
-                return renderFabricSelectorTool(tool, isCurrent);
-              })()}
+              {tool.toolName === 'open_fabric_selector' && renderFabricSelectorTool(tool, isCurrent)}
             </div>
           );
         })}
@@ -1363,8 +1351,6 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
     const fabricColor = input.fabric_color as string || null;
     const exposure = input.exposure as string || null;
     const withMotor = input.with_motor !== undefined ? input.with_motor as boolean : true;
-    
-    console.log('🎨 Configuration reçue de l\'IA:', { width, depth, frameColor, fabricColor, exposure, withMotor });
     
     const filteredModels = modelsToDisplay.map(id => Object.values(STORE_MODELS).find(m => m.id === id)).filter(Boolean) as StoreModel[];
     return (

@@ -5,6 +5,7 @@ import { STORE_MODELS, FRAME_COLORS, FABRICS, type Fabric, type FrameColor } fro
 import { useEffect, useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import type { ProductType } from '@/types/products';
 
 export default function DashboardBento() {
@@ -547,7 +548,21 @@ export default function DashboardBento() {
           
           {selectedFabric ? (
             <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3 border border-orange-200">
-              <p className="font-bold text-gray-900 text-sm">{selectedFabric.name}</p>
+              {selectedFabric.image_url ? (
+                <div className="space-y-2">
+                  <div className="relative w-full h-24 rounded-lg overflow-hidden border-2 border-white shadow-md">
+                    <Image 
+                      src={selectedFabric.image_url} 
+                      alt={selectedFabric.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <p className="font-semibold text-gray-900 text-xs text-center">{selectedFabric.name}</p>
+                </div>
+              ) : (
+                <p className="font-bold text-gray-900 text-sm">{selectedFabric.name}</p>
+              )}
             </div>
           ) : (
             <div className="text-center py-4 text-gray-400">
@@ -701,14 +716,8 @@ export default function DashboardBento() {
                 try {
                   // Récupérer la configuration depuis localStorage (où ChatAssistant la sauvegarde dans 'storal-cart')
                   const storedCartJson = localStorage.getItem('storal-cart');
-                  console.log('📦 storal-cart raw:', storedCartJson);
                   
                   const storedConfig = storedCartJson ? JSON.parse(storedCartJson) : null;
-                  console.log('📦 storedConfig keys:', Object.keys(storedConfig || {}));
-                  console.log('📦 modelId:', storedConfig?.modelId);
-                  console.log('📦 modelName:', storedConfig?.modelName);
-                  console.log('📦 colorId:', storedConfig?.colorId);
-                  console.log('📦 fabricId:', storedConfig?.fabricId);
 
                   if (!storedConfig || !storedConfig.modelId) {
                     console.error('❌ Missing modelId in storedConfig');
@@ -717,15 +726,10 @@ export default function DashboardBento() {
                     return;
                   }
 
-                  console.log('✅ Configuration found, searching for model');
-
                   // Récupérer les données du modèle (STORE_MODELS est un objet, pas un tableau)
                   const modelsList = Object.values(STORE_MODELS);
-                  console.log('📋 STORE_MODELS count:', modelsList.length);
-                  console.log('🔍 Looking for modelId:', storedConfig.modelId);
                   
                   const modelData = modelsList.find((m: any) => m.id === storedConfig.modelId);
-                  console.log('🔍 Found modelData:', modelData?.name || 'NOT FOUND');
                   
                   if (!modelData) {
                     console.error('❌ Model not found:', storedConfig.modelId);

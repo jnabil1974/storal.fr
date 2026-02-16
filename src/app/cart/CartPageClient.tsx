@@ -135,22 +135,11 @@ export default function CartPageClient() {
               {cart.items.map((item, index) => {
                 // 🔧 Récupérer modelId depuis configuration.modelId (ID original) ou fallback sur productId
                 const modelId = item.configuration?.modelId || item.productId as string;
-                console.log('🔍 Item productId:', item.productId);
-                console.log('🔍 configuration.modelId:', item.configuration?.modelId);
-                console.log('🔍 Using modelId:', modelId);
-                console.log('🔍 STORE_MODELS keys:', Object.keys(STORE_MODELS));
                 
                 const modelData = modelId && STORE_MODELS[modelId as keyof typeof STORE_MODELS] 
                   ? STORE_MODELS[modelId as keyof typeof STORE_MODELS]
                   : null;
                 const productImage = modelData?.image;
-                
-                console.log('🖼️ Cart item debug:', { 
-                  modelId, 
-                  hasModelData: !!modelData, 
-                  productImage,
-                  modelName: modelData?.name
-                });
 
                 return (
                   <div 
@@ -259,9 +248,7 @@ export default function CartPageClient() {
                             
                             {/* Couleur toile */}
                             {item.configuration?.fabricColor && (() => {
-                              console.log('🧵 fabricColor dans config:', item.configuration.fabricColor);
                               const fabric = FABRICS.find(f => f.id === item.configuration.fabricColor);
-                              console.log('🧵 Toile trouvée:', fabric?.name, 'Image:', fabric?.image_url);
                               return fabric && fabric.image_url ? (
                                 <div key="fabric" className="flex flex-col items-center gap-2">
                                   <div className="w-20 h-20 rounded-lg border-2 border-gray-300 shadow-md bg-gray-100 relative overflow-hidden">
