@@ -1,7 +1,7 @@
 // Context pour partager l'état du Showroom entre ChatAssistant et la page principale
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, Dispatch, SetStateAction } from 'react';
 
 interface TerraceState {
   m1: number;
@@ -53,7 +53,7 @@ export interface ShowroomState {
 
 interface ShowroomContextType {
   showroomState: ShowroomState;
-  setShowroomState: (state: ShowroomState) => void;
+  setShowroomState: Dispatch<SetStateAction<ShowroomState>>;
 }
 
 const ShowroomContext = createContext<ShowroomContextType | null>(null);
@@ -66,6 +66,16 @@ export function ShowroomProvider({ children }: { children: ReactNode }) {
     selectedModelId: null,
     hasStartedConversation: false,
   });
+
+  // 🔍 Log pour déboguer les changements du ShowroomContext
+  useEffect(() => {
+    console.log('🏠 ShowroomContext STATE CHANGED:', JSON.stringify({
+      selectedModelId: showroomState.selectedModelId,
+      selectedColorId: showroomState.selectedColorId,
+      selectedFabricId: showroomState.selectedFabricId,
+      activeTool: showroomState.activeTool?.toolName
+    }, null, 2));
+  }, [showroomState]);
 
   return (
     <ShowroomContext.Provider value={{ showroomState, setShowroomState }}>

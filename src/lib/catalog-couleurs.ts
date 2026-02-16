@@ -1,6 +1,6 @@
 /**
  * Catalogue des couleurs de structure (Matest) - Généré automatiquement depuis Supabase
- * Date de génération: 2026-02-15T11:18:13.966Z
+ * Date de génération: 2026-02-16T01:46:22.715Z
  * 
  * ⚠️ NE PAS MODIFIER MANUELLEMENT
  * Pour mettre à jour: npm run generate:catalogs

@@ -66,7 +66,37 @@ export default function VisualShowroom({
 
   // Si pas d'outil actif
   if (!activeTool) {
-    // Afficher l'image du store banne
+    // Si un modèle est sélectionné, l'afficher
+    if (selectedModelId) {
+      const selectedModel = Object.values(STORE_MODELS).find((m: any) => m.id === selectedModelId);
+      if (selectedModel) {
+        return (
+          <div className="animate-fade-in h-full overflow-y-auto">
+            <div className="p-6 space-y-4">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">📍 Modèle Sélectionné</h3>
+              
+              <div className="border-4 border-green-500 bg-green-50 rounded-xl overflow-hidden p-4">
+                <div className="relative w-full h-64 bg-gray-100 rounded mb-4">
+                  <Image 
+                    src={(selectedModel as any).image} 
+                    alt={(selectedModel as any).name} 
+                    fill 
+                    className="object-cover rounded" 
+                  />
+                </div>
+                <h4 className="font-bold text-xl text-gray-900 mb-2">{(selectedModel as any).name}</h4>
+                <p className="text-sm text-gray-600 mb-3">{(selectedModel as any).description}</p>
+                <div className="mt-3 pt-3 border-t border-green-300">
+                  <p className="text-green-600 font-bold text-sm">✅ Sélectionné</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+    }
+    
+    // Sinon afficher l'image du store banne par défaut
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-white overflow-hidden">
         <Image
@@ -122,88 +152,50 @@ export default function VisualShowroom({
     );
   }
 
-  // ✅ AFFICHAGE SÉLECTEUR DE COULEURS
+  // ❌ SÉLECTEUR DE COULEURS - Les sélecteurs sont maintenant affichés uniquement dans le chat
+  // VisualShowroom ne les affiche plus
   if (activeTool.toolName === 'open_color_selector') {
-    return (
-      <div className="animate-fade-in h-full overflow-y-auto">
-        <div className="p-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Couleur de l'Armature</h3>
-          
-          <div className="grid grid-cols-2 gap-4">
-            {FRAME_COLORS.map((color) => {
-              const isSelected = selectedColorId === color.id;
-              return (
-                <button
-                  key={color.id}
-                  onClick={() => onSelectColor(color.id, color.name)}
-                  className={`p-4 rounded-lg border-2 transition-all text-center cursor-pointer ${
-                    isSelected
-                      ? 'border-4 border-green-500 ring-2 ring-green-300 shadow-lg'
-                      : 'border-gray-300 hover:border-gray-500 hover:shadow-md'
-                  }`}
-                >
-                  <div
-                    className="w-full h-20 rounded-lg mb-2 border-2 border-gray-400"
-                    style={{ backgroundColor: color.hex }}
-                  />
-                  <p className="text-xs font-semibold text-gray-900">{color.name}</p>
-                  {color.price > 0 && <p className="text-xs text-orange-600">+{color.price}€</p>}
-                  {isSelected && <p className="text-xs text-green-600 font-bold mt-1">✅</p>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
-  // ✅ AFFICHAGE SÉLECTEUR DE TOILES
+  // ❌ SÉLECTEUR DE TOILES - Les sélecteurs sont maintenant affichés uniquement dans le chat
+  // VisualShowroom ne les affiche plus
   if (activeTool.toolName === 'open_fabric_selector') {
-    return (
-      <div className="animate-fade-in h-full overflow-y-auto">
-        <div className="p-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Choisissez votre Toile</h3>
-          
-          <div className="grid grid-cols-1 gap-3">
-            {FABRICS.map((fabric) => {
-              const isSelected = selectedFabricId === fabric.id;
-              return (
-                <button
-                  key={fabric.id}
-                  onClick={() => onSelectFabric(fabric.id, fabric.name)}
-                  className={`p-3 rounded-lg border-2 transition-all text-left cursor-pointer ${
-                    isSelected
-                      ? 'border-4 border-green-500 ring-2 ring-green-300 shadow-lg'
-                      : 'border-gray-300 hover:border-gray-500 hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-xs font-semibold text-gray-900">{fabric.ref}</p>
-                      <p className="text-sm text-gray-600">{fabric.name}</p>
-                    </div>
-                    <div className="text-right">
-                      {fabric.price > 0 && <p className="text-xs text-blue-600 font-bold">+{fabric.price}€</p>}
-                      {isSelected && <p className="text-xs text-green-600 font-bold">✅</p>}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // ✅ AFFICHAGE TRIPLE OFFRE
   if (activeTool.toolName === 'display_triple_offer') {
     const { width, depth, selected_model } = activeTool.input;
+    
+    // Récupérer le modèle sélectionné pour l'afficher
+    const selectedModel = selectedModelId 
+      ? Object.values(STORE_MODELS).find((m: any) => m.id === selectedModelId)
+      : null;
 
     return (
       <div className="animate-fade-in h-full overflow-y-auto">
-        <div className="p-6">
+        <div className="p-6 space-y-6">
+          {/* Afficher le store sélectionné si disponible */}
+          {selectedModel && (
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-3">📍 Votre Store</h3>
+              <div className="border-2 border-green-500 bg-green-50 rounded-xl overflow-hidden p-3">
+                <div className="relative w-full h-48 bg-gray-100 rounded mb-2">
+                  <Image 
+                    src={(selectedModel as any).image} 
+                    alt={(selectedModel as any).name} 
+                    fill 
+                    className="object-cover rounded" 
+                  />
+                </div>
+                <h4 className="font-bold text-base text-gray-900 mb-1">{(selectedModel as any).name}</h4>
+                <p className="text-xs text-gray-600 mb-2">{(selectedModel as any).description}</p>
+                <p className="text-xs text-green-600 font-semibold">✅ Sélectionné</p>
+              </div>
+            </div>
+          )}
+
           <h3 className="text-2xl font-bold text-gray-900 mb-2">Votre Triple Offre</h3>
           <p className="text-xs text-gray-600 mb-6">
             Configuration : {width}cm × {depth}cm {selected_model ? `| ${selected_model}` : ''}

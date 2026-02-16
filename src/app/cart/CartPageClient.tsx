@@ -138,9 +138,9 @@ export default function CartPageClient() {
                 const modelData = modelId && STORE_MODELS[modelId as keyof typeof STORE_MODELS] 
                   ? STORE_MODELS[modelId as keyof typeof STORE_MODELS]
                   : null;
-                const productImage = modelData?.image || '/images/stores/default.jpg';
+                const productImage = modelData?.image;
                 
-                console.log('🖼️ Cart item:', { modelId, modelData, productImage });
+                console.log('🖼️ Cart item:', { modelId, hasModelData: !!modelData, productImage });
 
                 return (
                   <div 
@@ -158,6 +158,10 @@ export default function CartPageClient() {
                               fill
                               className="object-cover"
                               sizes="160px"
+                              onError={(e) => {
+                                console.error('❌ Erreur chargement image modèle:', productImage);
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
                             />
                           </div>
                         </div>
@@ -209,7 +213,27 @@ export default function CartPageClient() {
                               const frameColor = FRAME_COLORS.find(c => c.id === item.configuration.frameColor);
                               return frameColor ? (
                                 <div key="frame" className="flex flex-col items-center gap-2">
-                                  <div className="w-20 h-20 rounded-lg border-2 border-gray-300 shadow-md" style={{ backgroundColor: frameColor.hex }}></div>
+                                  <div className="w-20 h-20 rounded-lg border-2 border-gray-300 shadow-md relative overflow-hidden bg-gray-100">
+                                    {frameColor.image_url ? (
+                                      <Image 
+                                        src={frameColor.image_url} 
+                                        alt={frameColor.name} 
+                                        fill 
+                                        className="object-cover"
+                                        sizes="80px"
+                                        onError={(e) => {
+                                          // Fallback: afficher la couleur hex en cas d'erreur
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = 'none';
+                                          if (target.parentElement) {
+                                            target.parentElement.style.backgroundColor = frameColor.hex;
+                                          }
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full" style={{ backgroundColor: frameColor.hex }}></div>
+                                    )}
+                                  </div>
                                   <span className="text-xs text-gray-700 text-center font-medium max-w-[80px]">
                                     Coffre<br/>{frameColor.name.split('(')[0].trim()}
                                   </span>
@@ -220,11 +244,11 @@ export default function CartPageClient() {
                             {/* Couleur toile */}
                             {item.configuration?.fabricColor && (() => {
                               const fabric = FABRICS.find(f => f.id === item.configuration.fabricColor);
-                              return fabric ? (
+                              return fabric && fabric.image_url ? (
                                 <div key="fabric" className="flex flex-col items-center gap-2">
                                   <div className="w-20 h-20 rounded-lg border-2 border-gray-300 shadow-md bg-gray-100 relative overflow-hidden">
                                     <Image 
-                                      src={`${fabric.folder}/${fabric.ref}.jpg`} 
+                                      src={fabric.image_url} 
                                       alt={fabric.name} 
                                       fill 
                                       className="object-cover"

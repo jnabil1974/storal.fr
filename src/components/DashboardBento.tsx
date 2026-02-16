@@ -16,6 +16,14 @@ export default function DashboardBento() {
   const [overlayType, setOverlayType] = useState<'color' | 'fabric' | 'model' | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
+  // 🔍 Log au render pour voir si le composant se met à jour
+  console.log('🎨 [DashboardBento] RENDER avec showroomState:', JSON.stringify({
+    selectedModelId: showroomState.selectedModelId,
+    selectedColorId: showroomState.selectedColorId,
+    selectedFabricId: showroomState.selectedFabricId,
+    timestamp: new Date().toLocaleTimeString()
+  }, null, 2));
+
   // Déterminer quelle tuile illuminer selon le contexte
   useEffect(() => {
     if (!showroomState.activeTool) {
@@ -49,14 +57,17 @@ export default function DashboardBento() {
     const toolName = showroomState.activeTool.toolName;
     
     if (toolName === 'open_model_selector') {
-      setOverlayType('model');
-      setShowOverlay(true);
+      // ❌ Désactivé - Les modèles s'affichent maintenant dans le chat
+      setOverlayType(null);
+      setShowOverlay(false);
     } else if (toolName === 'open_color_selector') {
-      setOverlayType('color');
-      setShowOverlay(true);
+      // ❌ Désactivé - Les couleurs s'affichent maintenant dans le chat
+      setOverlayType(null);
+      setShowOverlay(false);
     } else if (toolName === 'open_fabric_selector') {
-      setOverlayType('fabric');
-      setShowOverlay(true);
+      // ❌ Désactivé - Les toiles s'affichent maintenant dans le chat
+      setOverlayType(null);
+      setShowOverlay(false);
     } else {
       setShowOverlay(false);
       setOverlayType(null);
@@ -67,6 +78,16 @@ export default function DashboardBento() {
   const selectedModel = showroomState.selectedModelId 
     ? STORE_MODELS[showroomState.selectedModelId] 
     : null;
+  
+  // 🔍 Log de débogage pour tracer quel modèle est affiché
+  useEffect(() => {
+    console.log('📦 DashboardBento - Modèle actuel:', JSON.stringify({
+      selectedModelId: showroomState.selectedModelId,
+      modelName: selectedModel?.name,
+      modelImage: selectedModel?.image,
+      hasModel: !!selectedModel
+    }, null, 2));
+  }, [showroomState.selectedModelId, selectedModel]);
   
   const selectedFabric = showroomState.selectedFabricId 
     ? FABRICS.find((f: Fabric) => f.id === showroomState.selectedFabricId) 
@@ -349,6 +370,131 @@ export default function DashboardBento() {
           )}
         </div>
 
+        {/* TUILE PRIX - Large (2 colonnes) - DÉPLACÉE SOUS MODÈLE */}
+        <div className={tileClass('prix', 'col-span-2')}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-black text-gray-900 text-sm">Tarification</h3>
+              <p className="text-xs text-gray-500">Devis instantané</p>
+            </div>
+          </div>
+          
+          {showroomState.singleOfferCalc ? (
+            <div className="flex justify-center">
+              <button 
+                onClick={() => showroomState.onSelectOffer?.(showroomState.singleOfferCalc.totalTTC)}
+                className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-6 border-2 border-emerald-300 hover:border-emerald-500 hover:shadow-2xl transition-all cursor-pointer transform hover:scale-105 w-full max-w-md"
+              >
+                <p className="text-sm text-emerald-700 font-bold mb-3">💎 Votre Devis Personnalisé</p>
+                <p className="text-4xl font-black text-emerald-900 mb-2">{showroomState.singleOfferCalc.totalTTC?.toFixed(2) || '—'}€</p>
+                <p className="text-sm text-emerald-700 font-semibold mb-4">TTC</p>
+                
+                <div className="bg-white/60 rounded-lg p-3 mb-3 text-left space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">Store de base</span>
+                    <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.basePrice?.toFixed(2)}€ HT</span>
+                  </div>
+                  {showroomState.singleOfferCalc.options?.ledArms && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">💡 LED Bras</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.ledArms.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  {showroomState.singleOfferCalc.options?.ledBox && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">💡 LED Coffre</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.ledBox.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  {showroomState.singleOfferCalc.options?.lambrequin && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">🎨 Lambrequin</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.lambrequin.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  {showroomState.singleOfferCalc.options?.awning && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">☂️ Auvent</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.awning.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  {showroomState.singleOfferCalc.options?.sousCoffre && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">📦 Sous-coffre</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.sousCoffre.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  {showroomState.singleOfferCalc.poseHT > 0 && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-600">🔧 Installation</span>
+                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.poseHT?.toFixed(2)}€ HT</span>
+                    </div>
+                  )}
+                  <div className="border-t border-emerald-200 pt-1 mt-1"></div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">Total HT</span>
+                    <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.totalHT?.toFixed(2)}€</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-600">TVA ({showroomState.avec_pose ? '10' : '20'}%)</span>
+                    <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.tva?.toFixed(2)}€</span>
+                  </div>
+                </div>
+                
+                <p className="text-xs text-emerald-600 font-semibold">👆 Cliquez pour valider</p>
+              </button>
+            </div>
+          ) : showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc ? (
+            <div className="grid grid-cols-3 gap-3">
+              {showroomState.ecoCalc && (
+                <button 
+                  onClick={() => showroomState.onSelectEco?.(showroomState.ecoCalc.totalTTC)}
+                  className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer transform hover:scale-105"
+                >
+                  <p className="text-xs text-blue-600 font-semibold mb-1">Éco</p>
+                  <p className="text-2xl font-black text-blue-900">{showroomState.ecoCalc.totalTTC?.toFixed(2) || '—'}€</p>
+                  <p className="text-xs text-blue-600 mt-1">TTC</p>
+                  <p className="text-xs text-blue-500 mt-2">👆 Cliquez pour sélectionner</p>
+                </button>
+              )}
+              {showroomState.standardCalc && (
+                <button 
+                  onClick={() => showroomState.onSelectStandard?.(showroomState.standardCalc.totalTTC)}
+                  className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-3 border-2 border-indigo-200 hover:border-indigo-400 hover:shadow-lg transition-all cursor-pointer transform hover:scale-105"
+                >
+                  <p className="text-xs text-indigo-600 font-semibold mb-1">Standard</p>
+                  <p className="text-2xl font-black text-indigo-900">{showroomState.standardCalc.totalTTC?.toFixed(2) || '—'}€</p>
+                  <p className="text-xs text-indigo-600 mt-1">TTC</p>
+                  <p className="text-xs text-indigo-500 mt-2">👆 Cliquez pour sélectionner</p>
+                </button>
+              )}
+              {showroomState.premiumCalc && (
+                <button 
+                  onClick={() => showroomState.onSelectPremium?.(showroomState.premiumCalc.totalTTC)}
+                  className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-3 border-2 border-purple-200 hover:border-purple-400 hover:shadow-lg transition-all cursor-pointer transform hover:scale-105"
+                >
+                  <p className="text-xs text-purple-600 font-semibold mb-1">Premium</p>
+                  <p className="text-2xl font-black text-purple-900">{showroomState.premiumCalc.totalTTC?.toFixed(2) || '—'}€</p>
+                  <p className="text-xs text-purple-600 mt-1">TTC</p>
+                  <p className="text-xs text-purple-500 mt-2">👆 Cliquez pour sélectionner</p>
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-400">
+              <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-sm">En attente du calcul...</p>
+            </div>
+          )}
+        </div>
+
         {/* TUILE DIMENSIONS */}
         <div className={tileClass('dimensions', 'col-span-1')}>
           <div className="flex items-center gap-3 mb-3">
@@ -496,131 +642,6 @@ export default function DashboardBento() {
           ) : (
             <div className="text-center py-4 text-gray-400">
               <p className="text-xs">Non défini</p>
-            </div>
-          )}
-        </div>
-
-        {/* TUILE PRIX - Large (2 colonnes) */}
-        <div className={tileClass('prix', 'col-span-2')}>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-black text-gray-900 text-sm">Tarification</h3>
-              <p className="text-xs text-gray-500">Devis instantané</p>
-            </div>
-          </div>
-          
-          {showroomState.singleOfferCalc ? (
-            <div className="flex justify-center">
-              <button 
-                onClick={() => showroomState.onSelectOffer?.(showroomState.singleOfferCalc.totalTTC)}
-                className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-6 border-2 border-emerald-300 hover:border-emerald-500 hover:shadow-2xl transition-all cursor-pointer transform hover:scale-105 w-full max-w-md"
-              >
-                <p className="text-sm text-emerald-700 font-bold mb-3">💎 Votre Devis Personnalisé</p>
-                <p className="text-4xl font-black text-emerald-900 mb-2">{showroomState.singleOfferCalc.totalTTC?.toFixed(2) || '—'}€</p>
-                <p className="text-sm text-emerald-700 font-semibold mb-4">TTC</p>
-                
-                <div className="bg-white/60 rounded-lg p-3 mb-3 text-left space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">Store de base</span>
-                    <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.basePrice?.toFixed(2)}€ HT</span>
-                  </div>
-                  {showroomState.singleOfferCalc.options?.ledArms && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-600">💡 LED Bras</span>
-                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.ledArms.toFixed(2)}€ HT</span>
-                    </div>
-                  )}
-                  {showroomState.singleOfferCalc.options?.ledBox && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-600">💡 LED Coffre</span>
-                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.ledBox.toFixed(2)}€ HT</span>
-                    </div>
-                  )}
-                  {showroomState.singleOfferCalc.options?.lambrequin && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-600">🎨 Lambrequin</span>
-                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.lambrequin.toFixed(2)}€ HT</span>
-                    </div>
-                  )}
-                  {showroomState.singleOfferCalc.options?.awning && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-600">☂️ Auvent</span>
-                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.awning.toFixed(2)}€ HT</span>
-                    </div>
-                  )}
-                  {showroomState.singleOfferCalc.options?.sousCoffre && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-600">📦 Sous-coffre</span>
-                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.options.sousCoffre.toFixed(2)}€ HT</span>
-                    </div>
-                  )}
-                  {showroomState.singleOfferCalc.poseHT > 0 && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-600">🔧 Installation</span>
-                      <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.poseHT?.toFixed(2)}€ HT</span>
-                    </div>
-                  )}
-                  <div className="border-t border-emerald-200 pt-1 mt-1"></div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">Total HT</span>
-                    <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.totalHT?.toFixed(2)}€</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">TVA ({showroomState.avec_pose ? '10' : '20'}%)</span>
-                    <span className="font-semibold text-gray-900">{showroomState.singleOfferCalc.tva?.toFixed(2)}€</span>
-                  </div>
-                </div>
-                
-                <p className="text-xs text-emerald-600 font-semibold">👆 Cliquez pour valider</p>
-              </button>
-            </div>
-          ) : showroomState.ecoCalc || showroomState.standardCalc || showroomState.premiumCalc ? (
-            <div className="grid grid-cols-3 gap-3">
-              {showroomState.ecoCalc && (
-                <button 
-                  onClick={() => showroomState.onSelectEco?.(showroomState.ecoCalc.totalTTC)}
-                  className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 border-2 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer transform hover:scale-105"
-                >
-                  <p className="text-xs text-blue-600 font-semibold mb-1">Éco</p>
-                  <p className="text-2xl font-black text-blue-900">{showroomState.ecoCalc.totalTTC?.toFixed(2) || '—'}€</p>
-                  <p className="text-xs text-blue-600 mt-1">TTC</p>
-                  <p className="text-xs text-blue-500 mt-2">👆 Cliquez pour sélectionner</p>
-                </button>
-              )}
-              {showroomState.standardCalc && (
-                <button 
-                  onClick={() => showroomState.onSelectStandard?.(showroomState.standardCalc.totalTTC)}
-                  className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-3 border-2 border-indigo-200 hover:border-indigo-400 hover:shadow-lg transition-all cursor-pointer transform hover:scale-105"
-                >
-                  <p className="text-xs text-indigo-600 font-semibold mb-1">Standard</p>
-                  <p className="text-2xl font-black text-indigo-900">{showroomState.standardCalc.totalTTC?.toFixed(2) || '—'}€</p>
-                  <p className="text-xs text-indigo-600 mt-1">TTC</p>
-                  <p className="text-xs text-indigo-500 mt-2">👆 Cliquez pour sélectionner</p>
-                </button>
-              )}
-              {showroomState.premiumCalc && (
-                <button 
-                  onClick={() => showroomState.onSelectPremium?.(showroomState.premiumCalc.totalTTC)}
-                  className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-3 border-2 border-purple-200 hover:border-purple-400 hover:shadow-lg transition-all cursor-pointer transform hover:scale-105"
-                >
-                  <p className="text-xs text-purple-600 font-semibold mb-1">Premium</p>
-                  <p className="text-2xl font-black text-purple-900">{showroomState.premiumCalc.totalTTC?.toFixed(2) || '—'}€</p>
-                  <p className="text-xs text-purple-600 mt-1">TTC</p>
-                  <p className="text-xs text-purple-500 mt-2">👆 Cliquez pour sélectionner</p>
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-400">
-              <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-sm">En attente du calcul...</p>
             </div>
           )}
         </div>

@@ -38,9 +38,23 @@ interface Cart {
 }
 
 function AssistantContent() {
-  const [cart, setCart] = useState<Cart | null>(null);
+  const [cart, setCart] = useState<Cart | null>(() => {
+    // Charger le cart depuis localStorage au montage
+    if (typeof window !== 'undefined') {
+      const savedCart = localStorage.getItem('storal-cart');
+      if (savedCart) {
+        try {
+          return JSON.parse(savedCart);
+        } catch (e) {
+          console.error('Erreur lors du chargement du cart:', e);
+        }
+      }
+    }
+    return null;
+  });
   const searchParams = useSearchParams();
   const initialMessage = searchParams.get('msg');
+  const initialModelId = searchParams.get('model');
 
   return (
       <div 
@@ -65,6 +79,7 @@ function AssistantContent() {
                 cart={cart} 
                 setCart={setCart}
                 initialMessage={initialMessage}
+                initialModelId={initialModelId}
               />
             </div>
 

@@ -69,6 +69,7 @@ export interface FrameColor {
   hex: string;
   price: number;
   category: 'standard' | 'matest' | 'custom';
+  image_url: string | null;
 }
 
 export type ColorOption = FrameColor;
@@ -78,8 +79,10 @@ export interface Fabric {
   ref: string;
   name: string;
   folder: string;
-  category: 'uni' | 'raye' | 'goldies';
+  category: 'uni' | 'raye';
   price: number;
+  image_url: string | null;
+  toile_type_code: string;
 }
 
 export interface StoreModelCompatibility {
@@ -200,31 +203,76 @@ export const FABRIC_FAMILIES = {
 
 // Import depuis les catalogues générés automatiquement
 import { MATEST_COLORS, STANDARD_COLORS as MATEST_STANDARD_COLORS, getColorByRAL } from './catalog-couleurs';
-import { TOILE_TYPES, getCompatibleToileTypes, getToilesSummaryForChatbot } from './catalog-toiles';
+import { TOILE_TYPES, TOILE_IMAGES, getCompatibleToileTypes, getToilesSummaryForChatbot, getToileImageUrl } from './catalog-toiles';
 
 // Adapter le format pour la compatibilité avec le code existant
 export const FRAME_COLORS: FrameColor[] = [
-  { id: '9016', name: 'Blanc (RAL 9016)', hex: '#FFFFFF', price: 0, category: 'standard' },
-  { id: '1015', name: 'Beige (RAL 1015)', hex: '#F3E5AB', price: 0, category: 'standard' },
-  { id: '7016', name: 'Gris Anthracite (RAL 7016)', hex: '#383E42', price: 0, category: 'standard' },
-  { id: 'custom', name: 'Autre RAL (Hors Nuancier)', hex: '#cccccc', price: 138, category: 'custom' }
+  { id: '9016', name: 'Blanc (RAL 9016)', hex: '#FFFFFF', price: 0, category: 'standard', image_url: '/images/matest/pdf-thumbs/page-1/9016-mat.png' },
+  { id: '1015', name: 'Beige (RAL 1015)', hex: '#F3E5AB', price: 0, category: 'standard', image_url: null },
+  { id: '7016', name: 'Gris Anthracite (RAL 7016)', hex: '#383E42', price: 0, category: 'standard', image_url: '/images/matest/pdf-thumbs/page-1/7016-mat.png' },
+  { id: 'custom', name: 'Autre RAL (Hors Nuancier)', hex: '#cccccc', price: 138, category: 'custom', image_url: null }
 ];
 
 // Pour accéder au catalogue complet Matest depuis le chatbot
 export { MATEST_COLORS, STANDARD_COLORS, getColorByRAL } from './catalog-couleurs';
-export { TOILE_TYPES, getCompatibleToileTypes, getToilesSummaryForChatbot } from './catalog-toiles';
+export { TOILE_TYPES, TOILE_IMAGES, getCompatibleToileTypes, getToilesSummaryForChatbot, getToileImageUrl } from './catalog-toiles';
 
-export const FABRICS: Fabric[] = [
-  { id: 'orc_0001', ref: '0001', name: 'Écru', folder: '/images/Toiles/DICKSON/DICKSON ORCHESTREA UNI', category: 'uni', price: 0 },
-  { id: 'orc_6088', ref: '6088', name: 'Gris Anthracite', folder: '/images/Toiles/DICKSON/DICKSON ORCHESTREA UNI', category: 'uni', price: 0 },
-  { id: 'test_bleu', ref: 'TEST-BLEU', name: 'Bleu Océan (Test)', folder: '/images/Toiles/TEST', category: 'uni', price: 0 },
-];
+// Génération dynamique des toiles depuis catalog-toiles.ts
+function generateFabricsFromToileTypes(): Fabric[] {
+  const fabrics: Fabric[] = [];
+  
+  TOILE_TYPES.forEach(toileType => {
+    toileType.examples.forEach((example, index) => {
+      // Afficher TOUTES les toiles disponibles (284 toiles)
+      const imageUrl = example.image_url || getToileImageUrl(example.ref);
+      
+      // Pour Orchestra, séparer Unis et Décors
+      let typeCode = toileType.code;
+      if (toileType.code === 'ORCH') {
+        typeCode = example.name.includes('Décor') ? 'ORCH_DECOR' : 'ORCH_UNI';
+      }
+      
+      fabrics.push({
+        id: `${toileType.code.toLowerCase()}_${example.ref}`,
+        ref: example.ref,
+        name: example.name,
+        folder: imageUrl ? imageUrl.substring(0, imageUrl.lastIndexOf('/')) : '',
+        category: example.family.toLowerCase().includes('décor') || example.family.toLowerCase().includes('ray') ? 'raye' : 'uni',
+        price: 0, //Prix inclus dans le type de toile
+        image_url: imageUrl,
+        toile_type_code: typeCode
+      });
+    });
+  });
+  
+  return fabrics;
+}
+
+export const FABRICS: Fabric[] = generateFabricsFromToileTypes();
 
 export const FABRIC_OPTIONS = {
   MAIN_STORE: FABRICS,
   LAMBREQUIN: [
-    { id: 'soltis_86', ref: '86-XXXX', name: 'Soltis 86 (Micro-aéré)', collection: 'Soltis', category: 'technique', folder: '', price: 0 },
-    { id: 'soltis_92', ref: '92-XXXX', name: 'Soltis 92 (Thermique)', collection: 'Soltis', category: 'technique', folder: '', price: 0 },
+    { 
+      id: 'soltis_86', 
+      ref: '86-XXXX', 
+      name: 'Soltis 86 (Micro-aéré)', 
+      folder: '/images/Toiles/SOLTIS', 
+      category: 'uni' as const, 
+      price: 0,
+      image_url: null,
+      toile_type_code: 'SOLTIS' 
+    },
+    { 
+      id: 'soltis_92', 
+      ref: '92-XXXX', 
+      name: 'Soltis 92 (Thermique)', 
+      folder: '/images/Toiles/SOLTIS', 
+      category: 'uni' as const, 
+      price: 0,
+      image_url: null,
+      toile_type_code: 'SOLTIS' 
+    },
   ]
 };
 

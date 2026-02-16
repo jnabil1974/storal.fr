@@ -428,7 +428,7 @@ export default function HomePage() {
             {filteredModels.slice(0, 8).map((model) => (
               <div
                 key={model.id}
-                onClick={() => handleQuickSuggestion(`Je veux configurer le modèle ${model.name}`)}
+                onClick={() => router.push(`/assistant?model=${model.id}`)}
                 className="group relative bg-white border border-gray-100 p-5 rounded-3xl flex flex-col gap-5 cursor-pointer transition-all hover:shadow-[0_0_25px_rgba(37,99,235,0.25)] shadow-[0_0_15px_rgba(37,99,235,0.1)]"
                 style={{ boxShadow: '0 0 15px rgba(37, 99, 235, 0.1)' }}
               >

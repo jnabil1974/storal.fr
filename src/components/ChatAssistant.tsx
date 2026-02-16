@@ -131,6 +131,7 @@ interface ChatAssistantProps {
   cart: Cart | null;
   setCart: Dispatch<SetStateAction<Cart | null>>;
   initialMessage?: string | null;
+  initialModelId?: string | null;
 }
 
 const ProductModal = ({ model, onClose }: { model: StoreModel | null; onClose: () => void }) => {
@@ -146,7 +147,7 @@ const ProductModal = ({ model, onClose }: { model: StoreModel | null; onClose: (
   );
 };
 
-export default function ChatAssistant({ modelToConfig, cart, setCart, initialMessage }: ChatAssistantProps) {
+export default function ChatAssistant({ modelToConfig, cart, setCart, initialMessage, initialModelId }: ChatAssistantProps) {
   const [input, setInput] = useState('');
   const router = useRouter();
   const { setShowroomState } = useShowroom();
@@ -171,6 +172,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
   const [selectedFabricId, setSelectedFabricId] = useState<string | null>(null);
+  const [selectedFabricCategory, setSelectedFabricCategory] = useState<string>('ORCH_UNI');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedModelForModal, setSelectedModelForModal] = useState<StoreModel | null>(null);
   const [terraceState, setTerraceState] = useState({ m1: 4, m2: 3, m3: 4, m4: 3 });
@@ -188,12 +190,77 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
   const [honeypot, setHoneypot] = useState(''); // 🍯 Honeypot anti-bot
   const [waitingForResponse, setWaitingForResponse] = useState(false); // Attente après validation d'un outil
 
+  // Synchroniser les états depuis le cart au montage ET quand cart change
+  useEffect(() => {
+    console.log('🔄 [ChatAssistant] Synchronisation depuis cart:', {
+      hasCart: !!cart,
+      cartModelId: cart?.modelId,
+      cartColorId: cart?.colorId,
+      cartFabricId: cart?.fabricId,
+      currentSelectedModelId: selectedModelId
+    });
+    
+    if (cart) {
+      if (cart.modelId && !selectedModelId) {
+        console.log('✅ Restauration modelId depuis cart:', cart.modelId);
+        setSelectedModelId(cart.modelId);
+        // 🔥 Synchroniser avec ShowroomContext pour que DashboardBento affiche le bon modèle
+        setShowroomState((prev: any) => ({
+          ...prev,
+          selectedModelId: cart.modelId
+        }));
+      }
+      if (cart.colorId && !selectedColorId) {
+        console.log('✅ Restauration colorId depuis cart:', cart.colorId);
+        setSelectedColorId(cart.colorId);
+        // 🔥 Synchroniser avec ShowroomContext
+        setShowroomState((prev: any) => ({
+          ...prev,
+          selectedColorId: cart.colorId
+        }));
+      }
+      if (cart.fabricId && !selectedFabricId) {
+        console.log('✅ Restauration fabricId depuis cart:', cart.fabricId);
+        setSelectedFabricId(cart.fabricId);
+        // 🔥 Synchroniser avec ShowroomContext
+        setShowroomState((prev: any) => ({
+          ...prev,
+          selectedFabricId: cart.fabricId
+        }));
+      }
+    }
+  }, [cart, selectedModelId, selectedColorId, selectedFabricId, setShowroomState]); // 🔥 Ajouter cart dans les dépendances
+
+  // 🔄 Synchronisation CONTINUE entre états locaux et ShowroomContext
+  // Garantit que DashboardBento affiche toujours les bonnes sélections
+  useEffect(() => {
+    console.log('🔄 [ChatAssistant] Synchronisation ShowroomContext déclenchée:', JSON.stringify({
+      selectedModelId,
+      selectedColorId,
+      selectedFabricId,
+      timestamp: new Date().toLocaleTimeString()
+    }, null, 2));
+    setShowroomState((prev: any) => {
+      const newState = {
+        ...prev,
+        selectedModelId,
+        selectedColorId,
+        selectedFabricId
+      };
+      console.log('🔄 [ChatAssistant] Nouveau state envoyé au contexte:', JSON.stringify({
+        selectedModelId: newState.selectedModelId,
+        selectedColorId: newState.selectedColorId,
+        selectedFabricId: newState.selectedFabricId
+      }, null, 2));
+      return newState;
+    });
+  }, [selectedModelId, selectedColorId, selectedFabricId, setShowroomState]);
+
   // Fonction pour sauvegarder dans localStorage
   const saveToCart = (updates: Partial<Cart>) => {
-    const newCart = { ...cart, ...updates } as Cart;
+    const newCart = { ...(cart || {}), ...updates } as Cart;
     setCart(newCart);
     localStorage.setItem('storal-cart', JSON.stringify(newCart));
-    console.log('💾 Configuration sauvegardée:', newCart);
   };
 
   // 🛒 Fonction pour ajouter au panier Supabase via API
@@ -547,6 +614,11 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       onSelectColor: (colorId, colorName) => {
         setSelectedColorId(colorId);
         saveToCart({ colorId });
+        // 🔥 Synchroniser avec ShowroomContext pour DashboardBento
+        setShowroomState((prev: any) => ({
+          ...prev,
+          selectedColorId: colorId
+        }));
         if (activeTool?.toolName === 'open_color_selector') {
           setWaitingForResponse(true); // Démarrer l'attente
           addToolResult({ toolCallId: activeTool.toolCallId, result: { frame_color_id: colorId, frame_color_name: colorName, validated: true } } as any);
@@ -556,6 +628,11 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       onSelectFabric: (fabricId, fabricName) => {
         setSelectedFabricId(fabricId);
         saveToCart({ fabricId });
+        // 🔥 Synchroniser avec ShowroomContext pour DashboardBento
+        setShowroomState((prev: any) => ({
+          ...prev,
+          selectedFabricId: fabricId
+        }));
         if (activeTool?.toolName === 'open_fabric_selector') {
           setWaitingForResponse(true); // Démarrer l'attente
           addToolResult({ toolCallId: activeTool.toolCallId, result: { fabric_id: fabricId, fabric_name: fabricName, validated: true } } as any);
@@ -564,7 +641,12 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       },
       onSelectModel: (modelId, modelName) => {
         setSelectedModelId(modelId);
-        saveToCart({ modelId, modelName, priceEco: undefined, priceStandard: undefined, pricePremium: undefined, selectedPrice: undefined, priceType: undefined, storeHT: undefined, ledArmsPrice: undefined, ledBoxPrice: undefined, lambrequinPrice: undefined, poseHT: undefined, tvaAmount: undefined });
+        saveToCart({ modelId, modelName });
+        // 🔥 Synchroniser avec ShowroomContext pour DashboardBento
+        setShowroomState((prev: any) => ({
+          ...prev,
+          selectedModelId: modelId
+        }));
         if (activeTool?.toolName === 'open_model_selector') {
           setWaitingForResponse(true); // Démarrer l'attente
           addToolResult({ toolCallId: activeTool.toolCallId, result: { model_id: modelId, model_name: modelName, validated: true } } as any);
@@ -710,6 +792,9 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
   // Auto-send du message initial depuis l'URL (prioritaire)
   useEffect(() => {
     if (initialMessage && !initialMessageSentRef.current) {
+      // Détection automatique de modèle dans le message initial
+      detectAndSelectModel(initialMessage);
+      
       sendMessage({ text: initialMessage });
       initialMessageSentRef.current = true;
       setInitialMessageSent(true);
@@ -720,12 +805,37 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
   // Auto-send pour configuration d'un modèle spécifique
   useEffect(() => {
     if (modelToConfig && !initialMessageSentRef.current) {
-      sendMessage({ text: `Je souhaite configurer le modèle ${modelToConfig}` });
+      const message = `Je souhaite configurer le modèle ${modelToConfig}`;
+      
+      // Détection automatique de modèle
+      detectAndSelectModel(message);
+      
+      sendMessage({ text: message });
       initialMessageSentRef.current = true;
       setInitialMessageSent(true);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelToConfig]);
+
+  // Auto-sélection du modèle depuis l'URL (sans message, juste la sélection)
+  useEffect(() => {
+    if (initialModelId && !initialMessageSentRef.current) {
+      const model = STORE_MODELS[initialModelId as keyof typeof STORE_MODELS];
+      if (model) {
+        setSelectedModelId(initialModelId);
+        saveToCart({ modelId: initialModelId, modelName: model.name });
+        setShowroomState((prev: any) => ({
+          ...prev,
+          selectedModelId: initialModelId
+        }));
+        // Envoyer un message initial pour démarrer la conversation
+        sendMessage({ text: `Je veux configurer le modèle ${model.name}` });
+        initialMessageSentRef.current = true;
+        setInitialMessageSent(true);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialModelId]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -801,6 +911,31 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
     }
   }, [messages]);
 
+  // Détection automatique de modèle mentionné
+  const detectAndSelectModel = (text: string) => {
+    const lowerText = text.toLowerCase();
+    
+    // Chercher si un modèle est mentionné dans le texte
+    for (const [modelId, model] of Object.entries(STORE_MODELS)) {
+      const modelNameLower = model.name.toLowerCase();
+      
+      // Vérifier si le nom du modèle ou son ID est mentionné
+      if (lowerText.includes(modelNameLower) || lowerText.includes(modelId)) {
+        // Sélectionner automatiquement le modèle si pas déjà sélectionné
+        if (selectedModelId !== modelId) {
+          setSelectedModelId(modelId);
+          saveToCart({ modelId, modelName: model.name });
+          setShowroomState((prev: any) => ({
+            ...prev,
+            selectedModelId: modelId
+          }));
+        }
+        return true;
+      }
+    }
+    return false;
+  };
+
   // HandleSubmit simple et robuste
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -808,6 +943,9 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
     if (!trimmed || isLoading) return;
     
     console.log('🚀 Envoi:', trimmed);
+    
+    // Détection automatique de modèle
+    detectAndSelectModel(trimmed);
     
     // Détect expert mode trigger
     if (trimmed.toLowerCase().includes('me laisser guider') || 
@@ -824,6 +962,9 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
   const handleQuickClick = (text: string) => {
     if (isLoading) return;
     console.log('⚡ Quick:', text);
+    
+    // Détection automatique de modèle
+    detectAndSelectModel(text);
     
     // Detect expert mode trigger
     if (text.toLowerCase().includes('me laisser guider') || 
@@ -868,10 +1009,17 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
           
           return (
             <div key={`${tool.toolCallId}-${idx}`} className={`transition-all ${!isCurrent ? 'opacity-70 scale-95 mb-4' : ''}`}>
+              {(() => {
+                console.log(`🔍 Rendering tool: ${tool.toolName}, isCurrent: ${isCurrent}`);
+                return null;
+              })()}
               {tool.toolName === 'display_triple_offer' && renderTripleOfferTool(tool, isCurrent)}
               {tool.toolName === 'open_model_selector' && renderModelSelectorTool(tool, isCurrent)}
               {tool.toolName === 'open_color_selector' && renderColorSelectorTool(tool, isCurrent)}
-              {tool.toolName === 'open_fabric_selector' && renderFabricSelectorTool(tool, isCurrent)}
+              {tool.toolName === 'open_fabric_selector' && (() => {
+                console.log(`🧵 About to call renderFabricSelectorTool`);
+                return renderFabricSelectorTool(tool, isCurrent);
+              })()}
             </div>
           );
         })}
@@ -904,6 +1052,12 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       obstacles,
       includes_led_arms = false,
       includes_led_box = false,
+      // Prix des options
+      led_arms_price_ht = 0,
+      led_box_price_ht = 0,
+      lambrequin_price_ht = 0,
+      awning_price_ht = 0,
+      sous_coffre_price_ht = 0,
       // Backward compatibility with old parameter names
       eco_price, standard_price, premium_price
     } = input;
@@ -977,6 +1131,11 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       obstacles,
       ledArms: includes_led_arms,
       ledBox: includes_led_box,
+      ledArmsPrice: led_arms_price_ht,
+      ledBoxPrice: led_box_price_ht,
+      lambrequinPrice: lambrequin_price_ht,
+      awningPrice: awning_price_ht,
+      sousCoffrePrice: sous_coffre_price_ht,
     };
     
     return (
@@ -1011,6 +1170,12 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
                     }
                     setTripleOfferDisplayed(false);
                     saveToCart({ priceEco: ecoCalc.totalTTC, selectedPrice: ecoCalc.totalTTC, priceType: 'eco', storeHT: ecoCalc.storeHT, poseHT: ecoCalc.poseHT, tvaAmount: ecoCalc.tvaMontant, ...extraInfo });
+                    if (isCurrent) {
+                      setWaitingForResponse(true);
+                      addToolResult({ toolCallId: tool.toolCallId, tool: 'display_triple_offer', output: { offer_selected: 'eco', price_ttc: ecoCalc.totalTTC, validated: true } });
+                      sendMessage({ text: `Je sélectionne l'offre Eco à ${ecoCalc.totalTTC}€ TTC` });
+                      setTimeout(() => handleAddToCart(), 500);
+                    }
                   }} 
                   className={`p-6 rounded-xl text-center transition-all ${isCurrent ? 'bg-white border-2 border-gray-200 hover:border-blue-500 hover:shadow-lg' : 'bg-gray-100 border border-gray-300'}`} 
                   disabled={!isCurrent}
@@ -1037,7 +1202,13 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
                       setTripleOfferTimeoutId(null);
                     }
                     setTripleOfferDisplayed(false);
-                    saveToCart({ priceStandard: standardCalc.totalTTC, selectedPrice: standardCalc.totalTTC, priceType: 'standard', storeHT: standardCalc.storeHT, poseHT: standardCalc.poseHT, tvaAmount: standardCalc.tvaMontant, lambrequinPrice: (standardCalc.storeHT || 0) > (ecoCalc?.storeHT || 0) ? (standardCalc.storeHT || 0) - (ecoCalc?.storeHT || 0) : 0, ...extraInfo });
+                    saveToCart({ priceStandard: standardCalc.totalTTC, selectedPrice: standardCalc.totalTTC, priceType: 'standard', storeHT: standardCalc.storeHT, poseHT: standardCalc.poseHT, tvaAmount: standardCalc.tvaMontant, ...extraInfo });
+                    if (isCurrent) {
+                      setWaitingForResponse(true);
+                      addToolResult({ toolCallId: tool.toolCallId, tool: 'display_triple_offer', output: { offer_selected: 'standard', price_ttc: standardCalc.totalTTC, validated: true } });
+                      sendMessage({ text: `Je sélectionne l'offre Standard à ${standardCalc.totalTTC}€ TTC` });
+                      setTimeout(() => handleAddToCart(), 500);
+                    }
                   }} 
                   className={`p-6 rounded-xl text-center transition-all relative ${isCurrent ? 'bg-white border-4 border-blue-600 shadow-xl hover:shadow-2xl' : 'bg-gray-100 border border-gray-300'}`} 
                   disabled={!isCurrent}
@@ -1066,6 +1237,12 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
                     }
                     setTripleOfferDisplayed(false);
                     saveToCart({ pricePremium: premiumCalc.totalTTC, selectedPrice: premiumCalc.totalTTC, priceType: 'premium', storeHT: premiumCalc.storeHT, poseHT: premiumCalc.poseHT, tvaAmount: premiumCalc.tvaMontant, ...extraInfo });
+                    if (isCurrent) {
+                      setWaitingForResponse(true);
+                      addToolResult({ toolCallId: tool.toolCallId, tool: 'display_triple_offer', output: { offer_selected: 'premium', price_ttc: premiumCalc.totalTTC, validated: true } });
+                      sendMessage({ text: `Je sélectionne l'offre Premium à ${premiumCalc.totalTTC}€ TTC` });
+                      setTimeout(() => handleAddToCart(), 500);
+                    }
                   }} 
                   className={`p-6 rounded-xl text-center transition-all ${isCurrent ? 'bg-white border-2 border-gray-200 hover:border-purple-500 hover:shadow-lg' : 'bg-gray-100 border border-gray-300'}`} 
                   disabled={!isCurrent}
@@ -1209,10 +1386,19 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
               {isCurrent && (
                 <div className="mt-auto space-y-2">
                   <button onClick={() => { 
-                    // 🔄 Réinitialiser les anciens prix quand on change de store
-                    saveToCart({ modelId: model.id, modelName: model.name, priceEco: undefined, priceStandard: undefined, pricePremium: undefined, selectedPrice: undefined, storeHT: undefined, poseHT: undefined, tvaAmount: undefined, lambrequinPrice: undefined, ledArmsPrice: undefined, ledBoxPrice: undefined }); 
+                    // 🔄 Sélectionner le modèle
+                    saveToCart({ modelId: model.id, modelName: model.name }); 
                     setSelectedModelId(model.id);
+                    // 🔥 Mettre à jour le contexte ShowroomContext IMMÉDIATEMENT
+                    setShowroomState((prev: any) => ({
+                      ...prev,
+                      selectedModelId: model.id,
+                      activeTool: null,
+                      hasStartedConversation: true
+                    }));
                     addToolResult({ toolCallId: tool.toolCallId, tool: 'open_model_selector', output: { modelId: model.id, modelName: model.name, validated: true } }); 
+                    // 🔥 Réinitialiser activeTool pour faire disparaître le sélecteur
+                    setActiveTool(null);
                     // 🔥 Envoyer un message utilisateur pour déclencher l'enchaînement automatique
                     setTimeout(() => {
                       sendMessage({ text: `J'ai choisi le modèle ${model.name}` });
@@ -1249,9 +1435,19 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
                   setSelectedColorId(color.id);
                   saveToCart({ colorId: color.id });
                   if (isCurrent) {
+                    // 🔥 Mettre à jour le contexte ShowroomContext IMMÉDIATEMENT
+                    setShowroomState((prev: any) => ({
+                      ...prev,
+                      selectedColorId: color.id,
+                      activeTool: null
+                    }));
                     addToolResult({ toolCallId: tool.toolCallId, tool: 'open_color_selector', output: { color_id: color.id, color_name: color.name, validated: true } });
-                    // 🔥 Envoyer immédiatement (sans délai) pour disparition instantanée
-                    sendMessage({ text: `J'ai choisi la couleur ${color.name}` });
+                    // 🔥 Réinitialiser activeTool pour faire disparaître le sélecteur
+                    setActiveTool(null);
+                    // 🔥 Délai de 300ms pour laisser le temps à l'état de se mettre à jour avant d'envoyer le message
+                    setTimeout(() => {
+                      sendMessage({ text: `J'ai choisi la couleur ${color.name}` });
+                    }, 300);
                   }
                 }}
                 disabled={!isCurrent}
@@ -1282,13 +1478,57 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
     const input = tool.input as any;
     const { frame_color } = input;
     
+    // Grouper les toiles par type
+    const fabricsByType = FABRICS.reduce((acc, fabric) => {
+      const type = fabric.toile_type_code;
+      if (!acc[type]) acc[type] = [];
+      acc[type].push(fabric);
+      return acc;
+    }, {} as Record<string, typeof FABRICS>);
+    
+    // Noms lisibles pour les catégories
+    const categoryNames: Record<string, string> = {
+      'ORCH_UNI': '🎭 Orchestra Unis',
+      'ORCH_DECOR': '🎨 Orchestra Décors',
+      'ORCH_MAX': '🌟 Orchestra Max',
+      'SATT': '🏔️ Sattler'
+    };
+    
+    const fabricsToDisplay = fabricsByType[selectedFabricCategory] || [];
+    
     return (
       <div className={`p-6 rounded-xl border-2 ${isCurrent ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
-        <h3 className={`text-center mb-6 ${isCurrent ? 'text-2xl font-bold text-gray-900' : 'text-lg font-semibold text-gray-700'}`}>
+        <h3 className={`text-center mb-3 ${isCurrent ? 'text-2xl font-bold text-gray-900' : 'text-lg font-semibold text-gray-700'}`}>
           🧵 {isCurrent ? 'Choisissez votre Toile' : 'Toiles (antérieure)'}
         </h3>
-        <div className={`grid gap-4 ${isCurrent ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-3'}`}>
-          {FABRICS.map((fabric) => {
+        
+        {isCurrent && (
+          <>
+            {/* Onglets de catégories */}
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+              {Object.keys(fabricsByType).map((typeCode) => (
+                <button
+                  key={typeCode}
+                  onClick={() => setSelectedFabricCategory(typeCode)}
+                  className={`px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap transition-all ${
+                    selectedFabricCategory === typeCode
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-400'
+                  }`}
+                >
+                  {categoryNames[typeCode] || typeCode} ({fabricsByType[typeCode].length})
+                </button>
+              ))}
+            </div>
+            
+            <div className="text-center mb-4 text-xs text-gray-600">
+              {fabricsToDisplay.length} toiles dans cette catégorie
+            </div>
+          </>
+        )}
+        
+        <div className={`grid gap-4 ${isCurrent ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-3'} max-h-[60vh] overflow-y-auto`}>
+          {fabricsToDisplay.map((fabric) => {
             const isSelected = selectedFabricId === fabric.id;
             return (
               <button
@@ -1297,9 +1537,19 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
                   setSelectedFabricId(fabric.id);
                   saveToCart({ fabricId: fabric.id });
                   if (isCurrent) {
+                    // 🔥 Mettre à jour le contexte ShowroomContext IMMÉDIATEMENT
+                    setShowroomState((prev: any) => ({
+                      ...prev,
+                      selectedFabricId: fabric.id,
+                      activeTool: null
+                    }));
                     addToolResult({ toolCallId: tool.toolCallId, tool: 'open_fabric_selector', output: { fabric_id: fabric.id, fabric_name: fabric.name, validated: true } });
-                    // 🔥 Envoyer immédiatement (sans délai) pour disparition instantanée
-                    sendMessage({ text: `J'ai choisi la toile ${fabric.name}` });
+                    // 🔥 Réinitialiser activeTool pour faire disparaître le sélecteur
+                    setActiveTool(null);
+                    // 🔥 Délai de 300ms pour laisser le temps à l'état de se mettre à jour avant d'envoyer le message
+                    setTimeout(() => {
+                      sendMessage({ text: `J'ai choisi la toile ${fabric.name}` });
+                    }, 300);
                   }
                 }}
                 disabled={!isCurrent}
@@ -1310,10 +1560,23 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
                 }`}
               >
                 <div className={`w-full h-24 rounded-lg mb-2 bg-gray-200 border border-gray-400 overflow-hidden`}>
-                  {/* Placeholder pour image de toile */}
-                  <div className={`w-full h-full flex items-center justify-center text-xs text-gray-600`}>
-                    {fabric.category.toUpperCase()}
-                  </div>
+                  {fabric.image_url ? (
+                    <img 
+                      src={fabric.image_url} 
+                      alt={fabric.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={(e) => {
+                        console.error(`❌ Failed to load image for ${fabric.ref}:`, fabric.image_url);
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-xs text-red-600">❌ Image error</div>`;
+                      }}
+                    />
+                  ) : (
+                    <div className={`w-full h-full flex items-center justify-center text-xs text-gray-600`}>
+                      {fabric.category.toUpperCase()}
+                    </div>
+                  )}
                 </div>
                 <p className={`text-xs font-semibold ${isCurrent ? 'text-gray-900' : 'text-gray-600'} line-clamp-2`}>{fabric.ref}</p>
                 <p className={`text-xs ${isCurrent ? 'text-gray-700' : 'text-gray-500'}`}>{fabric.name}</p>
@@ -1432,6 +1695,8 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
               </div>
             );
           })}
+          
+          {renderActiveTool()}
           
           {(isLoading || waitingForResponse) && !activeTool && (
             (() => {
