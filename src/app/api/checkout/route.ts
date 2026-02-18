@@ -139,13 +139,20 @@ export async function POST(request: NextRequest) {
       });
       if (error) {
         console.error('[Checkout] Erreur création compte:', error);
-        return NextResponse.json({ 
-          error: `Création compte échouée: ${error.message || 'Erreur inconnue'}` 
-        }, { status: 500 });
+        // Si l'email existe déjà, on continue la commande sans créer le compte
+        if (error.code === 'email_exists' || error.message?.includes('already been registered')) {
+          console.log('[Checkout] Email existant, commande créée sans nouveau compte');
+        } else {
+          // Autres erreurs : on retourne une erreur
+          return NextResponse.json({ 
+            error: `Création compte échouée: ${error.message || 'Erreur inconnue'}` 
+          }, { status: 500 });
+        }
+      } else {
+        userIdToUse = data.user?.id || userIdToUse;
+        accountCreated = true;
+        console.log('[Checkout] Compte créé avec succès:', userIdToUse);
       }
-      userIdToUse = data.user?.id || userIdToUse;
-      accountCreated = true;
-      console.log('[Checkout] Compte créé avec succès:', userIdToUse);
     }
 
     // Créer commande en attente
