@@ -48,7 +48,7 @@ async function generateToilesCatalog() {
   // 2. Récupérer toutes les couleurs disponibles
   const { data: toileColors, error: colorsError } = await supabase
     .from('toile_colors')
-    .select('id, toile_type_id, ref, name, color_family, category')
+    .select('*')
     .eq('is_available', true)
     .order('toile_type_id')
     .order('ref');
@@ -58,9 +58,41 @@ async function generateToilesCatalog() {
     return;
   }
 
-  // 3. Grouper les références par type de toile
+  // 3. Grouper les références par type de toile et créer le mapping des images
   const typeRefsMap = new Map<number, string[]>();
-  const typeExamplesMap = new Map<number, Array<{ref: string, name: string, family: string}>>();
+  const typeExamplesMap = new Map<number, Array<{ref: string, name: string, family: string, image_url: string | null}>>();
+  const imageUrlsMap: Record<string, string> = {};
+  
+  // Fonction helper pour construire l'URL correcte à partir de la référence
+  const buildImageUrl = (originalUrl: string | null, ref: string): string | null => {
+    if (!originalUrl) return null;
+    
+    // Corriger la casse : /images/toiles/ → /images/Toiles/
+    let correctedUrl = originalUrl.replace('/images/toiles/', '/images/Toiles/');
+    
+    // Extraire le dossier parent (ex: /images/Toiles/DICKSON/ORCHESTRA_MAX/)
+    const parts = correctedUrl.split('/');
+    const folderPath = parts.slice(0, -1).join('/'); // Tout sauf le nom du fichier
+    
+    // Extraire JUSTE la partie référence courte (avant le premier espace si présent)
+    // Exemples: "U095 gris basalte" → "U095", "3914 120" → "3914 120" (garde les espaces internes)
+    // Mais pour les noms complets comme "U095 gris basalte", on prend juste "U095"
+    const shortRef = ref.split(' ')[0];
+    
+    // Vérifier si le fichier existe probablement avec la ref complète (pour "3914 120.png")
+    // Si la ref a UN espace et le premier mot est numérique, c'est probablement un fichier avec espace
+    const hasSpaceInFilename = /^\d+\s+\d+$/.test(ref); // Pattern: "3914 120"
+    const fileRef = hasSpaceInFilename ? ref : shortRef;
+    
+    // Construire la nouvelle URL avec la référence appropriée + extension
+    const newUrl = `${folderPath}/${fileRef}.png`;
+    
+    // Encoder les espaces dans le nom de fichier (pour les refs comme "3914 120")
+    return newUrl.split('/').map((segment, index) => {
+      if (index === 0 || segment === '' || segment === 'images' || segment === 'Toiles') return segment;
+      return segment.replace(/ /g, '%20');
+    }).join('/');
+  };
   
   toileColors?.forEach(color => {
     // Ajouter la référence
@@ -70,15 +102,20 @@ async function generateToilesCatalog() {
     }
     typeRefsMap.get(color.toile_type_id)!.push(color.ref);
     
-    // Garder quelques exemples pour la documentation
-    const examples = typeExamplesMap.get(color.toile_type_id)!;
-    if (examples.length < 10) {
-      examples.push({ 
-        ref: color.ref, 
-        name: color.name, 
-        family: color.color_family 
-      });
+    // Construire l'URL correcte en utilisant JUSTE la référence
+    const correctUrl = buildImageUrl(color.image_url, color.ref);
+    if (correctUrl) {
+      imageUrlsMap[color.ref] = correctUrl;
     }
+    
+    // Ajouter TOUTES les toiles dans les examples (pas de limite)
+    const examples = typeExamplesMap.get(color.toile_type_id)!;
+    examples.push({ 
+      ref: color.ref, 
+      name: color.name, 
+      family: color.color_family,
+      image_url: correctUrl
+    });
   });
 
   // 4. Créer les types enrichis avec les références
@@ -112,16 +149,33 @@ export interface ToileTypeCompact {
   code: string;
   purchase_price_ht: number;
   sales_coefficient: number;
-  composition: string | null;
-  description: string | null;
+  compatible_store_ids: any | null;
   compatible_categories: string[];
+  default_width: number | null;
+  composition: string | null;
+  weight_range: string | null;
+  description: string | null;
+  features: any | null;
   is_active: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
   // Liste des références disponibles (ex: ["U095", "6088", "7124", ...])
   available_refs: string[];
   ref_count: number;
-  // Quelques exemples pour la documentation
-  examples: Array<{ref: string, name: string, family: string}>;
+  // Quelques exemples pour la documentation (avec URLs d'images)
+  examples: Array<{ref: string, name: string, family: string, image_url: string | null}>;
 }
+
+// ============================================
+// MAPPING IMAGES (ref → image_url)
+// ============================================
+
+/**
+ * Mapping des références vers les URLs d'images
+ * Permet de récupérer rapidement l'image d'une toile par sa référence
+ */
+export const TOILE_IMAGES: Record<string, string> = ${JSON.stringify(imageUrlsMap, null, 2)};
 
 // ============================================
 // TYPES DE TOILES (${toileTypes?.length || 0} gammes, ${totalRefs} références)
@@ -216,6 +270,13 @@ export function getToilesSummaryForChatbot(): string {
     \`- \${type.name} (\${type.manufacturer}): \${type.ref_count} références disponibles\n  Exemples: \${type.examples.slice(0, 5).map(e => \`\${e.ref} "\${e.name}"\`).join(', ')}\n  Prix: \${type.purchase_price_ht}€/m² HT × coeff \${type.sales_coefficient}\`
   ).join('\\n\\n');
 }
+
+/**
+ * Récupère l'URL de l'image d'une toile par sa référence
+ */
+export function getToileImageUrl(ref: string): string | null {
+  return TOILE_IMAGES[ref] || null;
+}
 `;
 
   // 4. Écrire le fichier
@@ -224,11 +285,11 @@ export function getToilesSummaryForChatbot(): string {
   
   console.log(`✅ Fichier généré: ${filePath}`);
   console.log(`   - ${toileTypes?.length || 0} types de toiles`);
-  console.log(`   - ${toileColors?.length || 0} couleurs de toiles`);
+  console.log(`   - ${toileColors?.length || 0} couleurs avec URLs d'images`);
 }
 
 // ============================================
-// GÉNÉRATION DU CATALOGUE COULEURS
+// GÉNÉRATION DU CATALOGUE COULEURS MATEST
 // ============================================
 
 async function generateCouleursCatalog() {
@@ -427,7 +488,7 @@ async function main() {
     console.log('\n' + '='.repeat(60));
     console.log('✅ Génération terminée avec succès !');
     console.log('\nFichiers générés:');
-    console.log('  - src/lib/catalog-toiles.ts');
+    console.log('  - src/lib/catalog-toiles.ts (avec URLs d\'images)');
     console.log('  - src/lib/catalog-couleurs.ts');
     console.log('\n💡 Ces fichiers sont maintenant utilisables par le chatbot sans requêtes Supabase');
   } catch (error) {

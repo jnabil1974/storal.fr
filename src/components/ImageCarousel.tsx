@@ -1,0 +1,97 @@
+'use client';
+
+import { useState } from 'react';
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+interface ImageCarouselProps {
+  productId: string;
+  productName: string;
+  fallbackImage?: string;
+}
+
+export default function ImageCarousel({ productId, productName, fallbackImage }: ImageCarouselProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  // Générer les chemins d'images de la galerie (on suppose 4 images par défaut)
+  // Next.js Image component convertit automatiquement en WebP pour l'optimisation
+  const galleryImages = Array.from({ length: 4 }, (_, i) => 
+    `/images/produits/${productId}/gallery/${i + 1}.jpg`
+  );
+  
+  // Alt texts descriptifs pour le SEO et l'accessibilité
+  const getAltText = (index: number): string => {
+    const contexts = [
+      `Store banne ${productName} - Vue d'ensemble coffre et toile déployée`,
+      `${productName} - Détail du mécanisme et bras articulés`,
+      `Installation ${productName} - Vue de côté avec projection maximale`,
+      `Store ${productName} - Finitions et coloris disponibles`
+    ];
+    return contexts[index] || `${productName} - Photo ${index + 1}`;
+  };
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % galleryImages.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+  };
+
+  return (
+    <div className="relative group">
+      {/* Image principale */}
+      <div className="relative aspect-[4/3] bg-white rounded-2xl overflow-hidden shadow-2xl">
+        <Image
+          src={galleryImages[currentIndex]}
+          alt={getAltText(currentIndex)}
+          fill
+          className="object-cover"
+          priority={currentIndex === 0}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+          quality={85}
+          onError={(e) => {
+            // Fallback vers l'image du modèle si l'image de galerie n'existe pas
+            const target = e.target as HTMLImageElement;
+            target.src = fallbackImage || '/images/stores/default.png';
+          }}
+        />
+      </div>
+
+      {/* Boutons de navigation */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+        aria-label="Image précédente"
+      >
+        <ChevronLeft className="w-6 h-6" />
+      </button>
+      <button
+        onClick={nextSlide}
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+        aria-label="Image suivante"
+      >
+        <ChevronRight className="w-6 h-6" />
+      </button>
+
+      {/* Indicateurs */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        {galleryImages.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`w-2 h-2 rounded-full transition-all ${
+              index === currentIndex ? 'bg-white w-8' : 'bg-white/50 hover:bg-white/75'
+            }`}
+            aria-label={`Aller à l'image ${index + 1}`}
+          />
+        ))}
+      </div>
+
+      {/* Compteur */}
+      <div className="absolute top-4 right-4 bg-black/50 text-white text-sm px-3 py-1 rounded-full font-medium">
+        {currentIndex + 1} / {galleryImages.length}
+      </div>
+    </div>
+  );
+}

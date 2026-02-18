@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { STORE_MODELS, getMinimumPrice, getModelDimensions } from '@/lib/catalog-data';
+import { STORE_MODELS, getMinimumPrice, getModelDimensions, getSortedRanges, getProductsByRange, getMinPriceForRange, getModelCountForRange, getModelSlug, type MarketingRange } from '@/lib/catalog-data';
 
 // Fonts Google (Epilogue comme AstroTalky)
 import { Epilogue } from 'next/font/google';
@@ -18,7 +18,7 @@ const epilogue = Epilogue({
 export default function HomePage() {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState('');
-  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [selectedRange, setSelectedRange] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Handler pour la recherche conversationnelle
@@ -43,21 +43,14 @@ export default function HomePage() {
     "Quelle différence entre coffre intégral et semi-coffre ?"
   ];
 
-  // Filtrer les produits selon la catégorie active
-  const allModels = Object.values(STORE_MODELS);
-  const filteredModels = activeFilter === 'all' 
-    ? allModels 
-    : allModels.filter(model => {
-        if (activeFilter === 'coffre') return model.type === 'coffre';
-        if (activeFilter === 'traditionnel') return model.type === 'traditionnel';
-        if (activeFilter === 'monobloc') return model.type === 'monobloc';
-        if (activeFilter === 'specialite') return model.type === 'specialite';
-        if (activeFilter === 'promo') return model.is_promo === true;
-        if (activeFilter === 'balcon') return (model.compatibility?.max_width || 0) <= 5000;
-        if (activeFilter === 'large') return (model.compatibility?.max_width || 0) > 6000 && (model.compatibility?.max_width || 0) <= 12000;
-        if (activeFilter === 'xlarge') return (model.compatibility?.max_width || 0) > 12000 && (model.compatibility?.max_width || 0) <= 18000;
-        return true;
-      });
+  // Récupérer les gammes et les produits
+  const sortedRanges = getSortedRanges();
+  const productsByRange = getProductsByRange();
+  
+  // Filtrer les produits selon la gamme sélectionnée
+  const filteredModels = selectedRange
+    ? productsByRange[selectedRange] || []
+    : Object.values(STORE_MODELS);
 
   return (
     <>
@@ -86,12 +79,12 @@ export default function HomePage() {
               Accueil
             </Link>
             
-            <a 
-              href="#products" 
+            <Link 
+              href="/gammes" 
               className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
             >
-              Produits
-            </a>
+              Nos Gammes
+            </Link>
             
             <Link 
               href="/assistant" 
@@ -151,13 +144,13 @@ export default function HomePage() {
               >
                 Accueil
               </Link>
-              <a 
-                href="#products" 
+              <Link 
+                href="/gammes" 
                 onClick={() => setIsMenuOpen(false)}
                 className="text-sm font-bold text-[#2c3e50] hover:text-blue-600 transition-colors uppercase tracking-wider"
               >
-                Produits
-              </a>
+                Nos Gammes
+              </Link>
               <Link 
                 href="/assistant" 
                 onClick={() => setIsMenuOpen(false)}
@@ -197,11 +190,11 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-6 py-8">
         <div className="relative overflow-hidden rounded-3xl min-h-[520px] flex items-center justify-center p-8" 
              style={{
-               backgroundImage: 'url(/images/hero-terrasse.jpg), linear-gradient(135deg, rgba(37, 99, 235, 0.85) 0%, rgba(59, 130, 246, 0.7) 100%)',
+               backgroundImage: 'url(/images/hero-store-moderne.jpg), linear-gradient(135deg, rgba(37, 99, 235, 0.85) 0%, rgba(59, 130, 246, 0.7) 100%)',
                backgroundSize: 'cover',
                backgroundPosition: 'center'
              }}>
-          <div className="absolute inset-0 bg-[#2c3e50]/40 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-[#2c3e50]/30 mix-blend-multiply"></div>
           
           <div className="relative z-10 max-w-2xl text-center space-y-8">
             <div className="space-y-4">
@@ -264,172 +257,129 @@ export default function HomePage() {
       </section>
 
       {/* === SECTION CATALOGUE === */}
-      <section id="products" className="max-w-7xl mx-auto px-6 py-8">
-        <div className="space-y-8">
+      <section id="products" className="max-w-7xl mx-auto px-6 pt-4 pb-12">
+        <div className="space-y-12">
           
           {/* Header section */}
-          <div className="space-y-6 border-b border-gray-200 pb-8">
-            <div className="space-y-2">
-              <h3 className="text-3xl font-black text-[#2c3e50]">Nos Modèles de Stores</h3>
-              <p className="text-gray-500">Sélectionnés pour leur qualité et leur durabilité</p>
-            </div>
-
-            {/* Filtres par catégorie - Style AstroTalky */}
-            <div className="flex overflow-x-auto gap-8 pb-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-              <div
-                onClick={() => setActiveFilter('all')}
-                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4 ${activeFilter === 'all' ? 'active' : ''}`}
-                style={{ marginLeft: '10px' }}
+          <div className="text-center space-y-4">
+            <h2 className="text-4xl font-black text-[#2c3e50] uppercase tracking-tight">
+              {selectedRange ? 'Nos Modèles' : 'Choisissez Votre Gamme'}
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              {selectedRange 
+                ? 'Découvrez tous les modèles disponibles dans cette gamme'
+                : 'Sélectionnez la gamme qui correspond à vos besoins et votre budget'}
+            </p>
+            
+            {/* Bouton retour si une gamme est sélectionnée */}
+            {selectedRange && (
+              <button
+                onClick={() => setSelectedRange(null)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-all"
               >
-                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
-                  activeFilter === 'all' 
-                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
-                    : 'border-2 border-gray-200 bg-white'
-                }`}>
-                  <span className="text-4xl">🏠</span>
-                </div>
-                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
-                  activeFilter === 'all' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
-                }`}>
-                  Tout
-                </span>
-              </div>
-
-              <div
-                onClick={() => setActiveFilter('promo')}
-                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
-              >
-                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
-                  activeFilter === 'promo' 
-                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
-                    : 'border-2 border-gray-200 bg-white'
-                }`}>
-                  <span className="text-4xl">🔥</span>
-                </div>
-                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
-                  activeFilter === 'promo' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
-                }`}>
-                  Promos
-                </span>
-              </div>
-
-              <div
-                onClick={() => setActiveFilter('balcon')}
-                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
-              >
-                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
-                  activeFilter === 'balcon' 
-                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
-                    : 'border-2 border-gray-200 bg-white'
-                }`}>
-                  <span className="text-4xl">🏛️</span>
-                </div>
-                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
-                  activeFilter === 'balcon' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
-                }`}>
-                  Balcon
-                </span>
-              </div>
-
-              <div
-                onClick={() => setActiveFilter('coffre')}
-                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
-              >
-                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
-                  activeFilter === 'coffre' 
-                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
-                    : 'border-2 border-gray-200 bg-white'
-                }`}>
-                  <span className="text-4xl">📦</span>
-                </div>
-                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
-                  activeFilter === 'coffre' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
-                }`}>
-                  Coffre
-                </span>
-              </div>
-
-              <div
-                onClick={() => setActiveFilter('traditionnel')}
-                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
-              >
-                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
-                  activeFilter === 'traditionnel' 
-                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
-                    : 'border-2 border-gray-200 bg-white'
-                }`}>
-                  <span className="text-4xl">⛱️</span>
-                </div>
-                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
-                  activeFilter === 'traditionnel' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
-                }`}>
-                  Traditionnel
-                </span>
-              </div>
-
-              <div
-                onClick={() => setActiveFilter('monobloc')}
-                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
-              >
-                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
-                  activeFilter === 'monobloc' 
-                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
-                    : 'border-2 border-gray-200 bg-white'
-                }`}>
-                  <span className="text-4xl">🏗️</span>
-                </div>
-                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
-                  activeFilter === 'monobloc' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
-                }`}>
-                  Monobloc
-                </span>
-              </div>
-
-              <div
-                onClick={() => setActiveFilter('large')}
-                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
-              >
-                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
-                  activeFilter === 'large' 
-                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
-                    : 'border-2 border-gray-200 bg-white'
-                }`}>
-                  <span className="text-4xl">📏</span>
-                </div>
-                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
-                  activeFilter === 'large' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
-                }`}>
-                  Jusqu'à 12m
-                </span>
-              </div>
-
-              <div
-                onClick={() => setActiveFilter('xlarge')}
-                className={`flex flex-col items-center gap-3 shrink-0 cursor-pointer group mt-4`}
-              >
-                <div className={`w-28 h-28 rounded-full flex items-center justify-center shadow-lg transition-all group-hover:scale-110 ${
-                  activeFilter === 'xlarge' 
-                    ? 'bg-blue-600 text-white shadow-blue-600/20' 
-                    : 'border-2 border-gray-200 bg-white'
-                }`}>
-                  <span className="text-4xl">📐</span>
-                </div>
-                <span className={`text-sm font-black uppercase tracking-wider transition-colors ${
-                  activeFilter === 'xlarge' ? 'text-[#2c3e50]' : 'text-gray-500 group-hover:text-blue-600'
-                }`}>
-                  Jusqu'à 18m
-                </span>
-              </div>
-            </div>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Retour aux gammes
+              </button>
+            )}
           </div>
 
-          {/* Grille des produits - Style AstroTalky */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {filteredModels.slice(0, 8).map((model) => (
-              <div
+          {/* Grille des cartes de gammes */}
+          {!selectedRange && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {sortedRanges.map((range) => {
+                const modelCount = getModelCountForRange(range.id);
+                const minPrice = getMinPriceForRange(range.id);
+                
+                return (
+                  <Link
+                    key={range.id}
+                    href={`/gammes#${range.id}`}
+                    className="group relative bg-white rounded-2xl border-2 border-gray-200 hover:border-blue-500 
+                               p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 block"
+                  >
+                    {/* Badge optionnel */}
+                    {range.badge && (
+                      <div className="absolute -top-3 -right-3 bg-red-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg">
+                        {range.badge}
+                      </div>
+                    )}
+                    
+                    {/* Image et titre */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-16 h-16 bg-gradient-to-br ${range.gradientFrom} ${range.gradientTo} rounded-xl overflow-hidden shadow-lg group-hover:scale-110 transition-transform relative`}>
+                          <Image
+                            src={range.imageUrl}
+                            alt={range.label}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-black text-[#2c3e50] uppercase tracking-tight leading-tight">
+                            {range.label.replace('Gamme ', '')}
+                          </h3>
+                          <p className="text-sm font-bold text-blue-600">{range.tagline}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Description */}
+                      <p className="text-sm text-gray-600 line-clamp-3">
+                        {range.description}
+                      </p>
+                      
+                      {/* Stats */}
+                      <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-gray-500 font-semibold">À partir de</p>
+                          <p className="text-xl font-black text-[#2c3e50]">
+                            {minPrice.toLocaleString('fr-FR')}€
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-500 font-semibold">
+                            {modelCount} {modelCount > 1 ? 'modèles' : 'modèle'}
+                          </p>
+                          <div className="flex items-center gap-1 text-blue-600 font-bold text-sm mt-1">
+                            <span>Découvrir</span>
+                            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Bouton pour voir toutes les gammes avec comparatif */}
+          {!selectedRange && (
+            <div className="text-center pt-8">
+              <Link
+                href="/gammes"
+                className="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:scale-105"
+              >
+                <span>Voir toutes les gammes avec comparatif détaillé</span>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          )}
+
+          {/* Grille des produits */}
+          {selectedRange && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {filteredModels.map((model) => (
+              <Link
+                href={`/produits/${getModelSlug(model)}`}
                 key={model.id}
-                onClick={() => router.push(`/assistant?model=${model.id}`)}
-                className="group relative bg-white border border-gray-100 p-5 rounded-3xl flex flex-col gap-5 cursor-pointer transition-all hover:shadow-[0_0_25px_rgba(37,99,235,0.25)] shadow-[0_0_15px_rgba(37,99,235,0.1)]"
+                className="group relative bg-white border border-gray-100 p-5 rounded-3xl flex flex-col gap-5 cursor-pointer transition-all hover:shadow-[0_0_25px_rgba(37,99,235,0.25)] shadow-[0_0_15px_rgba(37,99,235,0.1)] block"
                 style={{ boxShadow: '0 0 15px rgba(37, 99, 235, 0.1)' }}
               >
                 {/* Badge promo en haut à droite */}
@@ -558,19 +508,15 @@ export default function HomePage() {
                     </button>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
+          )}
 
-          {/* Voir tous les produits */}
-          {filteredModels.length > 8 && (
-            <div className="text-center mt-10">
-              <button
-                onClick={() => handleQuickSuggestion("Montre-moi tous les modèles disponibles")}
-                className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold uppercase tracking-wider hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl"
-              >
-                Voir tous les modèles ({filteredModels.length})
-              </button>
+          {/* Message si aucun produit */}
+          {selectedRange && filteredModels.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">Aucun produit disponible dans cette gamme pour le moment.</p>
             </div>
           )}
         </div>

@@ -255,6 +255,32 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
     });
   }, [selectedModelId, selectedColorId, selectedFabricId, setShowroomState]);
 
+  // 🔥 Réinitialiser la catégorie de toile si elle devient indisponible après filtrage
+  useEffect(() => {
+    if (selectedModelId) {
+      const model = STORE_MODELS[selectedModelId];
+      if (model?.compatible_toile_types) {
+        const compatibleTypes = model.compatible_toile_types;
+        let allowedToileTypeCodes: string[] = [];
+        
+        compatibleTypes.forEach((type) => {
+          if (type === 'ORCH') {
+            allowedToileTypeCodes.push('ORCH_UNI', 'ORCH_DECOR');
+          } else if (type === 'ORCH_MAX') {
+            allowedToileTypeCodes.push('ORCH_UNI', 'ORCH_DECOR', 'ORCH_MAX');
+          } else if (type === 'SATT') {
+            allowedToileTypeCodes.push('SATT');
+          }
+        });
+        
+        // Si la catégorie actuelle n'est plus disponible, basculer sur la première disponible
+        if (!allowedToileTypeCodes.includes(selectedFabricCategory)) {
+          setSelectedFabricCategory(allowedToileTypeCodes[0] || 'ORCH_UNI');
+        }
+      }
+    }
+  }, [selectedModelId, selectedFabricCategory]);
+
   // Fonction pour sauvegarder dans localStorage
   const saveToCart = (updates: Partial<Cart>) => {
     const newCart = { ...(cart || {}), ...updates } as Cart;
@@ -722,6 +748,13 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
     id: chatId,
     body: {
       honeypot: honeypot, // 🍯 Envoyer le honeypot au backend
+      // 🎯 Transmettre les données du sessionStorage si elles existent
+      configData: typeof window !== 'undefined' ? {
+        width: sessionStorage.getItem('storal_width'),
+        projection: sessionStorage.getItem('storal_projection'),
+        modelId: sessionStorage.getItem('storal_modelId'),
+        fabricId: sessionStorage.getItem('storal_fabricId'),
+      } : null,
     },
     onToolCall: ({ toolCall }: any) => {
       console.log('🔧 Tool appelé:', toolCall);
@@ -834,8 +867,23 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
           ...prev,
           selectedModelId: initialModelId
         }));
-        // Envoyer un message initial pour démarrer la conversation
-        sendMessage({ text: `Je veux configurer le modèle ${model.name}` });
+        
+        // 🎯 NOUVEAU : Vérifier si des données du configurateur existent dans sessionStorage
+        const configWidth = sessionStorage.getItem('storal_width');
+        const configProjection = sessionStorage.getItem('storal_projection');
+        
+        if (configWidth && configProjection) {
+          // Envoyer un message avec les données de configuration
+          const widthM = (Number(configWidth) / 1000).toFixed(2);
+          const projectionM = (Number(configProjection) / 1000).toFixed(2);
+          sendMessage({ 
+            text: `Je veux configurer le modèle ${model.name} avec les dimensions suivantes : ${widthM}m de large × ${projectionM}m d'avancée` 
+          });
+        } else {
+          // Message standard sans dimensions
+          sendMessage({ text: `Je veux configurer le modèle ${model.name}` });
+        }
+        
         initialMessageSentRef.current = true;
         setInitialMessageSent(true);
       }
@@ -1476,8 +1524,33 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
     const input = tool.input as any;
     const { frame_color } = input;
     
-    // Grouper les toiles par type
-    const fabricsByType = FABRICS.reduce((acc, fabric) => {
+    // 🔥 FILTRAGE DES TOILES SELON LE STORE SÉLECTIONNÉ
+    const selectedModel = selectedModelId ? STORE_MODELS[selectedModelId] : null;
+    const compatibleTypes = selectedModel?.compatible_toile_types || [];
+    
+    // Mapper les types compatibles vers les codes de toiles
+    // 'ORCH' → ['ORCH_UNI', 'ORCH_DECOR'] (pas ORCH_MAX)
+    // 'ORCH_MAX' → ['ORCH_UNI', 'ORCH_DECOR', 'ORCH_MAX']
+    // 'SATT' → ['SATT']
+    let allowedToileTypeCodes: string[] = [];
+    
+    compatibleTypes.forEach((type) => {
+      if (type === 'ORCH') {
+        allowedToileTypeCodes.push('ORCH_UNI', 'ORCH_DECOR');
+      } else if (type === 'ORCH_MAX') {
+        allowedToileTypeCodes.push('ORCH_UNI', 'ORCH_DECOR', 'ORCH_MAX');
+      } else if (type === 'SATT') {
+        allowedToileTypeCodes.push('SATT');
+      }
+    });
+    
+    // Filtrer les toiles selon les types compatibles
+    const filteredFabrics = allowedToileTypeCodes.length > 0 
+      ? FABRICS.filter(fabric => allowedToileTypeCodes.includes(fabric.toile_type_code))
+      : FABRICS; // Si aucun filtre défini, montrer toutes les toiles
+    
+    // Grouper les toiles filtrées par type
+    const fabricsByType = filteredFabrics.reduce((acc, fabric) => {
       const type = fabric.toile_type_code;
       if (!acc[type]) acc[type] = [];
       acc[type].push(fabric);
@@ -1499,6 +1572,14 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         <h3 className={`text-center mb-3 ${isCurrent ? 'text-2xl font-bold text-gray-900' : 'text-lg font-semibold text-gray-700'}`}>
           🧵 {isCurrent ? 'Choisissez votre Toile' : 'Toiles (antérieure)'}
         </h3>
+        
+        {isCurrent && selectedModel && (
+          <div className="text-center mb-4 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              ✅ Toiles compatibles avec le <strong>{selectedModel.name}</strong> : {compatibleTypes.join(', ')}
+            </p>
+          </div>
+        )}
         
         {isCurrent && (
           <>
@@ -1641,6 +1722,26 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
           <h2 className="text-lg font-bold leading-tight">Expert Storal - Assistant Personnalisé</h2>
           <p className="text-xs text-gray-300 mt-1">Configurez votre produit idéal</p>
         </header>
+        
+        {/* 🔐 Bannière de Disclaimer IA - RGPD */}
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200 px-4 py-2">
+          <div className="flex items-start gap-3 text-xs">
+            <span className="text-green-600 text-sm flex-shrink-0">🔒</span>
+            <div className="flex-1">
+              <p className="text-gray-700 leading-relaxed">
+                <strong className="text-green-700">Assistant IA sécurisé :</strong> Cet agent utilise Google Gemini (version professionnelle). 
+                <strong> Vos conversations ne sont PAS utilisées pour entraîner l'IA.</strong>{' '}
+                <a 
+                  href="/confidentialite" 
+                  target="_blank" 
+                  className="text-blue-600 hover:underline font-semibold"
+                >
+                  En savoir plus
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
         
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {messages.length === 0 && (

@@ -4,6 +4,8 @@ import "./globals.css";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ConditionalLayout from "@/components/ConditionalLayout";
+import CookieBanner from "@/components/CookieBanner";
+import GoogleScripts from "@/components/GoogleScripts";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +49,12 @@ export default function RootLayout({
             <ConditionalLayout>
               {children}
             </ConditionalLayout>
+            
+            {/* Scripts Google (chargés uniquement si consentement) */}
+            <GoogleScripts />
+            
+            {/* Banner cookies CNIL */}
+            <CookieBanner />
           </CartProvider>
         </AuthProvider>
       </body>

@@ -9,6 +9,71 @@
 // ==========================================
 
 /**
+ * Génère un slug URL-friendly depuis un nom de produit
+ */
+export function createSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD') // Décompose les caractères accentués
+    .replace(/[\u0300-\u036f]/g, '') // Supprime les accents
+    .replace(/[^a-z0-9]+/g, '-') // Remplace les caractères non alphanumériques par des tirets
+    .replace(/^-+|-+$/g, ''); // Supprime les tirets en début et fin
+}
+
+/**
+ * Trouve un modèle par son slug
+ */
+export function getModelBySlug(slug: string): StoreModel | undefined {
+  const models = Object.values(STORE_MODELS);
+  return models.find(model => {
+    // Si le modèle a un slug défini, on l'utilise
+    if (model.slug) {
+      return model.slug === slug;
+    }
+    // Sinon, on génère le slug à partir du nom avec le préfixe "store-"
+    const generatedSlug = 'store-' + createSlug(model.name);
+    return generatedSlug === slug;
+  });
+}
+
+/**
+ * Retourne le slug d'un modèle (utilise le champ slug ou génère depuis le name)
+ */
+export function getModelSlug(modelIdOrModel: string | StoreModel): string {
+  const model = typeof modelIdOrModel === 'string' 
+    ? STORE_MODELS[modelIdOrModel] 
+    : modelIdOrModel;
+  
+  if (!model) return '';
+  // Si le modèle a un slug prédéfini, on l'utilise
+  if (model.slug) return model.slug;
+  // Sinon, on génère le slug à partir du nom avec le préfixe "store-"
+  return 'store-' + createSlug(model.name);
+}
+
+/**
+ * Vérifie si la largeur nécessite une alerte de livraison en 2 parties
+ * 
+ * @param model - Modèle de store
+ * @param largeur - Largeur du store en mm
+ * @returns Message d'alerte ou null
+ */
+export function checkDeliveryConditions(
+  model: StoreModel,
+  largeur: number
+): string | null {
+  if (!model.deliveryWarningThreshold) {
+    return null;
+  }
+  
+  if (largeur > model.deliveryWarningThreshold) {
+    return `⚠️ Attention : En raison d'une largeur supérieure à ${model.deliveryWarningThreshold / 1000}m, la livraison s'effectuera en deux parties via un transporteur spécialisé.`;
+  }
+  
+  return null;
+}
+
+/**
  * Calcule le prix minimum d'un modèle (prix de base TTC avec TVA 10%)
  * Prend la configuration la plus petite (avancée min, largeur min)
  */
@@ -35,7 +100,7 @@ export function getMinimumPrice(model: StoreModel): number {
   return Math.round(priceTTC);
 }
 
-/**
+/*
  * Extrait les dimensions min/max d'un modèle
  */
 export function getModelDimensions(model: StoreModel): {
@@ -98,6 +163,8 @@ export interface StoreModelCompatibility {
 export interface StoreModel {
   id: string;
   name: string;
+  slug?: string; // URL-friendly version du name (ex: "storal-compact")
+  marketingRange?: string; // GAMME_COMPACT, GAMME_ARMOR, GAMME_EXCELLENCE, etc.
   type: 'coffre' | 'monobloc' | 'traditionnel' | 'specialite';
   shape: 'carre' | 'galbe';
   is_promo: boolean;
@@ -113,6 +180,10 @@ export interface StoreModel {
   minWidths: Record<number, number>; 
   // Grille de prix : Clé = Avancée, Valeur = Tableau de paliers
   buyPrices: Record<number, { maxW: number, priceHT: number }[]>;
+  // Prix PROMO pour largeur < 6m (ARMOR et ARMOR+ uniquement)
+  promoPrices?: Record<number, { maxW: number, priceHT: number }[]>;
+  // Seuil de largeur pour basculer de promo à standard (en mm, défaut: 6000)
+  promoWidthThreshold?: number;
   // Option pose plafond : prix selon largeur (si non defini, considere inclus)
   ceilingMountPrices?: { maxW: number, price: number }[];
   // Option lambrequin enroulable : prix selon largeur et manoeuvre
@@ -122,11 +193,33 @@ export interface StoreModel {
   };
   // Coefficient de vente spécifique au modèle (si absent, utilise COEFF_MARGE par défaut)
   salesCoefficient?: number;
+  // Coefficients spécifiques pour les options de ce produit (surcharge OPTIONS_COEFFICIENTS global)
+  // Permet de faire des promos ou prix coûtant sur certaines options
+  optionsCoefficients?: Partial<{
+    LED_ARMS: number;
+    LED_CASSETTE: number;
+    LAMBREQUIN_FIXE: number;
+    LAMBREQUIN_ENROULABLE: number;
+    CEILING_MOUNT: number;
+    AUVENT: number;
+    FABRIC: number;
+    FRAME_COLOR_CUSTOM: number;
+    INSTALLATION: number;
+  }>;
+  // Type de livraison (argument commercial important)
+  deliveryType: 'ready_to_install' | 'ready_up_to_6m' | 'disassembled';
+  // Message commercial affiché au client
+  deliveryNote: string;
+  // Stratégie de tarification des couleurs
+  colorStrategy: 'PROMO_LIMITED' | 'STANDARD_ALL' | 'HYBRID_ARMOR';
+  // Seuil d'alerte livraison en 2 parties (en mm, généralement 6000)
+  deliveryWarningThreshold?: number;
 }
 
 // ==========================================
 // 2. PARAMÈTRES COMMERCIAUX
 // ==========================================
+
 export const CATALOG_SETTINGS = {
   COEFF_MARGE: 1.8,
   TVA_NORMAL: 1.20,
@@ -283,34 +376,12 @@ export const FABRIC_OPTIONS = {
 
 export const STORE_MODELS: Record<string, StoreModel> = {
 
-  // --- 1. KISSIMY (Page 34-35) ---
-  "kissimy": {
-    id: "kissimy",
-    name: "KISSIMY",
-    type: "coffre",
-    shape: "galbe",
-    is_promo: false,
-    description: "Le coffre compact sur mesure, idéal pour les balcons.",
-    features: ["Design doux", "Compact", "Éclairage Bras"],
-    image: "/images/stores/KISSIMY.png",
-    compatible_toile_types: ['ORCH', 'SATT'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 4830, max_projection: 3000 },
-    armLogic: 'standard_2',
-    minWidths: { 1500: 1835, 1750: 2085, 2000: 2335, 2500: 2835, 3000: 3355 },
-    buyPrices: {
-      1500: [{ maxW: 2470, priceHT: 1110 }, { maxW: 3650, priceHT: 1177 }, { maxW: 4830, priceHT: 1281 }],
-      1750: [{ maxW: 2470, priceHT: 1139 }, { maxW: 3650, priceHT: 1215 }, { maxW: 4830, priceHT: 1326 }],
-      2000: [{ maxW: 2470, priceHT: 1164 }, { maxW: 3650, priceHT: 1246 }, { maxW: 4830, priceHT: 1356 }],
-      2500: [{ maxW: 2470, priceHT: 1295 }, { maxW: 3650, priceHT: 1425 }, { maxW: 4830, priceHT: 1676 }],
-      3000: [{ maxW: 2470, priceHT: 1354 }, { maxW: 3650, priceHT: 1495 }, { maxW: 4830, priceHT: 1760 }]
-    },
-    salesCoefficient: 1.0  // Coefficient de test pour vérification
-  },
-
-  // --- 2. KISSIMY PROMO (Page 34) ---
+  // --- 1. KISSIMY PROMO - STORAL COMPACT (Page 34) ---
   "kissimy_promo": {
     id: "kissimy_promo",
-    name: "KISSIMY PROMO (Série Limitée)",
+    slug: "store-banne-coffre-compact-sur-mesure",
+    name: "STORAL COMPACT (Série Limitée)",
+    marketingRange: "GAMME_COMPACT",
     type: "coffre",
     shape: "galbe",
     is_promo: true,
@@ -318,23 +389,36 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     features: ["PRIX PROMO", "Moteur Sunea iO", "Option LED Bras"],
     image: "/images/stores/KISSIMY.png",
     compatible_toile_types: ['ORCH'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 4830, max_projection: 3000, allowed_colors: ['9016', '1015', '7016'] },
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 4830, max_projection: 3000, allowed_colors: ['9010', '1015', '7016'] },
     armLogic: 'standard_2',
     minWidths: { 1500: 1835, 1750: 2085, 2000: 2335, 2500: 2835, 3000: 3355 },
     buyPrices: {
-      1500: [{ maxW: 2470, priceHT: 1010 }, { maxW: 3650, priceHT: 1047 }, { maxW: 4830, priceHT: 1081 }],
-      1750: [{ maxW: 2470, priceHT: 1039 }, { maxW: 3650, priceHT: 1085 }, { maxW: 4830, priceHT: 1126 }],
-      2000: [{ maxW: 2470, priceHT: 1064 }, { maxW: 3650, priceHT: 1116 }, { maxW: 4830, priceHT: 1156 }],
-      2500: [{ maxW: 2470, priceHT: 1165 }, { maxW: 3650, priceHT: 1225 }, { maxW: 4830, priceHT: 1577 }],
-      3000: [{ maxW: 2470, priceHT: 1224 }, { maxW: 3650, priceHT: 1295 }, { maxW: 4830, priceHT: 1649 }]
+    1500: [{ maxW: 2470, priceHT: 1010 }, { maxW: 3650, priceHT: 1047 }, { maxW: 4830, priceHT: 1081 }],
+    1750: [{ maxW: 2470, priceHT: 1039 }, { maxW: 3650, priceHT: 1085 }, { maxW: 4830, priceHT: 1126 }],
+    2000: [{ maxW: 2470, priceHT: 1064 }, { maxW: 3650, priceHT: 1116 }, { maxW: 4830, priceHT: 1156 }],
+    2500: [{ maxW: 3650, priceHT: 1165 }, { maxW: 4830, priceHT: 1225 }],
+    3000: [{ maxW: 3650, priceHT: 1224 }, { maxW: 4830, priceHT: 1295 }]
     },
-    salesCoefficient: 1.0  // Coefficient de test pour vérification
+    salesCoefficient: 1.65,  // Marge réduite pour l'entrée de gamme promo
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'ready_to_install',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser",
+    colorStrategy: 'PROMO_LIMITED'  // Blanc/Beige/Gris inclus, reste +200€
   },
 
-  // --- 3. KITANGUY (Page 34-35) ---
+  // --- 2. KITANGUY - STORAL COMPACT + (Page 34-35) ---
   "kitanguy": {
     id: "kitanguy",
-    name: "KITANGUY",
+    slug: "store-banne-coffre-compact-renforce",
+    name: "STORAL COMPACT +",
+    marketingRange: "GAMME_COMPACT",
     type: "coffre",
     shape: "galbe",
     is_promo: false,
@@ -345,24 +429,38 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 5850, max_projection: 3250 },
     armLogic: 'standard_2',
     minWidths: { 1500: 1895, 1750: 2145, 2000: 2395, 2500: 2895, 3000: 3415, 3250: 3645 },
-    buyPrices: {
-      1500: [{ maxW: 2470, priceHT: 1353 }, { maxW: 3650, priceHT: 1435 }, { maxW: 4830, priceHT: 1561 }, { maxW: 5610, priceHT: 1657 }, { maxW: 5850, priceHT: 1794 }],
-      1750: [{ maxW: 2470, priceHT: 1389 }, { maxW: 3650, priceHT: 1478 }, { maxW: 4830, priceHT: 1613 }, { maxW: 5610, priceHT: 1712 }, { maxW: 5850, priceHT: 1852 }],
-      2000: [{ maxW: 2470, priceHT: 1428 }, { maxW: 3650, priceHT: 1516 }, { maxW: 4830, priceHT: 1660 }, { maxW: 5610, priceHT: 1765 }, { maxW: 5850, priceHT: 1904 }],
-      2500: [{ maxW: 3650, priceHT: 1735 }, { maxW: 4830, priceHT: 1879 }, { maxW: 5850, priceHT: 2033 }],
-      3000: [{ maxW: 3650, priceHT: 1822 }, { maxW: 4830, priceHT: 2024 }, { maxW: 5850, priceHT: 2186 }],
-      3250: [{ maxW: 4830, priceHT: 1917 }, { maxW: 5850, priceHT: 2148 }]
+  buyPrices: {
+    1500: [{ maxW: 2470, priceHT: 1353 }, { maxW: 3650, priceHT: 1435 }, { maxW: 4830, priceHT: 1561 }, { maxW: 5610, priceHT: 1657 }, { maxW: 5850, priceHT: 1794 }],
+    1750: [{ maxW: 2470, priceHT: 1389 }, { maxW: 3650, priceHT: 1478 }, { maxW: 4830, priceHT: 1613 }, { maxW: 5610, priceHT: 1712 }, { maxW: 5850, priceHT: 1852 }],
+    2000: [{ maxW: 2470, priceHT: 1428 }, { maxW: 3650, priceHT: 1516 }, { maxW: 4830, priceHT: 1660 }, { maxW: 5610, priceHT: 1765 }, { maxW: 5850, priceHT: 1904 }],
+    2500: [{ maxW: 3650, priceHT: 1577 }, { maxW: 4830, priceHT: 1735 }, { maxW: 5610, priceHT: 1879 }, { maxW: 5850, priceHT: 2033 }],
+    3000: [{ maxW: 3650, priceHT: 1649 }, { maxW: 4830, priceHT: 1822 }, { maxW: 5610, priceHT: 2024 }, { maxW: 5850, priceHT: 2186 }],
+    3250: [{ maxW: 3650, priceHT: 1735 }, { maxW: 4830, priceHT: 1917 }, { maxW: 5610, priceHT: 2148 }]
     },
     ceilingMountPrices: [
       { maxW: 3650, price: 0 },
       { maxW: 5850, price: 38 }
-    ]
+    ],
+    salesCoefficient: 1.8,  // Coefficient standard
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'ready_to_install',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser",
+    colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
   },
 
-  // --- 4. KITANGUY 2 (Page 36) ---
+  // --- 3. KITANGUY 2 - STORAL EXCELLENCE (Page 36) ---
   "kitanguy_2": {
     id: "kitanguy_2",
-    name: "KITANGUY 2 (LED Coffre)",
+    slug: "store-banne-coffre-excellence-led",
+    name: "STORAL EXCELLENCE",
+    marketingRange: "GAMME_EXCELLENCE",
     type: "coffre",
     shape: "galbe",
     is_promo: false,
@@ -384,13 +482,28 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     ceilingMountPrices: [
       { maxW: 3650, price: 0 },
       { maxW: 5850, price: 38 }
-    ]
+    ],
+    salesCoefficient: 2.0,  // Haut de gamme
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'ready_to_install',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser",
+    colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
+    deliveryWarningThreshold: 6000  // Alerte si > 6m (bien que max soit 5850mm)
   },
 
-  // --- 5. HELIOM (Page 38) ---
+  // --- 4. HELIOM - STORAL KUBE (Page 38) ---
   "heliom": {
     id: "heliom",
-    name: "HELIOM",
+    slug: "store-banne-coffre-rectangulaire-kube",
+    name: "STORAL KUBE",
+    marketingRange: "GAMME_KUBE",
     type: "coffre",
     shape: "carre",
     is_promo: false,
@@ -413,13 +526,27 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     ceilingMountPrices: [
       { maxW: 3580, price: 297 },
       { maxW: 6000, price: 444 }
-    ]
+    ],
+    salesCoefficient: 1.9,  // Design premium
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'ready_to_install',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser",
+    colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
   },
 
-  // --- 6. HELIOM PLUS (Page 38) ---
+  // --- 5. HELIOM PLUS - STORAL KUBE + (Page 38) ---
   "heliom_plus": {
     id: "heliom_plus",
-    name: "HELIOM PLUS (Grande Avancée)",
+    slug: "store-banne-design-architecte-kube",
+    name: "STORAL KUBE +",
+    marketingRange: "GAMME_KUBE",
     type: "coffre",
     shape: "carre",
     is_promo: false,
@@ -457,15 +584,30 @@ export const STORE_MODELS: Record<string, StoreModel> = {
         { maxW: 5610, price: 802 },
         { maxW: 6000, price: 838 }
       ]
-    }
+    },
+    salesCoefficient: 2.0,  // Design premium avec lambrequin
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'ready_to_install',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser",
+    colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
+    deliveryWarningThreshold: 6000  // Alerte si > 6m
   },
 
-  // --- 7. KALY'O (Page 44) ---
+  // --- 6. KALY'O - STORAL K (Page 44) ---
   "kalyo": {
     id: "kalyo",
-    name: "KALY'O",
+    slug: "store-banne-carre-coffre-compact",
+    name: "STORAL K",
+    marketingRange: "GAMME_KARE_COMPACT",
     type: "coffre",
-    shape: "galbe",
+    shape: "carre",
     is_promo: false,
     description: "La nouveauté 2026. Polyvalent avec option lambrequin enroulable.",
     features: ["Nouveauté", "Lambrequin Optionnel", "Éclairage Bras"],
@@ -502,33 +644,48 @@ export const STORE_MODELS: Record<string, StoreModel> = {
         { maxW: 5610, price: 802 },
         { maxW: 6000, price: 838 }
       ]
-    }
+    },
+    salesCoefficient: 1.8,  // Standard rénovation
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'ready_to_install',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser",
+    colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
+    deliveryWarningThreshold: 6000  // Alerte si > 6m
   },
-
-  // --- 8. DYNASTA (Page 40) ---
+  // RÈGLE IMPORTANTE : Largeur <6m = Prix PROMO + Couleurs limitées (9010, 1015, 7016)
+  //                    Largeur ≥6m = Prix STANDARD + Toutes couleurs incluses
   "dynasta": {
     id: "dynasta",
-    name: "DYNASTA (Grande Largeur)",
+    slug: "store-banne-grande-largeur-armor",
+    name: "STORAL ARMOR",
+    marketingRange: "GAMME_ARMOR",
     type: "coffre",
     shape: "galbe",
-    is_promo: false,
+    is_promo: false, // Promo dynamique selon largeur
     description: "Le géant des terrasses, jusqu'à 12m de large.",
     features: ["Jusqu'à 12m", "Bras Renforcés", "Idéal CHR"],
     image: "/images/stores/DYNASTA.png",
     compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 4000 },
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 4000, allowed_colors: ['9010', '1015', '7016'] },
     armLogic: 'couples_4_6',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3250: 3880, 3500: 4130, 4000: 4630 },
     buyPrices: {
-      1500: [{ maxW: 4760, priceHT: 1850 }, { maxW: 5610, priceHT: 2041 }, { maxW: 6000, priceHT: 2175 }, { maxW: 7110, priceHT: 2744 }, { maxW: 8280, priceHT: 3204 }, { maxW: 9450, priceHT: 3284 }, { maxW: 10620, priceHT: 3577 }, { maxW: 11220, priceHT: 3747 }, { maxW: 12000, priceHT: 3961 }],
-      2000: [{ maxW: 4760, priceHT: 1910 }, { maxW: 5610, priceHT: 2114 }, { maxW: 6000, priceHT: 2265 }, { maxW: 7110, priceHT: 3183 }, { maxW: 8280, priceHT: 3714 }, { maxW: 9450, priceHT: 3817 }, { maxW: 10620, priceHT: 4163 }, { maxW: 11220, priceHT: 4365 }, { maxW: 12000, priceHT: 4621 }],
-      2500: [{ maxW: 4760, priceHT: 1989 }, { maxW: 5610, priceHT: 2207 }, { maxW: 6000, priceHT: 2366 }, { maxW: 7110, priceHT: 2975 }, { maxW: 8280, priceHT: 3460 }, { maxW: 9450, priceHT: 3569 }, { maxW: 10620, priceHT: 4353 }, { maxW: 11220, priceHT: 4572 }, { maxW: 12000, priceHT: 4847 }],
-      2750: [{ maxW: 4760, priceHT: 2012 }, { maxW: 5610, priceHT: 2234 }, { maxW: 6000, priceHT: 2405 }, { maxW: 7110, priceHT: 3373 }, { maxW: 8280, priceHT: 3924 }, { maxW: 9450, priceHT: 4050 }, { maxW: 10620, priceHT: 4418 }, { maxW: 11220, priceHT: 4643 }, { maxW: 12000, priceHT: 4924 }],
-      3000: [{ maxW: 4760, priceHT: 2137 }, { maxW: 5610, priceHT: 2365 }, { maxW: 6000, priceHT: 2550 }, { maxW: 7110, priceHT: 3309 }, { maxW: 8280, priceHT: 3729 }, { maxW: 9450, priceHT: 3845 }, { maxW: 10620, priceHT: 4699 }, { maxW: 11220, priceHT: 4922 }, { maxW: 12000, priceHT: 5212 }],
-      3250: [{ maxW: 4760, priceHT: 2177 }, { maxW: 5610, priceHT: 2411 }, { maxW: 6000, priceHT: 2602 }, { maxW: 7110, priceHT: 3336 }, { maxW: 8280, priceHT: 3769 }, { maxW: 9450, priceHT: 3917 }, { maxW: 10620, priceHT: 4787 }, { maxW: 11220, priceHT: 5015 }, { maxW: 12000, priceHT: 5318 }],
-      3500: [{ maxW: 4760, priceHT: 2217 }, { maxW: 5610, priceHT: 2456 }, { maxW: 6000, priceHT: 2653 }, { maxW: 7110, priceHT: 3362 }, { maxW: 8280, priceHT: 3809 }, { maxW: 9450, priceHT: 3990 }, { maxW: 10620, priceHT: 4875 }, { maxW: 11220, priceHT: 5109 }, { maxW: 12000, priceHT: 5422 }],
-      4000: [{ maxW: 4760, priceHT: 2315 }, { maxW: 5610, priceHT: 2568 }, { maxW: 6000, priceHT: 2777 }, { maxW: 7110, priceHT: 3451 }, { maxW: 8280, priceHT: 3896 }, { maxW: 9450, priceHT: 4169 }, { maxW: 10620, priceHT: 5090 }, { maxW: 11220, priceHT: 5343 }, { maxW: 12000, priceHT: 5668 }]
-    },
+     1500: [{ maxW: 4760, priceHT: 1850 }, { maxW: 5610, priceHT: 2041 }, { maxW: 6000, priceHT: 2175 }, { maxW: 7110, priceHT: 2744 }, { maxW: 8280, priceHT: 3204 }, { maxW: 9450, priceHT: 3284 }, { maxW: 10620, priceHT: 3577 }, { maxW: 11220, priceHT: 3747 }, { maxW: 12000, priceHT: 3961 }],
+     2000: [{ maxW: 4760, priceHT: 1910 }, { maxW: 5610, priceHT: 2114 }, { maxW: 6000, priceHT: 2265 }, { maxW: 7110, priceHT: 2841 }, { maxW: 8280, priceHT: 3317 }, { maxW: 9450, priceHT: 3409 }, { maxW: 10620, priceHT: 3717 }, { maxW: 11220, priceHT: 3898 }, { maxW: 12000, priceHT: 4126 }],
+     2500: [{ maxW: 4760, priceHT: 1989 }, { maxW: 5610, priceHT: 2207 }, { maxW: 6000, priceHT: 2366 }, { maxW: 7110, priceHT: 2975 }, { maxW: 8280, priceHT: 3460 }, { maxW: 9450, priceHT: 3569 }, { maxW: 10620, priceHT: 3886 }, { maxW: 11220, priceHT: 4083 }, { maxW: 12000, priceHT: 4326 }],
+     2750: [{ maxW: 4760, priceHT: 2012 }, { maxW: 5610, priceHT: 2234 }, { maxW: 6000, priceHT: 2405 }, { maxW: 7110, priceHT: 3012 }, { maxW: 8280, priceHT: 3506 }, { maxW: 9450, priceHT: 3617 }, { maxW: 10620, priceHT: 3944 }, { maxW: 11220, priceHT: 4145 }, { maxW: 12000, priceHT: 4396 }],
+     3000: [{ maxW: 4760, priceHT: 2055 }, { maxW: 5610, priceHT: 2283 }, { maxW: 6000, priceHT: 2468 }, { maxW: 7110, priceHT: 3087 }, { maxW: 8280, priceHT: 3587 }, { maxW: 9450, priceHT: 3703 }, { maxW: 10620, priceHT: 4038 }, { maxW: 11220, priceHT: 4248 }, { maxW: 12000, priceHT: 4515 }],
+     3250: [{ maxW: 4760, priceHT: 2177 }, { maxW: 5610, priceHT: 2411 }, { maxW: 6000, priceHT: 2602 }, { maxW: 7110, priceHT: 3336 }, { maxW: 8280, priceHT: 3769 }, { maxW: 9450, priceHT: 3917 }, { maxW: 10620, priceHT: 4274 }, { maxW: 11220, priceHT: 4478 }, { maxW: 12000, priceHT: 4746 }],
+     3500: [{ maxW: 4760, priceHT: 2217 }, { maxW: 5610, priceHT: 2456 }, { maxW: 6000, priceHT: 2653 }, { maxW: 7110, priceHT: 3362 }, { maxW: 8280, priceHT: 3809 }, { maxW: 9450, priceHT: 3990 }, { maxW: 10620, priceHT: 4350 }, { maxW: 11220, priceHT: 4562 }, { maxW: 12000, priceHT: 4839 }],
+     4000: [{ maxW: 4760, priceHT: 2315 }, { maxW: 5610, priceHT: 2568 }, { maxW: 6000, priceHT: 2777 }, { maxW: 7110, priceHT: 3451 }, { maxW: 8280, priceHT: 3896 }, { maxW: 9450, priceHT: 4169 }, { maxW: 10620, priceHT: 4545 }, { maxW: 11220, priceHT: 4767 }, { maxW: 12000, priceHT: 5057 }] 
+   },
     ceilingMountPrices: [
       { maxW: 5610, price: 526 },
       { maxW: 6000, price: 554 },
@@ -538,48 +695,28 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       { maxW: 11220, price: 1184 },
       { maxW: 12000, price: 1250 }
     ],
-    salesCoefficient: 1.0  // Coefficient de test pour vérification
-  },
-
-  // --- 9. DYNASTA PROMO (Page 40) ---
-  "dynasta_promo": {
-    id: "dynasta_promo",
-    name: "DYNASTA PROMO (Max 6m)",
-    type: "coffre",
-    shape: "galbe",
-    is_promo: true,
-    description: "La robustesse du Dynasta à prix promo (limité à 6m). Moteur Sunea iO.",
-    features: ["PRIX PROMO", "Largeur Max 6m", "Option LED Bras"],
-    image: "/images/stores/DYNASTA.png",
-    compatible_toile_types: ['ORCH'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 6000, max_projection: 4000, allowed_colors: ['9016', '1015', '7016'] },
-    armLogic: 'force_2_3_4',
-    minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3500: 4130, 4000: 4630 },
-    buyPrices: {
-      1500: [{ maxW: 4760, priceHT: 1650 }, { maxW: 5610, priceHT: 1741 }, { maxW: 6000, priceHT: 1775 }],
-      2000: [{ maxW: 4760, priceHT: 1710 }, { maxW: 5610, priceHT: 1814 }, { maxW: 6000, priceHT: 1865 }],
-      2500: [{ maxW: 4760, priceHT: 1789 }, { maxW: 5610, priceHT: 1907 }, { maxW: 6000, priceHT: 1966 }],
-      2750: [{ maxW: 4760, priceHT: 1812 }, { maxW: 5610, priceHT: 1934 }, { maxW: 6000, priceHT: 2005 }],
-      3000: [{ maxW: 4760, priceHT: 1855 }, { maxW: 5610, priceHT: 1983 }, { maxW: 6000, priceHT: 2068 }],
-      3500: [{ maxW: 4760, priceHT: 2017 }, { maxW: 5610, priceHT: 2156 }, { maxW: 6000, priceHT: 2253 }],
-      4000: [{ maxW: 4760, priceHT: 2115 }, { maxW: 5610, priceHT: 2268 }, { maxW: 6000, priceHT: 2377 }]
+    salesCoefficient: 1.8,  // Standard
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
     },
-    ceilingMountPrices: [
-      { maxW: 5610, price: 526 },
-      { maxW: 6000, price: 554 },
-      { maxW: 7110, price: 764 },
-      { maxW: 8280, price: 1020 },
-      { maxW: 10620, price: 1036 },
-      { maxW: 11220, price: 1184 },
-      { maxW: 12000, price: 1250 }
-    ],
-    salesCoefficient: 1.0  // Coefficient de test pour vérification
+    deliveryType: 'ready_up_to_6m',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 parties.",
+    colorStrategy: 'HYBRID_ARMOR',  // < 6m: +200€ si non standard, ≥ 6m: inclus
+    promoWidthThreshold: 6000,  // Seuil de bascule tarifaire
+    deliveryWarningThreshold: 6000  // Alerte livraison 2 parties
   },
 
-  // --- 10. BELHARRA (Page 40) ---
+  // --- 8. BELHARRA - STORAL ARMOR + (Page 40) ---
   "belharra": {
     id: "belharra",
-    name: "BELHARRA (Grande Largeur)",
+    slug: "store-banne-coffre-armor-design",
+    name: "STORAL ARMOR +",
+    marketingRange: "GAMME_ARMOR",
     type: "coffre",
     shape: "galbe",
     is_promo: false,
@@ -601,115 +738,69 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       4000: [{ maxW: 4760, priceHT: 2596 }, { maxW: 5610, priceHT: 2951 }, { maxW: 6000, priceHT: 3192 }, { maxW: 7110, priceHT: 3866 }, { maxW: 8280, priceHT: 4330 }, { maxW: 9450, priceHT: 4670 }, { maxW: 10620, priceHT: 5090 }, { maxW: 11220, priceHT: 5343 }, { maxW: 12000, priceHT: 5668 }]
     },
     ceilingMountPrices: [
-      { maxW: 5610, price: 526 },
-      { maxW: 6000, price: 554 },
-      { maxW: 7110, price: 764 },
+      { maxW: 5610, price: 544 },
+      { maxW: 6000, price: 573 },
+      { maxW: 7110, price: 791 },
       { maxW: 8280, price: 1020 },
-      { maxW: 10620, price: 1036 },
-      { maxW: 11220, price: 1184 },
-      { maxW: 12000, price: 1250 }
+      { maxW: 10620, price: 1072 },
+      { maxW: 11220, price: 1225 },
+      { maxW: 12000, price: 1294 }
     ],
     lambrequinEnroulablePrices: {
       manual: [
-        { maxW: 2390, price: 358 },
-        { maxW: 3580, price: 416 },
-        { maxW: 4760, price: 451 },
-        { maxW: 5610, price: 614 },
-        { maxW: 6000, price: 633 }
+        { maxW: 4760, price: 472},
+        { maxW: 5610, price: 650 },
+        { maxW: 6000, price: 667 }
       ],
       motorized: [
-        { maxW: 2390, price: 598 },
-        { maxW: 3580, price: 656 },
-        { maxW: 4760, price: 683 },
-        { maxW: 5610, price: 802 },
-        { maxW: 6000, price: 838 }
+        { maxW: 4760, price: 715 },
+        { maxW: 5610, price: 892 },
+        { maxW: 6000, price: 912 }
       ]
-    }
-  },
-
-  // --- 11. BELHARRA PROMO (Page 40) ---
-  "belharra_promo": {
-    id: "belharra_promo",
-    name: "BELHARRA PROMO (Max 6m)",
-    type: "coffre",
-    shape: "galbe",
-    is_promo: true,
-    description: "Le design Belharra à prix promo (limité à 6m). Moteur Sunea iO.",
-    features: ["PRIX PROMO", "Design Premium", "Option LED Bras"],
-    image: "/images/stores/BELHARRA.png",
-    compatible_toile_types: ['ORCH'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 6000, max_projection: 4000, allowed_colors: ['9016', '1015', '7016'] },
-    armLogic: 'force_2_3_4',
-    minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3500: 4130, 4000: 4630 },
-    buyPrices: {
-      1500: [{ maxW: 4760, priceHT: 1868 }, { maxW: 5610, priceHT: 1985 }, { maxW: 6000, priceHT: 2037 }],
-      2000: [{ maxW: 4760, priceHT: 1937 }, { maxW: 5610, priceHT: 2067 }, { maxW: 6000, priceHT: 2133 }],
-      2500: [{ maxW: 4760, priceHT: 2028 }, { maxW: 5610, priceHT: 2171 }, { maxW: 6000, priceHT: 2251 }],
-      2750: [{ maxW: 4760, priceHT: 2055 }, { maxW: 5610, priceHT: 2203 }, { maxW: 6000, priceHT: 2292 }],
-      3000: [{ maxW: 4760, priceHT: 2101 }, { maxW: 5610, priceHT: 2258 }, { maxW: 6000, priceHT: 2362 }],
-      3500: [{ maxW: 4760, priceHT: 2282 }, { maxW: 5610, priceHT: 2526 }, { maxW: 6000, priceHT: 2652 }],
-      4000: [{ maxW: 4760, priceHT: 2396 }, { maxW: 5610, priceHT: 2651 }, { maxW: 6000, priceHT: 2792 }]
     },
-    ceilingMountPrices: [
-      { maxW: 5610, price: 526 },
-      { maxW: 6000, price: 554 },
-      { maxW: 7110, price: 764 },
-      { maxW: 8280, price: 1020 },
-      { maxW: 10620, price: 1036 },
-      { maxW: 11220, price: 1184 },
-      { maxW: 12000, price: 1250 }
-    ],
-    lambrequinEnroulablePrices: {
-      manual: [
-        { maxW: 2390, price: 358 },
-        { maxW: 3580, price: 416 },
-        { maxW: 4760, price: 451 },
-        { maxW: 5610, price: 614 },
-        { maxW: 6000, price: 633 }
-      ],
-      motorized: [
-        { maxW: 2390, price: 598 },
-        { maxW: 3580, price: 656 },
-        { maxW: 4760, price: 683 },
-        { maxW: 5610, price: 802 },
-        { maxW: 6000, price: 838 }
-      ]
-    }
+    salesCoefficient: 1.9,  // Premium
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'ready_up_to_6m',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 parties.",
+    colorStrategy: 'HYBRID_ARMOR',  // < 6m: +200€ si non standard, ≥ 6m: inclus
+    promoWidthThreshold: 6000,  // Seuil de bascule tarifaire
+    deliveryWarningThreshold: 6000  // Alerte livraison 2 parties
   },
 
-  // --- 12. BELHARRA 2 (Page 42) ---
+  // --- 9. BELHARRA 2 - STORAL EXCELLENCE + (Bras SB100 Standard) ---
   "belharra_2": {
     id: "belharra_2",
-    name: "BELHARRA 2 (Full LED)",
+    slug: "store-banne-excellence-grandes-dimensions",
+    name: "STORAL EXCELLENCE +",
+    marketingRange: "GAMME_EXCELLENCE",
     type: "coffre",
     shape: "galbe",
     is_promo: false,
-    description: "Le Belharra ultime avec éclairage LED dans les bras ET le coffre.",
-    features: ["LED Coffre + Bras", "Design Luxe", "Lambrequin Enroulable"],
+    description: "Nouveau Design, store semi-coffre avec bras standards SB100.",
+    features: ["Auvent Intégré", "Bras SB100", "Jusqu'à 12m"],
     image: "/images/stores/BELHARRA_2.png",
-    compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
-    compatibility: { led_arms: true, led_box: true, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 12000, max_projection: 4000 },
+    compatible_toile_types: ['ORCH', 'SATT'],
+    compatibility: { led_arms: true, led_box: true, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 12000, max_projection: 3000 },
     armLogic: 'couples_4_6',
-    minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3250: 3880, 3500: 4130, 4000: 4630 },
+    minWidths: { 1500: 2050, 2000: 2050, 2500: 3130, 2750: 3380, 3000: 3630 },
     buyPrices: {
-      1500: [{ maxW: 2400, priceHT: 1666 }, { maxW: 3580, priceHT: 1932 }, { maxW: 4760, priceHT: 2269 }, { maxW: 5610, priceHT: 2507 }, { maxW: 6000, priceHT: 2673 }, { maxW: 7110, priceHT: 3371 }, { maxW: 8280, priceHT: 3936 }, { maxW: 9450, priceHT: 4035 }, { maxW: 10620, priceHT: 4397 }, { maxW: 11220, priceHT: 4863 }, { maxW: 12000, priceHT: 5129 }],
-      2000: [{ maxW: 3580, priceHT: 1992 }, { maxW: 4760, priceHT: 2344 }, { maxW: 5610, priceHT: 2597 }, { maxW: 6000, priceHT: 2779 }, { maxW: 7110, priceHT: 3492 }, { maxW: 8280, priceHT: 4075 }, { maxW: 9450, priceHT: 4188 }, { maxW: 10620, priceHT: 4567 }, { maxW: 11220, priceHT: 4605 }, { maxW: 12000, priceHT: 5196 }],
-      2500: [{ maxW: 3580, priceHT: 2073 }, { maxW: 4760, priceHT: 2445 }, { maxW: 5610, priceHT: 2711 }, { maxW: 6000, priceHT: 2908 }, { maxW: 7110, priceHT: 3655 }, { maxW: 8280, priceHT: 4254 }, { maxW: 9450, priceHT: 4382 }, { maxW: 10620, priceHT: 4775 }, { maxW: 11220, priceHT: 4789 }, { maxW: 12000, priceHT: 5504 }],
-      2750: [{ maxW: 3580, priceHT: 2098 }, { maxW: 4760, priceHT: 2474 }, { maxW: 5610, priceHT: 2746 }, { maxW: 6000, priceHT: 2954 }, { maxW: 7110, priceHT: 3700 }, { maxW: 8280, priceHT: 4407 }, { maxW: 9450, priceHT: 4443 }, { maxW: 10620, priceHT: 4847 }, { maxW: 11220, priceHT: 5069 }, { maxW: 12000, priceHT: 5718 }],
-      3000: [{ maxW: 3580, priceHT: 2176 }, { maxW: 4760, priceHT: 2546 }, { maxW: 5610, priceHT: 2813 }, { maxW: 6000, priceHT: 3021 }, { maxW: 7110, priceHT: 3767 }, { maxW: 8280, priceHT: 4367 }, { maxW: 9450, priceHT: 4495 }, { maxW: 10620, priceHT: 4888 }, { maxW: 11220, priceHT: 5094 }, { maxW: 12000, priceHT: 5400 }],
-      3250: [{ maxW: 3580, priceHT: 2199 }, { maxW: 4760, priceHT: 2576 }, { maxW: 5610, priceHT: 2848 }, { maxW: 6000, priceHT: 3055 }, { maxW: 7110, priceHT: 3803 }, { maxW: 8280, priceHT: 4407 }, { maxW: 9450, priceHT: 4546 }, { maxW: 10620, priceHT: 4949 }, { maxW: 11220, priceHT: 5217 }, { maxW: 12000, priceHT: 5502 }],
-      3500: [{ maxW: 4760, priceHT: 2723 }, { maxW: 5610, priceHT: 3101 }, { maxW: 6000, priceHT: 3348 }, { maxW: 7110, priceHT: 4135 }, { maxW: 8280, priceHT: 4673 }, { maxW: 9450, priceHT: 4901 }, { maxW: 10620, priceHT: 5349 }, { maxW: 11220, priceHT: 5431 }, { maxW: 12000, priceHT: 5948 }],
-      4000: [{ maxW: 4760, priceHT: 2848 }, { maxW: 5610, priceHT: 3237 }, { maxW: 6000, priceHT: 3502 }, { maxW: 7110, priceHT: 4241 }, { maxW: 8280, priceHT: 4751 }, { maxW: 9450, priceHT: 5123 }, { maxW: 10620, priceHT: 5584 }, { maxW: 11220, priceHT: 5862 }, { maxW: 12000, priceHT: 6218 }]
+      1500: [{ maxW: 2400, priceHT: 1666 }, { maxW: 3580, priceHT: 1932 }, { maxW: 4760, priceHT: 2269 }, { maxW: 5610, priceHT: 2507 }, { maxW: 6000, priceHT: 2673 }, { maxW: 7110, priceHT: 3371 }, { maxW: 8280, priceHT: 3936 }, { maxW: 9450, priceHT: 4035 }, { maxW: 10620, priceHT: 4397 }, { maxW: 11220, priceHT: 4605 }, { maxW: 12000, priceHT: 4863 }],
+      2000: [{ maxW: 2400, priceHT: 1992 }, { maxW: 3580, priceHT: 2344 }, { maxW: 4760, priceHT: 2597 }, { maxW: 6000, priceHT: 2779 }, { maxW: 7110, priceHT: 3492 }, { maxW: 8280, priceHT: 4075 }, { maxW: 9450, priceHT: 4188 }, { maxW: 10620, priceHT: 4567 }, { maxW: 11220, priceHT: 4789 }, { maxW: 12000, priceHT: 5069 }],
+      2500: [{ maxW: 3580, priceHT: 2073 }, { maxW: 4760, priceHT: 2445 }, { maxW: 5610, priceHT: 2711 }, { maxW: 6000, priceHT: 2908 }, { maxW: 7110, priceHT: 3655 }, { maxW: 8280, priceHT: 4254 }, { maxW: 9450, priceHT: 4382 }, { maxW: 10620, priceHT: 4775 }, { maxW: 11220, priceHT: 5016 }, { maxW: 12000, priceHT: 5318 }],
+      2750: [{ maxW: 3580, priceHT: 2098 }, { maxW: 4760, priceHT: 2474 }, { maxW: 5610, priceHT: 2746 }, { maxW: 6000, priceHT: 2954 }, { maxW: 7110, priceHT: 3700 }, { maxW: 8280, priceHT: 4305 }, { maxW: 9450, priceHT: 4443 }, { maxW: 10620, priceHT: 4847 }, { maxW: 11220, priceHT: 5094 }, { maxW: 12000, priceHT: 5402 }],
+      3000: [{ maxW: 4760, priceHT: 2524 }, { maxW: 5610, priceHT: 2806 }, { maxW: 6000, priceHT: 3030 }, { maxW: 7110, priceHT: 3791 }, { maxW: 8280, priceHT: 4407 }, { maxW: 9450, priceHT: 4554 }, { maxW: 10620, priceHT: 4962 }, { maxW: 11220, priceHT: 5217 }, { maxW: 12000, priceHT: 5547 }]
     },
     ceilingMountPrices: [
-      { maxW: 3580, price: 361 },
-      { maxW: 5610, price: 506 },
-      { maxW: 6000, price: 533 },
-      { maxW: 7110, price: 735 },
-      { maxW: 8280, price: 982 },
-      { maxW: 10620, price: 997 },
-      { maxW: 11220, price: 1140 },
-      { maxW: 12000, price: 1203 }
+      { maxW: 2400, price: 388 }, { maxW: 3580, price: 388 }, { maxW: 4760, price: 544 }, { maxW: 5610, price: 544 },
+      { maxW: 6000, price: 573 }, { maxW: 7110, price: 791 }, { maxW: 8280, price: 1056 }, { maxW: 9450, price: 1072 },
+      { maxW: 10620, price: 1072 }, { maxW: 11220, price: 1225 }, { maxW: 12000, price: 1294 }
     ],
     lambrequinEnroulablePrices: {
       manual: [
@@ -724,13 +815,67 @@ export const STORE_MODELS: Record<string, StoreModel> = {
         { maxW: 5610, price: 859 },
         { maxW: 6000, price: 878 }
       ]
-    }
+    },
+    salesCoefficient: 2.1,  // Très haut de gamme
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'ready_up_to_6m',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 parties.",
+    colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
+    deliveryWarningThreshold: 6000  // Alerte si > 6m
   },
 
-  // --- 13. MADRID (Monobloc Standard) ---
+  // --- 10. ANTIBES - STORAL CLASSIQUE (Monobloc Standard) ---
+  "antibes": {
+    id: "antibes",
+    slug: "store-banne-coffre-traditionnel-antibes",
+    name: "STORAL CLASSIQUE",
+    marketingRange: "GAMME_CLASSIQUE",
+    type: "monobloc",
+    shape: "carre",
+    is_promo: false,
+    description: "Store monobloc sans coffre avec tube carré 40×40. Solution économique et compacte.",
+    features: ["Encombrement réduit", "Prix attractif", "Installation simple"],
+    image: "/images/stores/store_monobloc.png",
+    compatible_toile_types: ['ORCH'],
+    compatibility: { led_arms: false, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 6000, max_projection: 3000 },
+    armLogic: 'standard_2',
+    minWidths: { 1500: 1800, 2000: 2300, 2500: 2800, 3000: 3300 },
+    buyPrices: {
+      1500: [{ maxW: 3000, priceHT: 800 }, { maxW: 4000, priceHT: 900 }, { maxW: 5000, priceHT: 1050 }, { maxW: 6000, priceHT: 1200 }],
+      2000: [{ maxW: 3000, priceHT: 880 }, { maxW: 4000, priceHT: 1000 }, { maxW: 5000, priceHT: 1180 }, { maxW: 6000, priceHT: 1350 }],
+      2500: [{ maxW: 3000, priceHT: 980 }, { maxW: 4000, priceHT: 1140 }, { maxW: 5000, priceHT: 1340 }, { maxW: 6000, priceHT: 1530 }],
+      3000: [{ maxW: 3000, priceHT: 1100 }, { maxW: 4000, priceHT: 1300 }, { maxW: 5000, priceHT: 1530 }, { maxW: 6000, priceHT: 1750 }]
+    },
+    ceilingMountPrices: [
+      { maxW: 6000, price: 100 }
+    ],
+    salesCoefficient: 1.8,  // Standard monobloc
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'ready_to_install',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser",
+    colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
+  },
+
+  // --- 11. MADRID - STORAL CLASSIQUE + (Monobloc Standard) ---
   "madrid": {
     id: "madrid",
-    name: "MADRID (Monobloc)",
+    slug: "store-banne-coffre-robuste-madrid",
+    name: "STORAL CLASSIQUE +",
+    marketingRange: "GAMME_CLASSIQUE",
     type: "monobloc",
     shape: "carre",
     is_promo: false,
@@ -752,42 +897,28 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     ceilingMountPrices: [
       { maxW: 6000, price: 150 },
       { maxW: 12000, price: 300 }
-    ]
-  },
-
-  // --- 14. BERLIN (Monobloc Poids Lourd) ---
-  "berlin": {
-    id: "berlin",
-    name: "BERLIN (Monobloc Poids Lourd)",
-    type: "monobloc",
-    shape: "carre",
-    is_promo: false,
-    description: "Store monobloc renforcé avec bras XXL jusqu'à 4.5m d'avancée. Certifié Classe 3 vent.",
-    features: ["Bras XXL 4.5m", "Classe 3 Vent", "Supports renforcés", "Option Auvent"],
-    image: "/images/stores/store_traditionnel.png",
-    compatible_toile_types: ['ORCH'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 4500 },
-    armLogic: 'couples_4_6',
-    minWidths: { 1500: 2050, 2000: 2550, 2500: 3050, 3000: 3550, 3500: 4050, 4000: 4550, 4500: 5050 },
-    buyPrices: {
-      1500: [{ maxW: 4000, priceHT: 1650 }, { maxW: 6000, priceHT: 1950 }, { maxW: 8000, priceHT: 2500 }, { maxW: 10000, priceHT: 3150 }, { maxW: 12000, priceHT: 3800 }],
-      2000: [{ maxW: 4000, priceHT: 1780 }, { maxW: 6000, priceHT: 2150 }, { maxW: 8000, priceHT: 2750 }, { maxW: 10000, priceHT: 3450 }, { maxW: 12000, priceHT: 4150 }],
-      2500: [{ maxW: 4000, priceHT: 1950 }, { maxW: 6000, priceHT: 2350 }, { maxW: 8000, priceHT: 3000 }, { maxW: 10000, priceHT: 3750 }, { maxW: 12000, priceHT: 4500 }],
-      3000: [{ maxW: 4000, priceHT: 2150 }, { maxW: 6000, priceHT: 2600 }, { maxW: 8000, priceHT: 3300 }, { maxW: 10000, priceHT: 4100 }, { maxW: 12000, priceHT: 4900 }],
-      3500: [{ maxW: 4000, priceHT: 2350 }, { maxW: 6000, priceHT: 2850 }, { maxW: 8000, priceHT: 3600 }, { maxW: 10000, priceHT: 4500 }, { maxW: 12000, priceHT: 5400 }],
-      4000: [{ maxW: 4000, priceHT: 2580 }, { maxW: 6000, priceHT: 3100 }, { maxW: 8000, priceHT: 3950 }, { maxW: 10000, priceHT: 4900 }, { maxW: 12000, priceHT: 5850 }],
-      4500: [{ maxW: 4000, priceHT: 2850 }, { maxW: 6000, priceHT: 3400 }, { maxW: 8000, priceHT: 4350 }, { maxW: 10000, priceHT: 5400 }, { maxW: 12000, priceHT: 6450 }]
+    ],
+    salesCoefficient: 1.9,  // Premium monobloc
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
     },
-    ceilingMountPrices: [
-      { maxW: 6000, price: 200 },
-      { maxW: 12000, price: 400 }
-    ]
+    deliveryType: 'ready_up_to_6m',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 parties.",
+    colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
+    deliveryWarningThreshold: 6000  // Alerte si > 6m
   },
 
-  // --- 15. GÈNES (Traditionnel Standard) ---
+  // --- 12. GENES - STORAL TRADITION (Traditionnel Standard) ---
   "genes": {
     id: "genes",
-    name: "GÈNES (Traditionnel)",
+    slug: "store-banne-loggia-sans-coffre",
+    name: "STORAL TRADITION",
+    marketingRange: "GAMME_TRADITION",
     type: "traditionnel",
     shape: "galbe",
     is_promo: false,
@@ -806,40 +937,27 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     },
     ceilingMountPrices: [
       { maxW: 6000, price: 100 }
-    ]
-  },
-
-  // --- 16. MONTRÉAL (Traditionnel Largeur) ---
-  "montreal": {
-    id: "montreal",
-    name: "MONTRÉAL (Traditionnel Grande Largeur)",
-    type: "traditionnel",
-    shape: "galbe",
-    is_promo: false,
-    description: "Version renforcée du store traditionnel pour couvrir de grandes largeurs à prix maîtrisé.",
-    features: ["Jusqu'à 12m", "Supports renforcés", "Prix maîtrisé", "Option Auvent"],
-    image: "/images/stores/store_traditionnel.png",
-    compatible_toile_types: ['ORCH'],
-    compatibility: { led_arms: false, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 3500 },
-    armLogic: 'couples_4_6',
-    minWidths: { 1500: 1800, 2000: 2300, 2500: 2800, 3000: 3300, 3500: 3800 },
-    buyPrices: {
-      1500: [{ maxW: 4000, priceHT: 1200 }, { maxW: 6000, priceHT: 1450 }, { maxW: 8000, priceHT: 1850 }, { maxW: 10000, priceHT: 2350 }, { maxW: 12000, priceHT: 2850 }],
-      2000: [{ maxW: 4000, priceHT: 1320 }, { maxW: 6000, priceHT: 1600 }, { maxW: 8000, priceHT: 2050 }, { maxW: 10000, priceHT: 2600 }, { maxW: 12000, priceHT: 3150 }],
-      2500: [{ maxW: 4000, priceHT: 1480 }, { maxW: 6000, priceHT: 1800 }, { maxW: 8000, priceHT: 2300 }, { maxW: 10000, priceHT: 2900 }, { maxW: 12000, priceHT: 3500 }],
-      3000: [{ maxW: 4000, priceHT: 1680 }, { maxW: 6000, priceHT: 2050 }, { maxW: 8000, priceHT: 2600 }, { maxW: 10000, priceHT: 3250 }, { maxW: 12000, priceHT: 3900 }],
-      3500: [{ maxW: 4000, priceHT: 1920 }, { maxW: 6000, priceHT: 2350 }, { maxW: 8000, priceHT: 2950 }, { maxW: 10000, priceHT: 3700 }, { maxW: 12000, priceHT: 4450 }]
+    ],
+    salesCoefficient: 1.6,  // Économique
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
     },
-    ceilingMountPrices: [
-      { maxW: 6000, price: 150 },
-      { maxW: 12000, price: 300 }
-    ]
+    deliveryType: 'disassembled',
+    deliveryNote: "Store livré démonté (pose par nos soins ou par un professionnel recommandé)",
+    colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
   },
 
-  // --- 17. BRAS CROISÉS (Spécialité pour balcons étroits) ---
+  // --- 13. BRAS CROISÉS - STORAL BRAS CROISÉS (Spécialité pour balcons étroits) ---
   "bras_croises": {
     id: "bras_croises",
-    name: "BRAS CROISÉS (Balcons Étroits)",
+    slug: "store-banne-balcon-etroit-bras-croises",
+    name: "STORAL BRAS CROISÉS",
+    marketingRange: "GAMME_SPECIAL",
     type: "specialite",
     shape: "carre",
     is_promo: false,
@@ -859,7 +977,19 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     },
     ceilingMountPrices: [
       { maxW: 4000, price: 150 }
-    ]
+    ],
+    salesCoefficient: 1.9,  // Spécialité
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'ready_to_install',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser",
+    colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
   }
 };
 
@@ -1133,6 +1263,11 @@ export function calculateFinalPrice(config: {
   const prixStoreBaseAchatHT = tier.priceHT;
   const prixOptionsAchatHT = totalAchatHT - prixStoreBaseAchatHT;
   
+  // Helper pour obtenir le coefficient d'une option (spécifique au produit ou global)
+  const getOptionCoeff = (optionKey: keyof typeof CATALOG_SETTINGS.OPTIONS_COEFFICIENTS) => {
+    return model.optionsCoefficients?.[optionKey] ?? CATALOG_SETTINGS.OPTIONS_COEFFICIENTS[optionKey];
+  };
+  
   // Appliquer coefficient spécifique au store (ou COEFF_MARGE par défaut)
   const coeffStore = model.salesCoefficient ?? CATALOG_SETTINGS.COEFF_MARGE;
   let totalVenteHT = prixStoreBaseAchatHT * coeffStore;
@@ -1149,18 +1284,18 @@ export function calculateFinalPrice(config: {
     const ledGrid = OPTIONS_PRICES.LED_ARMS[usedProjection];
     if (ledGrid) {
       const ledPriceAchatHT = ledGrid[nbBras] || ledGrid[2] || 0;
-      totalVenteHT += ledPriceAchatHT * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.LED_ARMS;
+      totalVenteHT += ledPriceAchatHT * getOptionCoeff('LED_ARMS');
     }
   }
   
   // LED Coffre
   if (config.options.ledBox && model.compatibility.led_box) {
-    totalVenteHT += OPTIONS_PRICES.LED_CASSETTE * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.LED_CASSETTE;
+    totalVenteHT += OPTIONS_PRICES.LED_CASSETTE * getOptionCoeff('LED_CASSETTE');
   }
   
   // RAL spécifique
   if (config.options.isCustomColor) {
-    totalVenteHT += OPTIONS_PRICES.FRAME_SPECIFIC_RAL * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.FRAME_COLOR_CUSTOM;
+    totalVenteHT += OPTIONS_PRICES.FRAME_SPECIFIC_RAL * getOptionCoeff('FRAME_COLOR_CUSTOM');
   }
   
   // Pose plafond
@@ -1169,14 +1304,14 @@ export function calculateFinalPrice(config: {
     if (ceilingGrid && ceilingGrid.length > 0) {
       const tier = ceilingGrid.find(t => config.width <= t.maxW);
       if (tier) {
-        totalVenteHT += tier.price * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.CEILING_MOUNT;
+        totalVenteHT += tier.price * getOptionCoeff('CEILING_MOUNT');
       }
     }
   }
   
   // Lambrequin Fixe
   if (config.options.lambrequinFixe && model.compatibility.lambrequin_fixe) {
-    totalVenteHT += OPTIONS_PRICES.LAMBREQUIN_FIXE * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.LAMBREQUIN_FIXE;
+    totalVenteHT += OPTIONS_PRICES.LAMBREQUIN_FIXE * getOptionCoeff('LAMBREQUIN_FIXE');
   }
   
   // Lambrequin Déroulant
@@ -1189,7 +1324,7 @@ export function calculateFinalPrice(config: {
       if (tiers && tiers.length > 0) {
         const tier = tiers.find(t => config.width <= t.maxW && t.maxW <= 6000);
         if (tier) {
-          totalVenteHT += tier.price * CATALOG_SETTINGS.OPTIONS_COEFFICIENTS.LAMBREQUIN_ENROULABLE;
+          totalVenteHT += tier.price * getOptionCoeff('LAMBREQUIN_ENROULABLE');
         }
       }
     }
@@ -1222,3 +1357,212 @@ export function calculateFinalPrice(config: {
     }
   };
 }
+// ==========================================
+// 7. MAPPING PRODUITS PAR GAMME MARKETING
+// ==========================================
+// Export simplifié pour référence rapide des produits par gamme
+
+export const products = {
+  // --- GAMME COMPACT ---
+  kissimy_promo: { label: "STORAL COMPACT", marketingRange: "GAMME_COMPACT" }, 
+  kitanguy: { label: "STORAL COMPACT +", marketingRange: "GAMME_COMPACT" },
+
+  // --- GAMME ARMOR ---
+  dynasta: { label: "STORAL ARMOR", marketingRange: "GAMME_ARMOR" },
+  belharra: { label: "STORAL ARMOR +", marketingRange: "GAMME_ARMOR" },
+
+  // --- GAMME EXCELLENCE ---
+  kitanguy_2: { label: "STORAL EXCELLENCE", marketingRange: "GAMME_EXCELLENCE" },
+  belharra_2: { label: "STORAL EXCELLENCE +", marketingRange: "GAMME_EXCELLENCE" },
+
+  // --- GAMME KUBE ---
+  heliom: { label: "STORAL KUBE", marketingRange: "GAMME_KUBE" },
+  heliom_plus: { label: "STORAL KUBE +", marketingRange: "GAMME_KUBE" },
+
+  // --- GAMME CLASSIQUE (Monobloc) ---
+  antibes: { label: "STORAL CLASSIQUE", marketingRange: "GAMME_CLASSIQUE" },
+  madrid: { label: "STORAL CLASSIQUE +", marketingRange: "GAMME_CLASSIQUE" },
+
+  // --- SPÉCIAUX ---
+  kalyo: { label: "STORAL K", marketingRange: "GAMME_KARE_COMPACT" },
+  bras_croises: { label: "STORAL BRAS CROISÉS", marketingRange: "GAMME_SPECIAL" },
+  genes: { label: "STORAL TRADITION", marketingRange: "GAMME_TRADITION" }
+};
+
+// ==========================================
+// 8. MÉTADONNÉES DES GAMMES MARKETING
+// ==========================================
+// Configuration pour l'affichage des gammes sur la page d'accueil
+
+export interface MarketingRange {
+  id: string;
+  label: string;
+  tagline: string;
+  imageUrl: string;
+  description: string;
+  color: string;
+  gradientFrom: string;
+  gradientTo: string;
+  order: number;
+  badge?: string;
+}
+
+export const MARKETING_RANGES: Record<string, MarketingRange> = {
+  GAMME_COMPACT: {
+    id: "GAMME_COMPACT",
+    label: "Gamme Compact",
+    tagline: "L'Essentiel",
+    imageUrl: "/images/stores/KISSIMY.png",
+    description: "Votre premier store banne à prix mini, sans compromis sur la qualité",
+    color: "blue",
+    gradientFrom: "from-blue-500",
+    gradientTo: "to-blue-600",
+    order: 1,
+    badge: "PROMO"
+  },
+  GAMME_ARMOR: {
+    id: "GAMME_ARMOR",
+    label: "Gamme Armor",
+    tagline: "Le Géant des Terrasses",
+    imageUrl: "/images/stores/DYNASTA.png",
+    description: "Jusqu'à 12m de large, la référence pour les grandes surfaces et CHR",
+    color: "red",
+    gradientFrom: "from-red-500",
+    gradientTo: "to-red-600",
+    order: 2
+  },
+  GAMME_EXCELLENCE: {
+    id: "GAMME_EXCELLENCE",
+    label: "Gamme Excellence",
+    tagline: "Le Haut de Gamme",
+    imageUrl: "/images/stores/KITANGUY_2.png",
+    description: "Le luxe à la française, finitions exceptionnelles et options premium",
+    color: "purple",
+    gradientFrom: "from-purple-500",
+    gradientTo: "to-purple-600",
+    order: 3,
+    badge: "PREMIUM"
+  },
+  GAMME_KUBE: {
+    id: "GAMME_KUBE",
+    label: "Gamme Kube",
+    tagline: "Design Moderne",
+    imageUrl: "/images/stores/HELIOM.png",
+    description: "Le design au carré, l'élégance géométrique pour l'architecture contemporaine",
+    color: "indigo",
+    gradientFrom: "from-indigo-500",
+    gradientTo: "to-indigo-600",
+    order: 4
+  },
+  GAMME_CLASSIQUE: {
+    id: "GAMME_CLASSIQUE",
+    label: "Gamme Classique",
+    tagline: "Monobloc sur Mesure",
+    imageUrl: "/images/stores/store_monobloc.png",
+    description: "Le monobloc réinventé, robuste et élégant pour tous les styles",
+    color: "amber",
+    gradientFrom: "from-amber-500",
+    gradientTo: "to-amber-600",
+    order: 5
+  },
+  GAMME_KARE_COMPACT: {
+    id: "GAMME_KARE_COMPACT",
+    label: "Karé Compact",
+    tagline: "Design Polyvalent",
+    imageUrl: "/images/stores/KALY_O.png",
+    description: "Le coffre carré compact, solution polyvalente avec options lambrequin enroulable",
+    color: "teal",
+    gradientFrom: "from-teal-500",
+    gradientTo: "to-teal-600",
+    order: 6
+  },
+  GAMME_SPECIAL: {
+    id: "GAMME_SPECIAL",
+    label: "Bras Croisés",
+    tagline: "Configuration Unique",
+    imageUrl: "/images/stores/store-banne-coffre.jpeg",
+    description: "La solution exclusive pour balcons étroits : bras superposés, avancée > largeur",
+    color: "pink",
+    gradientFrom: "from-pink-500",
+    gradientTo: "to-pink-600",
+    order: 7
+  },
+  GAMME_TRADITION: {
+    id: "GAMME_TRADITION",
+    label: "Gamme Tradition",
+    tagline: "L'Authentique",
+    imageUrl: "/images/stores/store_traditionnel.png",
+    description: "Le store traditionnel pour les bricoleurs avertis, à assembler soi-même",
+    color: "green",
+    gradientFrom: "from-green-500",
+    gradientTo: "to-green-600",
+    order: 8
+  }
+};
+
+// ==========================================
+// 9. HELPERS POUR LES GAMMES
+// ==========================================
+
+/**
+ * Grouper les modèles de stores par gamme marketing
+ */
+export function getProductsByRange(): Record<string, StoreModel[]> {
+  const grouped: Record<string, StoreModel[]> = {};
+  
+  Object.values(STORE_MODELS).forEach(model => {
+    const range = model.marketingRange || 'AUTRES';
+    if (!grouped[range]) {
+      grouped[range] = [];
+    }
+    grouped[range].push(model);
+  });
+  
+  return grouped;
+}
+
+/**
+ * Obtenir toutes les gammes triées par ordre d'affichage
+ */
+export function getSortedRanges(): MarketingRange[] {
+  return Object.values(MARKETING_RANGES).sort((a, b) => a.order - b.order);
+}
+
+/**
+ * Obtenir le prix minimum d'une gamme
+ */
+export function getMinPriceForRange(rangeId: string): number {
+  const models = getProductsByRange()[rangeId] || [];
+  if (models.length === 0) return 0;
+  
+  const prices = models.map(model => getMinimumPrice(model));
+  return Math.min(...prices);
+}
+
+/**
+ * Compter le nombre de modèles dans une gamme
+ */
+export function getModelCountForRange(rangeId: string): number {
+  const models = getProductsByRange()[rangeId] || [];
+  return models.length;
+}
+
+/**
+ * Méta-descriptions SEO personnalisées pour chaque produit
+ * Optimisées pour Google (max 155 caractères, keywords ciblés, appel à l'action)
+ */
+export const META_DESCRIPTIONS: Record<string, string> = {
+  'store-banne-coffre-compact-sur-mesure': "Le STORAL COMPACT : store banne idéal pour petits balcons. Fabrication sur mesure, coffre intégral et prix direct usine. Devis immédiat avec notre IA !",
+  'store-banne-coffre-compact-renforce': "Alliez compacité et robustesse avec le COMPACT+. Structure renforcée pour une tenue au vent optimale. Personnalisez votre store en ligne avec l'IA.",
+  'store-banne-grande-largeur-armor': "Protégez vos grandes terrasses avec le STORAL ARMOR. Jusqu'à 12m de large. Bras renforcés haute résistance. Configurez votre projet sur mesure dès maintenant.",
+  'store-banne-coffre-armor-design': "Le store ARMOR+ : le mariage parfait entre design moderne et grande avancée. Finition premium, coffre galbé et options LED. Qualité française sur mesure.",
+  'store-banne-coffre-excellence-led': "Illuminez vos soirées avec le STORAL EXCELLENCE. LED intégrées, design épuré et technologie domotique. Le store banne haut de gamme par excellence.",
+  'store-banne-coffre-rectangulaire-kube': "Design minimaliste et cubique pour architectures modernes. Le STORAL KUBE s'intègre parfaitement à votre façade. Qualité premium et design épuré.",
+  'store-banne-design-architecte-kube': "Le KUBE+ pousse le design encore plus loin. Finitions invisibles, grande avancée et esthétique cubique. Le choix des architectes pour votre terrasse.",
+  'store-banne-renovation-coffre-compact': "Le STORAL K est spécialement conçu pour la rénovation. Installation simplifiée, coffre ultra-compact et protection maximale de la toile.",
+  'store-banne-excellence-grandes-dimensions': "L'EXCELLENCE+ pour vos projets XXL. Confort domotique, éclairage LED puissant et structure ultra-robuste. Le luxe et la performance sur mesure.",
+  'store-banne-coffre-traditionnel-antibes': "Retrouvez le charme du classique avec le STORAL ANTIBES. Coffre de protection traditionnel, mécanisme éprouvé et large choix de toiles.",
+  'store-banne-coffre-robuste-madrid': "Le STORAL MADRID offre une robustesse à toute épreuve pour un usage intensif. Fiabilité mécanique et esthétique intemporelle pour votre maison.",
+  'store-banne-loggia-sans-coffre': "Idéal pour les loggias et balcons abrités, le STORAL TRADITION offre une protection solaire efficace et économique sans encombrement inutile.",
+  'store-banne-balcon-etroit-bras-croises': "La solution pour les terrasses étroites : les bras croisés permettent une avancée supérieure à la largeur du store. Ingénieux et pratique.",
+};

@@ -63,20 +63,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.log('📦 Raw cart data from API:', data);
         console.log('📦 Items count:', data.items?.length || 0);
         
-        const mappedItems = data.items.map((item: any) => ({
-          id: item.id,
-          sessionId: item.session_id,
-          productId: item.product_id,
-          productType: item.product_type,
-          productName: item.product_name,
-          basePrice: item.base_price,
-          configuration: item.configuration,
-          quantity: item.quantity,
-          pricePerUnit: item.price_per_unit,
-          totalPrice: item.total_price,
-          addedAt: new Date(item.added_at || item.created_at),
-          updatedAt: new Date(item.updated_at),
-        }));
+        const mappedItems = data.items.map((item: any) => {
+          console.log('📦 Mapping item:', {
+            id: item.id,
+            product_id: item.product_id,
+            product_name: item.product_name
+          });
+          return {
+            id: item.id,
+            sessionId: item.session_id,
+            productId: item.product_id,
+            productType: item.product_type,
+            productName: item.product_name,
+            basePrice: item.base_price,
+            configuration: item.configuration,
+            quantity: item.quantity,
+            pricePerUnit: item.price_per_unit,
+            totalPrice: item.total_price,
+            addedAt: new Date(item.added_at || item.created_at),
+            updatedAt: new Date(item.updated_at),
+          };
+        });
         
         console.log('📦 Mapped items:', mappedItems);
         

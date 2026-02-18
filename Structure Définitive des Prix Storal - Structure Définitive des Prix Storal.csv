@@ -1,0 +1,16 @@
+Gamme Storal,Modèle Matest,Clé Code,Règle de Prix,Couleur de coffres,configurateur IA,type de livraison
+STORAL COMPACT,Kissimy,kissimy_promo,PROMO,"RAL 9010, RAL 1015 , RAL 7016",oui,"fini, toile réglé et juste a poser"
+STORAL COMPACT +,Kitanguy,kitanguy,STANDARD ,(Couleurs incluses),oui,"fini, toile réglé et juste a poser"
+STORAL ARMOR,Dynasta,dynasta,HYBRIDE : Promo (<6m) / Std (>6m),"RAL 9010, RAL 1015 , RAL 7016 + plus value pour store < 6M pour une autre couleur matest",oui mais pose par nos soins au dela de 6 m ou par un professionnel ,"fini, toile réglé et juste a poser jusqu'a 6 m, et au dela en 2 parties "
+STORAL ARMOR +,Belharra,belharra,HYBRIDE : Promo (<6m) / Std (>6m),"RAL 9010, RAL 1015 , RAL 7016 + plus value pour store < 6M pour une autre couleur matest",oui mais pose par nos soins au dela de 6 m ou par un professionnel ,"fini, toile réglé et juste a poser jusqu'a 6 m, et au dela en 2 parties "
+STORAL EXCELLENCE,Kitanguy 2,kitanguy_2,STANDARD (Prix catalogue),(Couleurs incluses),oui,"fini, toile réglé et juste a poser"
+STORAL EXCELLENCE +,Belharra 2,belharra_2,STANDARD (Prix catalogue),(Couleurs incluses),oui mais pose par nos soins au dela de 6 m ou par un professionnel ,"fini, toile réglé et juste a poser jusqu'a 6 m, et au dela en 2 parties "
+STORAL KUBE,Héliom,heliom,STANDARD,(Couleurs incluses),oui,"fini, toile réglé et juste a poser"
+STORAL KUBE +,Héliom +,heliom_plus,STANDARD,(Couleurs incluses),oui,"fini, toile réglé et juste a poser"
+STORAL K,Kaly'o,kalyo,STANDARD,(Couleurs incluses),oui,"fini, toile réglé et juste a poser"
+STORAL CLASSIQUE,Antibes,Antibes,STANDARD,(Couleurs incluses),oui,"fini, toile réglé et juste a poser"
+STORAL CLASSIQUE +,Madrid,madrid,STANDARD,(Couleurs incluses),oui mais pose par nos soins au dela de 6 m ou par un professionnel ,"fini, toile réglé et juste a poser jusqu'a 6 m, et au dela en 2 parties "
+STOAL BRAS CROISES,bras croisés,bras_croises,STANDARD,(Couleurs incluses),oui,"fini, toile réglé et juste a poser"
+STORAL TRADITION,genes,genes,STANDARD,(Couleurs incluses),oui mais pose par nos soins au dela de 6 m ou par un professionnel ,démonté
+STORAL TRADITION +,menton,menton,STANDARD,(Couleurs incluses),oui mais pose par nos soins ou par un professionnel ,démonté
+STORAL TRADITION 18m,lisbonne,lisbonne,STANDARD,(Couleurs incluses),non,démonté

@@ -47,7 +47,36 @@ export default function CGVPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 3 - Commandes et Validation</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 3 - Utilisation de l&apos;assistant IA</h2>
+            <p className="text-gray-700 mb-4">
+              L&apos;assistant conversationnel basé sur Google Gemini est fourni à titre indicatif pour faciliter 
+              votre recherche de produits. Les informations fournies par l&apos;IA sont générées automatiquement et, 
+              bien que vérifiées par nos algorithmes, peuvent nécessiter une validation technique.
+            </p>
+            
+            <ul className="list-disc list-inside space-y-2 text-gray-700 ml-2">
+              <li>
+                Les configurations et prix proposés par l&apos;assistant sont indicatifs et seront confirmés 
+                lors de la validation de devis.
+              </li>
+              <li>
+                En cas de divergence entre les recommandations de l&apos;IA et les fiches techniques officielles, 
+                ces dernières prévalent.
+              </li>
+              <li>
+                Le Client reconnaît que l&apos;utilisation de l&apos;assistant est volontaire et ne remplace pas 
+                les conseils d&apos;un professionnel pour des installations complexes.
+              </li>
+            </ul>
+            
+            <p className="text-gray-700 mt-4 bg-blue-50 p-4 rounded border border-blue-200">
+              Pour toute installation nécessitant une étude technique approfondie, nous recommandons 
+              de contacter notre service commercial au <strong>01 85 09 34 46</strong>.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 4 - Commandes et Validation</h2>
             <p className="text-gray-700">
               Les informations contractuelles sont présentées en langue française. La validation de la commande vaut 
               acceptation des présentes CGV. Le Client est responsable de l'exactitude des données fournies (adresse, email, 
@@ -56,7 +85,7 @@ export default function CGVPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 4 - Paiement</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 5 - Paiement</h2>
             <p className="text-gray-700">
               Le règlement s'effectue intégralement à la commande par carte bancaire via la plateforme sécurisée Stripe. 
               Le débit est immédiat. En cas de refus bancaire, la commande est automatiquement annulée.
@@ -64,7 +93,7 @@ export default function CGVPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 5 - Absence de Droit de Rétractation (Sur-Mesure)</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 6 - Absence de Droit de Rétractation (Sur-Mesure)</h2>
             <p className="text-gray-700 mb-4">
               Conformément à l'article L.221-28 du Code de la consommation, le droit de rétractation ne s'applique pas aux 
               contrats de fourniture de biens confectionnés selon les spécifications du consommateur ou nettement personnalisés. 
@@ -78,7 +107,7 @@ export default function CGVPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 6 - Livraison</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 7 - Livraison</h2>
             <p className="text-gray-700 mb-4">
               La livraison est effectuée par transporteur spécialisé. La livraison s'entend "en limite de propriété" 
               (au pied du camion). Le transporteur n'est pas tenu de monter les produits à l'étage ou d'entrer dans le domicile.
@@ -94,7 +123,7 @@ export default function CGVPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 7 - Garanties</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 8 - Garanties</h2>
             <p className="text-gray-700 mb-4">
               Les produits bénéficient de la garantie légale de conformité (2 ans) et de la garantie contre les vices cachés. 
             </p>
@@ -106,7 +135,7 @@ export default function CGVPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 8 - Médiation</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Article 9 - Médiation</h2>
             <p className="text-gray-700 mb-4">
               En cas de litige, le Client s'adressera en priorité au service client de STORAL pour obtenir une solution amiable. 
               À défaut, le Client peut recourir à la plateforme européenne de Règlement en Ligne des Litiges (RLL) :

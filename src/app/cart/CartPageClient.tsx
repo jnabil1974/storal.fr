@@ -33,15 +33,18 @@ export default function CartPageClient() {
 
   // Format configuration for display
   const formatConfigValue = (key: string, value: any): string => {
+    // Les dimensions du store (width, depth, projection) sont stockées en cm
     if (key === 'width' && typeof value === 'number') {
-      return `${(value / 10).toFixed(1)} cm`;
+      return `${(value / 100).toFixed(2)} m`;
     }
     if (key === 'projection' || key === 'depth') {
-      return `${(value / 10).toFixed(1)} cm`;
+      return `${(value / 100).toFixed(2)} m`;
     }
+    // Les dimensions de terrasse sont aussi en cm
     if (key === 'terraceLength' || key === 'terraceWidth') {
       return `${(value / 100).toFixed(2)} m`;
     }
+    // La hauteur de pose est déjà en mètres
     if (key === 'installHeight' && typeof value === 'number') {
       return `${value.toFixed(2)} m`;
     }

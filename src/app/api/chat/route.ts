@@ -17,6 +17,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const messages = body.messages || [];
     const honeypot = body.honeypot || ''; // Champ honeypot pour détecter les bots
+    const configData = body.configData || null; // Données du configurateur inline
 
     // 🍯 PROTECTION ANTI-BOT : Si honeypot rempli = bot détecté
     if (honeypot && honeypot.trim() !== '') {
@@ -88,10 +89,93 @@ export async function POST(req: Request) {
     // 🔄 GÉNÉRATION DYNAMIQUE du catalogue depuis catalog-data.ts
     const dynamicCatalog = generateDynamicCatalog();
 
+    // 🎯 DÉTECTION DES DIMENSIONS DANS LE MESSAGE DE L'UTILISATEUR
+    const lastMessageContent = messages[messages.length - 1]?.content || '';
+    const dimensionMatch = lastMessageContent.match(/(\d+\.?\d*)m de large.*?(\d+\.?\d*)m d'avancée/i);
+    const modelMatch = lastMessageContent.match(/modèle\s+([A-Z][^\s]+(?:\s+[A-Z][^\s]+)*)/i);
+    
+    let detectedWidth = null;
+    let detectedProjection = null;
+    let detectedModelName = null;
+    
+    if (dimensionMatch) {
+      detectedWidth = dimensionMatch[1];
+      detectedProjection = dimensionMatch[2];
+    }
+    
+    if (modelMatch) {
+      detectedModelName = modelMatch[1];
+    }
+
+    // 🎯 CONSTRUCTION DU MESSAGE CONTEXTUEL SI CONFIGURATION PRÉ-REMPLIE
+    let contextualIntro = '';
+    if ((configData && (configData.width || configData.projection || configData.modelId)) || (detectedWidth && detectedProjection)) {
+      const widthM = detectedWidth || (configData?.width ? (Number(configData.width) / 1000).toFixed(2) : null);
+      const projectionM = detectedProjection || (configData?.projection ? (Number(configData.projection) / 1000).toFixed(2) : null);
+      const modelName = detectedModelName || (configData?.modelId ? STORE_MODELS[configData.modelId]?.name : null);
+      
+      contextualIntro = `
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+🎯 CONFIGURATION PRÉ-SÉLECTIONNÉE DÉTECTÉE
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+⚠️ PRIORITÉ ABSOLUE - MESSAGE D'ACCUEIL CONTEXTUEL :
+
+L'utilisateur arrive depuis le configurateur en ligne avec des données pré-remplies.
+
+📊 DONNÉES DÉTECTÉES :
+${modelName ? `- Modèle : ${modelName}` : ''}
+${widthM ? `- Largeur : ${widthM}m` : ''}
+${projectionM ? `- Avancée : ${projectionM}m` : ''}
+
+🗣️ TON MESSAGE D'ACCUEIL DOIT OBLIGATOIREMENT :
+
+1. **Confirmer la sélection** de manière chaleureuse :
+   "Bonjour ! 👋 Je vois que vous avez configuré ${modelName ? `un **${modelName}**` : 'un store banne'} ${widthM && projectionM ? `de **${widthM}m de large** × **${projectionM}m d'avancée**` : ''}.${widthM && Number(widthM) >= 6 ? `\n\n✨ C'est un **beau projet de grande envergure** !` : ''}"
+
+2. **Saluer l'engagement** :
+   "Excellent ! Vous avez déjà fait le plus dur. Je vais maintenant vous poser quelques questions techniques essentielles pour finaliser votre configuration et vous garantir une installation parfaite."
+
+3. **Poser IMMÉDIATEMENT les 2 questions techniques critiques** (pas de bavardage inutile) :
+
+   📋 **Question 1 - Support de fixation** :
+   "🔧 Sur quel type de support allez-vous fixer votre store ?
+   - **Béton** (mur plein en béton)
+   - **Brique** (mur en briques pleines)
+   - **Bois** (bardage ou structure bois)
+   - **Chevrons apparents** (pose sous avancée de toit)
+   
+   Cette information est cruciale pour adapter la visserie et garantir une fixation solide."
+
+   📋 **Question 2 - Obstacles** :
+   "🚧 Y a-t-il des **obstacles** sur votre mur de pose ?
+   - Volets roulants
+   - Luminaires extérieurs
+   - Descente de gouttière
+   - Autre obstacle
+   - Aucun obstacle
+   
+   Cela nous permettra de prévoir les adaptations nécessaires."
+
+⚠️ IMPORTANT :
+- **NE REDEMANDE PAS** les dimensions (${widthM || 'X'}m × ${projectionM || 'Y'}m) - elles sont déjà validées
+- **NE REDEMANDE PAS** le modèle${modelName ? ` (${modelName})` : ''} - déjà sélectionné
+- **PASSE DIRECTEMENT** aux questions techniques (support + obstacles)
+- **RESTE BREF ET EFFICACE** - Le client veut avancer rapidement
+- **NE POSE PAS** de questions sur l'orientation ou l'environnement pour l'instant
+- **ATTENDS** les réponses du client sur le support ET les obstacles avant de continuer
+
+🎯 APRÈS LES RÉPONSES :
+Une fois que le client a répondu aux 2 questions (support + obstacles), tu pourras passer à la PHASE 2 (Orientation/Exposition) du flux normal.
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+`;
+    }
+
     const SYSTEM_PROMPT = `Tu es "Agent Storal", un expert en stores bannes. Ton but est de guider l'utilisateur pour configurer son store idéal.
 
 ${dynamicCatalog}
-
+${contextualIntro}
 ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 🎯 FLUX GUIDÉ - 4 PHASES PRODUCTIVES
 ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
