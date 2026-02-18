@@ -9,6 +9,7 @@ import TechnicalSchemaImage from '@/components/TechnicalSchemaImage';
 import InlineConfigurator from '@/components/InlineConfigurator';
 import ExpertAdvice from '@/components/ExpertAdvice';
 import ProductSchema from '@/components/ProductSchema';
+import ProductSpecifications from '@/components/ProductSpecifications';
 
 /**
  * Génère les paramètres statiques pour toutes les pages produits
@@ -173,6 +174,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
               {/* CONFIGURATEUR INTÉGRÉ */}
               <InlineConfigurator model={model} />
+
+              {/* FICHE TECHNIQUE SEO-OPTIMISÉE */}
+              <div className="mt-8">
+                <ProductSpecifications />
+              </div>
             </div>
           </div>
         </div>
@@ -185,10 +191,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight mb-3">
-              Caractéristiques Techniques
+              Dimensions et Configuration sur Mesure
             </h2>
             <p className="text-gray-600 text-lg">
-              Tout ce que vous devez savoir sur les dimensions et options
+              Toutes les dimensions disponibles et options de personnalisation pour votre projet
             </p>
           </div>
 
@@ -292,7 +298,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <div className="mt-12 bg-white rounded-2xl shadow-xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
               <span>⚙️</span>
-              Options & Personnalisations Disponibles
+              Options Premium et Personnalisations Disponibles
             </h3>
             <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div className={`p-4 rounded-xl border-2 ${model.compatibility.led_arms ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200'}`}>
@@ -346,10 +352,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight mb-3">
-              Spécifications & Schémas Techniques
+              Plans d'Installation et Schémas de Montage
             </h2>
             <p className="text-gray-600 text-lg">
-              Plans détaillés pour comprendre l'encombrement et l'installation
+              Plans techniques détaillés pour comprendre l'encombrement, les fixations murales et l'inclinaison
             </p>
           </div>
 
@@ -358,7 +364,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 shadow-lg">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <span className="text-2xl">📐</span>
-                Encombrement du Coffre
+                Dimensions du Coffre et Encombrement Mural
               </h3>
               <TechnicalSchemaImage
                 src={`/images/produits/${model.id}/tech/encombrement.jpg`}
@@ -374,7 +380,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 shadow-lg">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <span className="text-2xl">📏</span>
-                Inclinaison & Projection
+                Angle d'Inclinaison et Projection Maximale
               </h3>
               <TechnicalSchemaImage
                 src={`/images/produits/${model.id}/tech/inclinaison.jpg`}
