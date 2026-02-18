@@ -20,6 +20,8 @@ export interface CartState {
   totalItems: number;
   totalPrice: number;
   lastUpdated: Date;
+  promoCode?: string;
+  discount?: number;
 }
 
 export interface AddToCartPayload {

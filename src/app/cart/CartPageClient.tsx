@@ -5,10 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { STORE_MODELS, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
+import { Tag, X } from 'lucide-react';
 
 export default function CartPageClient() {
-  const { cart, removeItem, updateQuantity, clearCart, isLoading } = useCart();
+  const { cart, removeItem, updateQuantity, clearCart, applyPromoCode, removePromoCode, isLoading } = useCart();
   const [isClearing, setIsClearing] = useState(false);
+  const [promoInput, setPromoInput] = useState('');
+  const [promoError, setPromoError] = useState('');
 
   const handleRemove = async (id: string) => {
     console.log('🗑️ Removing item:', id);
@@ -29,6 +32,21 @@ export default function CartPageClient() {
       await clearCart();
       setIsClearing(false);
     }
+  };
+
+  const handleApplyPromo = () => {
+    const success = applyPromoCode(promoInput);
+    if (success) {
+      setPromoError('');
+    } else {
+      setPromoError('Code promo invalide');
+    }
+  };
+
+  const handleRemovePromo = () => {
+    removePromoCode();
+    setPromoInput('');
+    setPromoError('');
   };
 
   // Format configuration for display
@@ -444,11 +462,78 @@ export default function CartPageClient() {
                   📋 Résumé
                 </h2>
 
+                {/* Code Promo */}
+                <div className="mb-6 pb-6 border-b-2 border-gray-200">
+                  <label className="flex items-center gap-2 text-gray-900 font-bold mb-3">
+                    <Tag className="w-5 h-5 text-orange-600" />
+                    Code Promo
+                  </label>
+                  
+                  {!cart.promoCode ? (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={promoInput}
+                          onChange={(e) => {
+                            setPromoInput(e.target.value.toUpperCase());
+                            setPromoError('');
+                          }}
+                          placeholder="Entrez votre code"
+                          className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none font-mono font-bold text-gray-900"
+                          maxLength={20}
+                        />
+                        <button
+                          onClick={handleApplyPromo}
+                          disabled={!promoInput.trim()}
+                          className="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white font-bold rounded-lg transition-colors"
+                        >
+                          Appliquer
+                        </button>
+                      </div>
+                      {promoError && (
+                        <div className="text-red-600 text-sm font-semibold">❌ {promoError}</div>
+                      )}
+                      <div className="text-xs text-gray-500">
+                        💡 Utilisez le code <span className="font-mono font-bold text-orange-600">STORAL5</span> pour -5%
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-green-50 border-2 border-green-500 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-green-800 font-bold flex items-center gap-2">
+                            ✅ Code <span className="font-mono">{cart.promoCode}</span> appliqué
+                          </div>
+                          <div className="text-sm text-green-700 mt-1">
+                            -5% sur votre commande
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleRemovePromo}
+                          className="p-2 hover:bg-green-100 rounded-full transition-colors"
+                          aria-label="Retirer le code promo"
+                        >
+                          <X className="w-5 h-5 text-green-700" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="space-y-4 mb-6 pb-6 border-b-2 border-gray-200">
                   <div className="flex justify-between items-center text-gray-700">
                     <span className="text-lg">Sous-total:</span>
                     <span className="font-bold text-xl">{Number(cart.totalPrice).toFixed(2)}€</span>
                   </div>
+                  
+                  {cart.promoCode && cart.discount && (
+                    <div className="flex justify-between items-center text-green-700">
+                      <span className="text-lg font-semibold">Code {cart.promoCode}:</span>
+                      <span className="font-bold text-xl">-{cart.discount.toFixed(2)}€</span>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between items-center text-gray-700">
                     <span className="text-lg">Articles:</span>
                     <span className="font-bold text-xl">{cart.totalItems}</span>
@@ -457,7 +542,9 @@ export default function CartPageClient() {
 
                 <div className="flex justify-between items-center text-3xl font-bold text-gray-900 mb-8 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg px-4">
                   <span>Total:</span>
-                  <span className="text-blue-600">{Number(cart.totalPrice).toFixed(2)}€</span>
+                  <span className="text-blue-600">
+                    {(cart.totalPrice - (cart.discount || 0)).toFixed(2)}€
+                  </span>
                 </div>
 
                 <div className="space-y-3">

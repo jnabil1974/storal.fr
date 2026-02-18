@@ -251,6 +251,7 @@ function CheckoutPageContent() {
                 country: formData.country,
               },
           comment: comment?.trim() || undefined,
+          promoCode: cart.promoCode || undefined,
           recaptchaToken,
         }),
       });

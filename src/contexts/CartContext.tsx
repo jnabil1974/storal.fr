@@ -9,6 +9,8 @@ interface CartContextType {
   removeItem: (id: string) => Promise<void>;
   updateQuantity: (id: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
+  applyPromoCode: (code: string) => boolean;
+  removePromoCode: () => void;
   isLoading: boolean;
 }
 
@@ -36,6 +38,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     totalItems: 0,
     totalPrice: 0,
     lastUpdated: new Date(),
+    promoCode: undefined,
+    discount: undefined,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState('');
@@ -45,7 +49,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const id = getOrCreateSessionId();
     setSessionId(id);
     loadCart(id);
+    
+    // Récupérer le code promo depuis localStorage
+    const savedPromoCode = localStorage.getItem('cart_promo_code');
+    if (savedPromoCode) {
+      setCart(prev => {
+        const discount = prev.totalPrice * 0.05;
+        return { ...prev, promoCode: savedPromoCode, discount };
+      });
+    }
   }, []);
+
+  // Recalculer la remise quand le totalPrice change
+  useEffect(() => {
+    if (cart.promoCode && cart.totalPrice > 0) {
+      const discount = cart.totalPrice * 0.05;
+      setCart(prev => ({ ...prev, discount }));
+    }
+  }, [cart.totalPrice, cart.promoCode]);
 
   const loadCart = async (sid: string) => {
     if (!sid) return;
@@ -178,14 +199,37 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         totalItems: 0,
         totalPrice: 0,
         lastUpdated: new Date(),
+        promoCode: undefined,
+        discount: undefined,
       });
+      // Supprimer aussi le code promo du localStorage
+      localStorage.removeItem('cart_promo_code');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const applyPromoCode = (code: string): boolean => {
+    const normalizedCode = code.trim().toUpperCase();
+    
+    // Vérifier si le code est valide (STORAL5)
+    if (normalizedCode === 'STORAL5') {
+      const discount = cart.totalPrice * 0.05;
+      setCart(prev => ({ ...prev, promoCode: normalizedCode, discount }));
+      localStorage.setItem('cart_promo_code', normalizedCode);
+      return true;
+    }
+    
+    return false;
+  };
+
+  const removePromoCode = () => {
+    setCart(prev => ({ ...prev, promoCode: undefined, discount: undefined }));
+    localStorage.removeItem('cart_promo_code');
+  };
+
   return (
-    <CartContext.Provider value={{ cart, addItem, removeItem, updateQuantity, clearCart, isLoading }}>
+    <CartContext.Provider value={{ cart, addItem, removeItem, updateQuantity, clearCart, applyPromoCode, removePromoCode, isLoading }}>
       {children}
     </CartContext.Provider>
   );

@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       createAccount = false,
       password,
       userId,
+      promoCode,
     } = body;
 
     // Générer un session_id si absent (requis par la table)
@@ -109,8 +110,16 @@ export async function POST(request: NextRequest) {
       const qty = Number(item.quantity || 0);
       return sum + unit * qty;
     }, 0);
+    
+    // Appliquer le code promo si valide
+    let discount = 0;
+    if (promoCode && promoCode.toUpperCase() === 'STORAL5') {
+      discount = total_amount * 0.05;
+    }
+    const final_amount = total_amount - discount;
+    
     const total_items = items.reduce((sum: number, item: CheckoutItem) => sum + Number(item.quantity || 0), 0);
-    console.log('[Checkout] Totals', { total_amount, total_items });
+    console.log('[Checkout] Totals', { total_amount, discount, final_amount, total_items, promoCode });
 
     const supabaseAdmin = getSupabaseAdminClient();
     const supabase = getSupabaseClient();
@@ -154,13 +163,16 @@ export async function POST(request: NextRequest) {
       delivery_country: deliveryCountry,
       items,
       total_items,
-      total_amount,
+      total_amount: final_amount,
       status: 'pending',
       payment_method: paymentMethod,
       user_id: userIdToUse,
       notes: JSON.stringify({
         billing: billingInfo,
         comment: (comment && String(comment).trim()) || undefined,
+        promoCode: promoCode || undefined,
+        discount: discount > 0 ? discount : undefined,
+        originalAmount: discount > 0 ? total_amount : undefined,
       }),
     };
     
@@ -236,12 +248,14 @@ export async function POST(request: NextRequest) {
         console.log('[Checkout] Stripe key type', key.startsWith('sk_test') ? 'TEST' : key.startsWith('sk_live') ? 'LIVE' : 'UNKNOWN');
       } catch {}
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(total_amount * 100),
+        amount: Math.round(final_amount * 100),
         currency: 'eur',
         metadata: {
           orderId: order.id,
           userId: userIdToUse || '',
           customerEmail,
+          promoCode: promoCode || '',
+          discount: discount > 0 ? discount.toFixed(2) : '',
         },
       });
 
