@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import CookieBanner from "@/components/CookieBanner";
 import GoogleScripts from "@/components/GoogleScripts";
+import TopBar from "@/components/TopBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +47,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <CartProvider>
+            <TopBar />
             <ConditionalLayout>
               {children}
             </ConditionalLayout>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { StoreModel, calculateFinalPrice, CATALOG_SETTINGS } from '@/lib/catalog-data';
-import { Ruler, Palette, Zap, Settings } from 'lucide-react';
+import { Ruler, Palette, Zap, Settings, Tag, X } from 'lucide-react';
 import Link from 'next/link';
 
 interface InlineConfiguratorProps {
@@ -21,6 +21,11 @@ export default function InlineConfigurator({ model }: InlineConfiguratorProps) {
   const [ledArms, setLedArms] = useState(false);
   const [ledBox, setLedBox] = useState(false);
   const [ceilingMount, setCeilingMount] = useState(false);
+  
+  // États pour le code promo
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState('');
 
   // Calculer les limites de largeur pour la projection sélectionnée
   const minWidthForProjection = model.minWidths[projection] || 1000;
@@ -54,6 +59,29 @@ export default function InlineConfigurator({ model }: InlineConfiguratorProps) {
   });
 
   const finalPriceTTC = priceResult?.ttc || 0;
+  
+  // Calcul avec code promo
+  const discount = promoApplied ? finalPriceTTC * 0.05 : 0;
+  const finalPriceWithPromo = finalPriceTTC - discount;
+  
+  // Fonction pour appliquer le code promo
+  const handleApplyPromo = () => {
+    const code = promoCode.trim().toUpperCase();
+    if (code === 'STORAL5') {
+      setPromoApplied(true);
+      setPromoError('');
+    } else {
+      setPromoApplied(false);
+      setPromoError('Code promo invalide');
+    }
+  };
+  
+  // Réinitialiser le code promo si invalide
+  const handleRemovePromo = () => {
+    setPromoApplied(false);
+    setPromoCode('');
+    setPromoError('');
+  };
 
   // Détection logique Armor (supplément couleur gratuit ≥ 6m)
   const isArmorModel = model.colorStrategy === 'HYBRID_ARMOR';
@@ -206,6 +234,65 @@ export default function InlineConfigurator({ model }: InlineConfiguratorProps) {
           </div>
         </div>
 
+        {/* Code Promo */}
+        <div className="border-t-2 border-dashed border-gray-200 pt-6">
+          <label className="flex items-center gap-2 text-gray-900 font-bold mb-3">
+            <Tag className="w-5 h-5 text-orange-600" />
+            Code Promo
+          </label>
+          
+          {!promoApplied ? (
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => {
+                    setPromoCode(e.target.value.toUpperCase());
+                    setPromoError('');
+                  }}
+                  placeholder="Entrez votre code"
+                  className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none font-mono font-bold text-gray-900"
+                  maxLength={20}
+                />
+                <button
+                  onClick={handleApplyPromo}
+                  disabled={!promoCode.trim()}
+                  className="px-6 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white font-bold rounded-lg transition-colors"
+                >
+                  Appliquer
+                </button>
+              </div>
+              {promoError && (
+                <div className="text-red-600 text-sm font-semibold">❌ {promoError}</div>
+              )}
+              <div className="text-xs text-gray-500">
+                💡 Utilisez le code <span className="font-mono font-bold text-orange-600">STORAL5</span> pour -5%
+              </div>
+            </div>
+          ) : (
+            <div className="bg-green-50 border-2 border-green-500 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-green-800 font-bold flex items-center gap-2">
+                    ✅ Code <span className="font-mono">{promoCode}</span> appliqué
+                  </div>
+                  <div className="text-sm text-green-700 mt-1">
+                    -5% sur votre commande
+                  </div>
+                </div>
+                <button
+                  onClick={handleRemovePromo}
+                  className="p-2 hover:bg-green-100 rounded-full transition-colors"
+                  aria-label="Retirer le code promo"
+                >
+                  <X className="w-5 h-5 text-green-700" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Prix Final */}
         <div className="border-t-4 border-blue-600 pt-6">
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 text-center">
@@ -214,8 +301,18 @@ export default function InlineConfigurator({ model }: InlineConfiguratorProps) {
             </div>
             {priceResult ? (
               <>
+                {promoApplied && discount > 0 && (
+                  <div className="mb-3 bg-green-100 border-2 border-green-500 rounded-lg p-3">
+                    <div className="text-lg font-black text-green-800">
+                      🎉 Vous économisez {discount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                    </div>
+                    <div className="text-sm text-green-700 mt-1 line-through">
+                      Prix initial : {finalPriceTTC.toLocaleString('fr-FR')}€
+                    </div>
+                  </div>
+                )}
                 <div className="text-5xl font-black text-blue-900 mb-2">
-                  {finalPriceTTC.toLocaleString('fr-FR')}€
+                  {finalPriceWithPromo.toLocaleString('fr-FR')}€
                 </div>
                 <div className="text-sm text-blue-600 font-medium">
                   TTC • TVA réduite 10% • Installation comprise
