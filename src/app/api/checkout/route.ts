@@ -241,32 +241,39 @@ export async function POST(request: NextRequest) {
     if (paymentMethod === 'stripe') {
       try {
         console.log('[Checkout] Creating Stripe PaymentIntent', {
-          amount: Math.round(total_amount * 100),
+          amount: Math.round(final_amount * 100),
           currency: 'eur',
         });
         const key = process.env.STRIPE_SECRET_KEY || '';
         console.log('[Checkout] Stripe key type', key.startsWith('sk_test') ? 'TEST' : key.startsWith('sk_live') ? 'LIVE' : 'UNKNOWN');
-      } catch {}
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(final_amount * 100),
-        currency: 'eur',
-        metadata: {
-          orderId: order.id,
-          userId: userIdToUse || '',
-          customerEmail,
-          promoCode: promoCode || '',
-          discount: discount > 0 ? discount.toFixed(2) : '',
-        },
-      });
+        
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round(final_amount * 100),
+          currency: 'eur',
+          metadata: {
+            orderId: order.id,
+            userId: userIdToUse || '',
+            customerEmail,
+            promoCode: promoCode || '',
+            discount: discount > 0 ? discount.toFixed(2) : '',
+          },
+        });
 
-      return NextResponse.json(
-        {
-          orderId: order.id,
-          clientSecret: paymentIntent.client_secret,
-          accountCreated,
-        },
-        { status: 200 }
-      );
+        return NextResponse.json(
+          {
+            orderId: order.id,
+            clientSecret: paymentIntent.client_secret,
+            accountCreated,
+          },
+          { status: 200 }
+        );
+      } catch (stripeError: any) {
+        console.error('[Checkout] Erreur Stripe PaymentIntent:', stripeError);
+        return NextResponse.json({ 
+          error: `Erreur paiement Stripe: ${stripeError?.message || 'Erreur inconnue'}`,
+          details: stripeError?.type,
+        }, { status: 500 });
+      }
     }
 
     // Paiement manuel (chèque / virement)
