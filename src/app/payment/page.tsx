@@ -238,9 +238,11 @@ function PaymentPageContent() {
 
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Informations de paiement</h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Carte de test: 4242 4242 4242 4242 | 12/26 | 123
-          </p>
+          {(process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY?.startsWith('pk_test')) && (
+            <p className="text-sm text-gray-600 mb-4">
+              Carte de test: 4242 4242 4242 4242 | 12/26 | 123
+            </p>
+          )}
 
           <Elements stripe={stripePromise}>
             <PaymentForm orderId={orderId!} total={Number(order.totalAmount)} initialClientSecret={clientSecret} />
