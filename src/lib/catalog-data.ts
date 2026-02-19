@@ -218,6 +218,19 @@ export interface StoreModel {
   colorStrategy: 'PROMO_LIMITED' | 'STANDARD_ALL' | 'HYBRID_ARMOR';
   // Seuil d'alerte livraison en 2 parties (en mm, généralement 6000)
   deliveryWarningThreshold?: number;
+  // ⚙️ DIMENSIONS TECHNIQUES (Service "Prêt à poser" - Réglage Usine)
+  dimensions_techniques?: {
+    encombrement: {
+      hauteur_coffre_cm: number;        // Hauteur du coffre fermé
+      profondeur_coffre_cm: number;     // Profondeur du coffre
+      hauteur_totale_utile_cm: number;  // Espace minimum requis au-dessus de la fenêtre pour fixer le store
+    };
+    inclinaison: {
+      angle_min_degres: number;         // Angle minimum d'inclinaison
+      angle_max_degres: number;         // Angle maximum d'inclinaison
+      angle_usine_defaut: number;       // Angle par défaut réglé en usine (service "Prêt à poser")
+    };
+  };
 }
 
 // ==========================================
@@ -416,7 +429,19 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     },
     deliveryType: 'ready_to_install',
     deliveryNote: "Store livré fini, toile réglée et prêt à poser",
-    colorStrategy: 'PROMO_LIMITED'  // Blanc/Beige/Gris inclus, reste +200€
+    colorStrategy: 'PROMO_LIMITED',  // Blanc/Beige/Gris inclus, reste +200€
+    dimensions_techniques: {
+      encombrement: {
+        hauteur_coffre_cm: 22,
+        profondeur_coffre_cm: 24,
+        hauteur_totale_utile_cm: 30
+      },
+      inclinaison: {
+        angle_min_degres: 5,
+        angle_max_degres: 35,
+        angle_usine_defaut: 15
+      }
+    }
   },
 
   // --- 2. KITANGUY - STORAL COMPACT + (Page 34-35) ---
@@ -460,7 +485,19 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     },
     deliveryType: 'ready_to_install',
     deliveryNote: "Store livré fini, toile réglée et prêt à poser",
-    colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
+    colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
+    dimensions_techniques: {
+      encombrement: {
+        hauteur_coffre_cm: 22,
+        profondeur_coffre_cm: 24,
+        hauteur_totale_utile_cm: 30
+      },
+      inclinaison: {
+        angle_min_degres: 5,
+        angle_max_degres: 35,
+        angle_usine_defaut: 15
+      }
+    }
   },
 
   // --- 3. KITANGUY 2 - STORAL EXCELLENCE (Page 36) ---
@@ -505,7 +542,19 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     deliveryType: 'ready_to_install',
     deliveryNote: "Store livré fini, toile réglée et prêt à poser",
     colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
-    deliveryWarningThreshold: 6000  // Alerte si > 6m (bien que max soit 5850mm)
+    deliveryWarningThreshold: 6000,  // Alerte si > 6m (bien que max soit 5850mm)
+    dimensions_techniques: {
+      encombrement: {
+        hauteur_coffre_cm: 24,
+        profondeur_coffre_cm: 26,
+        hauteur_totale_utile_cm: 32
+      },
+      inclinaison: {
+        angle_min_degres: 5,
+        angle_max_degres: 35,
+        angle_usine_defaut: 15
+      }
+    }
   },
 
   // --- 4. HELIOM - STORAL KUBE (Page 38) ---
@@ -550,7 +599,19 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     },
     deliveryType: 'ready_to_install',
     deliveryNote: "Store livré fini, toile réglée et prêt à poser",
-    colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
+    colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
+    dimensions_techniques: {
+      encombrement: {
+        hauteur_coffre_cm: 25,
+        profondeur_coffre_cm: 27,
+        hauteur_totale_utile_cm: 32
+      },
+      inclinaison: {
+        angle_min_degres: 5,
+        angle_max_degres: 35,
+        angle_usine_defaut: 15
+      }
+    }
   },
 
   // --- 5. HELIOM PLUS - STORAL KUBE + (Page 38) ---
@@ -673,7 +734,19 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     deliveryType: 'ready_to_install',
     deliveryNote: "Store livré fini, toile réglée et prêt à poser",
     colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
-    deliveryWarningThreshold: 6000  // Alerte si > 6m
+    deliveryWarningThreshold: 6000,  // Alerte si > 6m
+    dimensions_techniques: {
+      encombrement: {
+        hauteur_coffre_cm: 24,
+        profondeur_coffre_cm: 25,
+        hauteur_totale_utile_cm: 30
+      },
+      inclinaison: {
+        angle_min_degres: 5,
+        angle_max_degres: 35,
+        angle_usine_defaut: 15
+      }
+    }
   },
   // RÈGLE IMPORTANTE : Largeur <6m = Prix PROMO + Couleurs limitées (9010, 1015, 7016)
   //                    Largeur ≥6m = Prix STANDARD + Toutes couleurs incluses
@@ -726,7 +799,19 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 parties.",
     colorStrategy: 'HYBRID_ARMOR',  // < 6m: +200€ si non standard, ≥ 6m: inclus
     promoWidthThreshold: 6000,  // Seuil de bascule tarifaire
-    deliveryWarningThreshold: 6000  // Alerte livraison 2 parties
+    deliveryWarningThreshold: 6000,  // Alerte livraison 2 parties
+    dimensions_techniques: {
+      encombrement: {
+        hauteur_coffre_cm: 26,
+        profondeur_coffre_cm: 28,
+        hauteur_totale_utile_cm: 35
+      },
+      inclinaison: {
+        angle_min_degres: 5,
+        angle_max_degres: 35,
+        angle_usine_defaut: 15
+      }
+    }
   },
 
   // --- 8. BELHARRA - STORAL ARMOR + (Page 40) ---
@@ -791,7 +876,19 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 parties.",
     colorStrategy: 'HYBRID_ARMOR',  // < 6m: +200€ si non standard, ≥ 6m: inclus
     promoWidthThreshold: 6000,  // Seuil de bascule tarifaire
-    deliveryWarningThreshold: 6000  // Alerte livraison 2 parties
+    deliveryWarningThreshold: 6000,  // Alerte livraison 2 parties
+    dimensions_techniques: {
+      encombrement: {
+        hauteur_coffre_cm: 26,
+        profondeur_coffre_cm: 28,
+        hauteur_totale_utile_cm: 35
+      },
+      inclinaison: {
+        angle_min_degres: 5,
+        angle_max_degres: 35,
+        angle_usine_defaut: 15
+      }
+    }
   },
 
   // --- 9. BELHARRA 2 - STORAL EXCELLENCE + (Bras SB100 Standard) ---
@@ -850,7 +947,19 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     deliveryType: 'ready_up_to_6m',
     deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 parties.",
     colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
-    deliveryWarningThreshold: 6000  // Alerte si > 6m
+    deliveryWarningThreshold: 6000,  // Alerte si > 6m
+    dimensions_techniques: {
+      encombrement: {
+        hauteur_coffre_cm: 28,
+        profondeur_coffre_cm: 30,
+        hauteur_totale_utile_cm: 35
+      },
+      inclinaison: {
+        angle_min_degres: 5,
+        angle_max_degres: 35,
+        angle_usine_defaut: 15
+      }
+    }
   },
 
   // --- 10. ANTIBES - STORAL CLASSIQUE (Monobloc Standard) ---
