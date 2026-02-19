@@ -10,6 +10,7 @@ import InlineConfigurator from '@/components/InlineConfigurator';
 import ExpertAdvice from '@/components/ExpertAdvice';
 import ProductSchema from '@/components/ProductSchema';
 import ProductSpecifications from '@/components/ProductSpecifications';
+import ScrollToConfigurator from '@/components/ScrollToConfigurator';
 
 /**
  * Génère les paramètres statiques pour toutes les pages produits
@@ -185,16 +186,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               </div>
 
               {/* Bouton d'ancrage vers le configurateur */}
-              <a
-                href="#configurateur"
-                className="block w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-center font-bold text-lg py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('configurateur')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }}
-              >
-                🚀 Configurer mon store
-              </a>
+              <ScrollToConfigurator />
             </div>
           </div>
         </div>
