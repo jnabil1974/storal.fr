@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useState } from 'react';
 
 interface TechnicalSchemaImageProps {
@@ -15,18 +14,20 @@ export default function TechnicalSchemaImage({
   fallbackSrc = '/images/tech/schema-default.png'
 }: TechnicalSchemaImageProps) {
   const [imageSrc, setImageSrc] = useState(src);
+  const [hasError, setHasError] = useState(false);
 
   return (
     <div className="relative aspect-video bg-white rounded-xl overflow-hidden border-2 border-gray-300">
-      <Image
+      {/* Utilisation d'une balise <img> native pour les SVG car Next.js Image a des limitations avec les SVG */}
+      <img
         src={imageSrc}
         alt={alt}
-        fill
-        className="object-contain p-4"
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
-        quality={90}
+        className="w-full h-full object-contain p-4"
         onError={() => {
-          setImageSrc(fallbackSrc);
+          if (!hasError) {
+            setHasError(true);
+            setImageSrc(fallbackSrc);
+          }
         }}
       />
     </div>
