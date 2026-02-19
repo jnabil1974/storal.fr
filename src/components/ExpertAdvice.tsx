@@ -22,9 +22,9 @@ const ExpertAdvice = () => {
       - **Important :** Pensez à vérifier la "hauteur de passage" sous la barre de charge. Nous conseillons un minimum de 2m pour circuler librement.`
     },
     {
-      title: "Pourquoi choisir les bras renforcés (Gamme Armor) ?",
+      title: "Pourquoi choisir les bras renforcés ?",
       content: `La tension de la toile est le secret d'un store qui dure.
-      - **Double câblage gainé :** Nos bras de la gamme Armor utilisent des câbles d'acier haute résistance protégés par une gaine, assurant une tension constante et silencieuse.
+      - **Double câblage gainé :** Nos bras renforcés utilisent des câbles d'acier haute résistance protégés par une gaine, assurant une tension constante et silencieuse.
       - **Résistance au vent :** Ces bras permettent une meilleure stabilité face aux brises. Ils sont classés en haute catégorie de résistance selon les normes européennes.
       - **Protection de la toile :** Une toile bien tendue évite les poches d'eau et les battements excessifs, prolongeant la durée de vie de l'ensemble du store.`
     },
