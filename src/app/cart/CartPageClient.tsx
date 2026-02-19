@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { STORE_MODELS, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
-import { Tag, X } from 'lucide-react';
+import { Tag, X, Lock } from 'lucide-react';
 
 export default function CartPageClient() {
   const { cart, removeItem, updateQuantity, clearCart, applyPromoCode, removePromoCode, isLoading } = useCart();
@@ -538,6 +538,11 @@ export default function CartPageClient() {
                     <span className="text-lg">Articles:</span>
                     <span className="font-bold text-xl">{cart.totalItems}</span>
                   </div>
+                  
+                  <div className="flex justify-between items-center text-gray-700">
+                    <span className="text-lg">🚚 Livraison spécialisée:</span>
+                    <span className="font-bold text-green-600">INCLUSE</span>
+                  </div>
                 </div>
 
                 <div className="flex justify-between items-center text-3xl font-bold text-gray-900 mb-8 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg px-4">
@@ -573,6 +578,29 @@ export default function CartPageClient() {
                       🏠 Retour à l'accueil
                     </button>
                   </Link>
+                </div>
+
+                {/* Mention légale TVA */}
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <p className="text-xs text-gray-500 text-justify leading-relaxed">
+                    <span className="font-semibold text-gray-700">* Information TVA :</span> Le taux réduit de 10% s'applique exclusivement dans le cadre d'une prestation de fourniture et de pose réalisée par nos installateurs agréés, dans un logement achevé depuis plus de 2 ans. En cas de livraison seule (installation par vos soins) ou pour une construction neuve, le taux normal de 20% sera appliqué conformément à la législation fiscale en vigueur.
+                  </p>
+                </div>
+
+                {/* Zone de réassurance paiement */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex items-center gap-2 mb-3 justify-center text-gray-800 font-semibold">
+                    <Lock className="w-5 h-5 text-green-600" />
+                    Paiement 100% sécurisé
+                  </div>
+                  <div className="flex justify-center gap-3 mb-3">
+                    <span className="px-2 py-1 bg-gray-100 text-xs font-bold rounded border">CB</span>
+                    <span className="px-2 py-1 bg-gray-100 text-xs font-bold rounded border">VISA</span>
+                    <span className="px-2 py-1 bg-gray-100 text-xs font-bold rounded border">MASTERCARD</span>
+                  </div>
+                  <div className="text-center text-sm font-medium text-blue-600 bg-blue-50 py-2 rounded">
+                    Possibilité de paiement en 3x ou 4x sans frais
+                  </div>
                 </div>
               </div>
             </div>
