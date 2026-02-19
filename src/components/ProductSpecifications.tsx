@@ -97,7 +97,7 @@ export default function ProductSpecifications() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {specifications.map((spec, index) => {
           const colors = colorClasses[spec.color] || colorClasses.blue;
           
