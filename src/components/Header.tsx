@@ -9,12 +9,13 @@ import Logo from './Logo';
 
 export default function Header() {
   const { cart } = useCart();
-  const { user, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [hasOrders, setHasOrders] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
+    if (loading) return; // Attendre que la session soit chargée
     console.log('Header user:', user?.email);
     if (user?.email) {
       const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'admin@storal.fr')
@@ -45,10 +46,11 @@ export default function Header() {
     } else {
       setIsAdmin(false);
     }
-  }, [user?.email]);
+  }, [user?.email, loading]);
 
   // Vérifier si l'utilisateur a des commandes
   useEffect(() => {
+    if (loading) return; // Attendre que la session soit chargée
     const checkOrders = async () => {
       if (!user?.email) {
         setHasOrders(false);
@@ -70,7 +72,7 @@ export default function Header() {
       }
     };
     checkOrders();
-  }, [user?.email]);
+  }, [user?.email, loading]);
 
   const showMyOrders = (!!user || hasOrders) && !isAdmin;
 
