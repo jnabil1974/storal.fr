@@ -73,16 +73,29 @@
   
   <!-- ANGLE D'INCLINAISON -->
   <!-- Ligne horizontale de référence depuis le coffre -->
-  <line x1="270" y1="190" x2="580" y2="190" style="stroke: #27ae60; stroke-width: 2; stroke-dasharray: 5,5;"/>
+  <line x1="270" y1="190" x2="640" y2="190" style="stroke: #27ae60; stroke-width: 3; stroke-dasharray: 8,4;"/>
   
-  <!-- Arc d'angle -->
-  <path d="M 370 190 Q 400 210 405 250" class="angle-arc"/>
-  <text x="420" y="220" class="angle-text">α = 5° à 35°</text>
-  <text x="420" y="240" class="angle-text" style="font-size: 14px;">(défaut: 15°)</text>
+  <!-- Zone d'angle colorée (secteur) -->
+  <path d="M 270 190 L 470 190 A 200 200 0 0 1 383 317 Z" style="fill: #27ae60; opacity: 0.15;"/>
   
-  <!-- Flèche d'angle -->
-  <line x1="270" y1="190" x2="370" y2="190" style="stroke: #27ae60; stroke-width: 2;" marker-end="url(#arrowhead-green)"/>
-  <line x1="270" y1="190" x2="330" y2="245" style="stroke: #27ae60; stroke-width: 2;" marker-end="url(#arrowhead-green)"/>
+  <!-- Arc d'angle principal (grand et visible) -->
+  <path d="M 470 190 A 200 200 0 0 1 383 317" style="stroke: #27ae60; stroke-width: 4; fill: none;"/>
+  
+  <!-- Ligne représentant l'angle -->
+  <line x1="270" y1="190" x2="383" y2="317" style="stroke: #27ae60; stroke-width: 3; stroke-dasharray: 8,4;"/>
+  
+  <!-- Symbole angle -->
+  <text x="480" y="250" style="font-family: Arial; font-size: 48px; font-weight: bold; fill: #27ae60;">α</text>
+  
+  <!-- Valeur angle -->
+  <text x="360" y="235" class="angle-text" style="font-size: 22px;">15°</text>
+  <text x="360" y="260" class="angle-text" style="font-size: 16px;">(5° - 35°)</text>
+  
+  <!-- Étiquette angle avec fond -->
+  <rect x="495" y="140" width="130" height="70" style="fill: #27ae60; opacity: 0.9;" rx="5"/>
+  <text x="560" y="165" text-anchor="middle" style="font-family: Arial; font-size: 14px; font-weight: bold; fill: white;">ANGLE</text>
+  <text x="560" y="185" text-anchor="middle" style="font-family: Arial; font-size: 14px; font-weight: bold; fill: white;">D'INCLINAISON</text>
+  <text x="560" y="205" text-anchor="middle" style="font-family: Arial; font-size: 18px; font-weight: bold; fill: white;">α = 15°</text>
   
   <!-- CÔTE 1: Projection / Avancée maximale (A) -->
   <line x1="270" y1="600" x2="580" y2="600" class="dimension-line" marker-start="url(#arrowhead-red)" marker-end="url(#arrowhead-red)"/>
