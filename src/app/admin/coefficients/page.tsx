@@ -22,6 +22,9 @@ interface CoefficientData {
   modelCoefficients: {
     [key: string]: number;
   };
+  modelNames: {
+    [key: string]: string;
+  };
 }
 
 export default function CoefficientsAdmin() {
@@ -46,7 +49,8 @@ export default function CoefficientsAdmin() {
       FRAME_COLOR_CUSTOM: 1.8,
       INSTALLATION: 1.3,
     },
-    modelCoefficients: {}
+    modelCoefficients: {},
+    modelNames: {}
   });
 
   // Vérifier si l'utilisateur est admin
@@ -277,8 +281,10 @@ export default function CoefficientsAdmin() {
             {Object.entries(coefficients.modelCoefficients).map(([modelId, value]) => (
               <div key={modelId} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div>
-                  <label className="font-medium text-gray-900">{modelId.toUpperCase()}</label>
-                  <p className="text-xs text-gray-500">Coefficient spécifique pour ce modèle</p>
+                  <label className="font-medium text-gray-900">
+                    {coefficients.modelNames[modelId] || modelId.toUpperCase()}
+                  </label>
+                  <p className="text-xs text-gray-500">{modelId}</p>
                 </div>
                 <input
                   type="number"

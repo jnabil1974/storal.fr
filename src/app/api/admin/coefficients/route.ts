@@ -67,18 +67,28 @@ function readCoefficients() {
     }
   }
 
-  // Extraire salesCoefficient par modèle
+  // Extraire salesCoefficient ET name par modèle
   const modelCoefficients: { [key: string]: number } = {};
-  const modelRegex = /id:\s*['"]([^'"]+)['"][^}]*salesCoefficient:\s*([\d.]+)/g;
+  const modelNames: { [key: string]: string } = {};
+  
+  // Regex pour capturer id, name et salesCoefficient d'un modèle
+  const modelBlockRegex = /"([^"]+)":\s*\{[^}]*id:\s*"([^"]+)"[^}]*name:\s*"([^"]+)"[^}]*salesCoefficient:\s*([\d.]+)[^}]*\}/g;
   let match;
-  while ((match = modelRegex.exec(content)) !== null) {
-    modelCoefficients[match[1]] = parseFloat(match[2]);
+  
+  while ((match = modelBlockRegex.exec(content)) !== null) {
+    const modelId = match[2];
+    const modelName = match[3];
+    const salesCoeff = parseFloat(match[4]);
+    
+    modelCoefficients[modelId] = salesCoeff;
+    modelNames[modelId] = modelName;
   }
 
   return {
     COEFF_MARGE,
     OPTIONS_COEFFICIENTS,
     modelCoefficients,
+    modelNames,
   };
 }
 
