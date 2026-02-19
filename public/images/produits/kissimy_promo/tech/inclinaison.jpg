@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" style="background:#f8f9fa">
+  <defs>
+    <style>
+      .dimension-line { stroke: #e74c3c; stroke-width: 2; fill: none; }
+      .dimension-arrow { fill: #e74c3c; }
+      .dimension-text { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #e74c3c; }
+      .label-text { font-family: Arial, sans-serif; font-size: 16px; font-weight: 600; fill: #2c3e50; }
+      .note-text { font-family: Arial, sans-serif; font-size: 14px; fill: #7f8c8d; }
+      .main-stroke { stroke: #34495e; stroke-width: 3; fill: none; }
+      .wall { fill: #95a5a6; stroke: #7f8c8d; stroke-width: 2; }
+      .coffre { fill: #3498db; stroke: #2c3e50; stroke-width: 2; }
+      .toile { fill: #f39c12; stroke: #d68910; stroke-width: 2; opacity: 0.8; }
+      .ground { fill: none; stroke: #7f8c8d; stroke-width: 2; stroke-dasharray: 10,5; }
+      .angle-arc { fill: none; stroke: #27ae60; stroke-width: 2; }
+      .angle-text { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #27ae60; }
+    </style>
+    
+    <!-- Marqueur flèche pour les côtes -->
+    <marker id="arrowhead-red" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+      <polygon points="0 0, 10 5, 0 10" class="dimension-arrow" />
+    </marker>
+    <marker id="arrowhead-green" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+      <polygon points="0 0, 10 5, 0 10" style="fill: #27ae60;" />
+    </marker>
+  </defs>
+  
+  <!-- Titre -->
+  <text x="600" y="40" text-anchor="middle" style="font-family: Arial; font-size: 28px; font-weight: bold; fill: #2c3e50;">
+    ANGLE D'INCLINAISON ET PROJECTION MAXIMALE
+  </text>
+  
+  <!-- Mur -->
+  <rect x="80" y="100" width="30" height="450" class="wall"/>
+  <text x="60" y="330" text-anchor="middle" transform="rotate(-90, 60, 330)" class="label-text" style="font-size: 14px;">MUR</text>
+  
+  <!-- Sol / Ligne de référence horizontale -->
+  <line x1="50" y1="550" x2="800" y2="550" class="ground"/>
+  <text x="420" y="575" text-anchor="middle" class="note-text">Niveau du sol / Ligne de référence</text>
+  
+  <!-- Support de fixation au mur -->
+  <rect x="110" y="180" width="40" height="20" style="fill: #7f8c8d; stroke: #34495e; stroke-width: 2;"/>
+  <circle cx="130" cy="190" r="4" style="fill: #2c3e50;"/>
+  
+  <!-- Coffre -->
+  <rect x="150" y="160" width="120" height="60" class="coffre" rx="5"/>
+  <text x="210" y="195" text-anchor="middle" class="label-text" style="fill: white; font-size: 14px;">COFFRE</text>
+  
+  <!-- Tube d'enroulement -->
+  <circle cx="210" cy="190" r="20" style="fill: #95a5a6; stroke: #7f8c8d; stroke-width: 2;"/>
+  
+  <!-- Store déployé avec inclinaison de 15° -->
+  <!-- Bras supérieur -->
+  <line x1="270" y1="190" x2="580" y2="350" style="stroke: #34495e; stroke-width: 5;"/>
+  <circle cx="270" cy="190" r="7" style="fill: #2c3e50;"/>
+  <circle cx="425" cy="270" r="6" style="fill: #2c3e50;"/>
+  <circle cx="580" cy="350" r="7" style="fill: #2c3e50;"/>
+  
+  <text x="430" y="290" class="note-text">Bras articulé</text>
+  
+  <!-- Toile déployée -->
+  <path d="M 270 190 L 580 350 L 580 520 L 270 360 Z" class="toile"/>
+  <text x="425" y="360" text-anchor="middle" class="label-text" style="fill: white;">TOILE DÉPLOYÉE</text>
+  
+  <!-- Bras inférieur -->
+  <line x1="270" y1="360" x2="580" y2="520" style="stroke: #34495e; stroke-width: 5;"/>
+  <circle cx="270" cy="360" r="5" style="fill: #2c3e50;"/>
+  <circle cx="425" cy="440" r="5" style="fill: #2c3e50;"/>
+  <circle cx="580" cy="520" r="5" style="fill: #2c3e50;"/>
+  
+  <!-- Barre de charge -->
+  <rect x="575" y="350" width="10" height="170" style="fill: #7f8c8d; stroke: #34495e; stroke-width: 2;"/>
+  <text x="620" y="440" class="note-text">Barre de charge</text>
+  
+  <!-- ANGLE D'INCLINAISON -->
+  <!-- Ligne horizontale de référence depuis le coffre -->
+  <line x1="270" y1="190" x2="580" y2="190" style="stroke: #27ae60; stroke-width: 2; stroke-dasharray: 5,5;"/>
+  
+  <!-- Arc d'angle -->
+  <path d="M 370 190 Q 400 210 405 250" class="angle-arc"/>
+  <text x="420" y="220" class="angle-text">α = 5° à 35°</text>
+  <text x="420" y="240" class="angle-text" style="font-size: 14px;">(défaut: 15°)</text>
+  
+  <!-- Flèche d'angle -->
+  <line x1="270" y1="190" x2="370" y2="190" style="stroke: #27ae60; stroke-width: 2;" marker-end="url(#arrowhead-green)"/>
+  <line x1="270" y1="190" x2="330" y2="245" style="stroke: #27ae60; stroke-width: 2;" marker-end="url(#arrowhead-green)"/>
+  
+  <!-- CÔTE 1: Projection / Avancée maximale (A) -->
+  <line x1="270" y1="600" x2="580" y2="600" class="dimension-line" marker-start="url(#arrowhead-red)" marker-end="url(#arrowhead-red)"/>
+  <text x="425" y="590" text-anchor="middle" class="dimension-text">Avancée (A)</text>
+  <text x="425" y="615" text-anchor="middle" class="dimension-text" style="font-size: 16px;">1.50m à 4.00m</text>
+  
+  <!-- CÔTE 2: Hauteur coffre au-dessus du sol (H) -->
+  <line x1="50" y1="190" x2="50" y2="550" class="dimension-line" marker-start="url(#arrowhead-red)" marker-end="url(#arrowhead-red)"/>
+  <text x="30" y="380" class="dimension-text" transform="rotate(-90, 30, 380)">Hauteur coffre (H)</text>
+  <text x="30" y="410" class="dimension-text" transform="rotate(-90, 30, 410)" style="font-size: 16px;">≈ 2.50m - 3.50m</text>
+  
+  <!-- CÔTE 3: Hauteur passage sous toile déployée -->
+  <line x1="650" y1="520" x2="650" y2="550" class="dimension-line" marker-start="url(#arrowhead-red)" marker-end="url(#arrowhead-red)"/>
+  <text x="680" y="540" class="dimension-text" style="font-size: 14px;">≥ 2.00m passage</text>
+  
+  <!-- Ligne pointillée verticale pour hauteur passage -->
+  <line x1="580" y1="520" x2="580" y2="550" style="stroke: #e74c3c; stroke-width: 2; stroke-dasharray: 5,5;"/>
+  
+  <!-- Personne pour référence d'échelle (hauteur ≈ 1.75m) -->
+  <ellipse cx="700" cy="530" rx="15" ry="20" style="fill: #34495e;"/>
+  <rect x="695" y="510" width="10" height="40" style="fill: #34495e;"/>
+  <line x1="695" y1="520" x2="680" y2="535" style="stroke: #34495e; stroke-width: 3;"/>
+  <line x1="705" y1="520" x2="720" y2="535" style="stroke: #34495e; stroke-width: 3;"/>
+  <circle cx="700" cy="505" r="8" style="fill: #34495e;"/>
+  <text x="700" y="570" text-anchor="middle" class="note-text" style="font-size: 12px;">≈ 1.75m</text>
+  
+  <!-- Configuration servivce "PRÊT À POSER" -->
+  <rect x="750" y="120" width="400" height="450" style="fill: white; stroke: #27ae60; stroke-width: 3;" rx="10"/>
+  <rect x="750" y="120" width="400" height="60" style="fill: #27ae60;"/>
+  <text x="950" y="160" text-anchor="middle" style="font-family: Arial; font-size: 22px; font-weight: bold; fill: white;">⚙️ SERVICE "PRÊT À POSER"</text>
+  
+  <text x="780" y="220" class="label-text" style="font-size: 18px;">🎯 CALCUL AUTOMATIQUE DE L'ANGLE</text>
+  
+  <text x="780" y="260" class="note-text" style="font-size: 15px;">L'IA calcule automatiquement l'angle d'inclinaison</text>
+  <text x="780" y="280" class="note-text" style="font-size: 15px;">optimal pour garantir :</text>
+  
+  <text x="800" y="310" class="label-text" style="font-size: 15px; fill: #27ae60;">✓ Hauteur de passage ≥ 2.00m</text>
+  <text x="800" y="335" class="label-text" style="font-size: 15px; fill: #27ae60;">✓ Protection solaire maximale</text>
+  <text x="800" y="360" class="label-text" style="font-size: 15px; fill: #27ae60;">✓ Respect des limites mécaniques</text>
+  
+  <rect x="770" y="385" width="360" height="160" style="fill: #ecf0f1; stroke: #bdc3c7; stroke-width: 2;" rx="5"/>
+  
+  <text x="950" y="410" text-anchor="middle" class="label-text" style="font-size: 16px;">📐 FORMULE DE CALCUL :</text>
+  <text x="950" y="440" text-anchor="middle" style="font-family: 'Courier New', monospace; font-size: 16px; font-weight: bold; fill: #2c3e50;">angle = arctan((H - 2.00) / A) × (180 / π)</text>
+  
+  <text x="780" y="475" class="note-text">Où :</text>
+  <text x="800" y="495" class="note-text">• H = Hauteur coffre au-dessus du sol (m)</text>
+  <text x="800" y="515" class="note-text">• A = Avancée souhaitée (m)</text>
+  <text x="800" y="535" class="note-text">• Angle contraint entre 5° et 35°</text>
+  
+  <!-- Informations complémentaires en bas -->
+  <rect x="50" y="630" width="680" height="140" style="fill: white; stroke: #bdc3c7; stroke-width: 2;" rx="10"/>
+  <text x="390" y="660" text-anchor="middle" style="font-family: Arial; font-size: 18px; font-weight: bold; fill: #2c3e50;">📊 INFORMATIONS IMPORTANTES</text>
+  
+  <text x="80" y="690" class="note-text">🔹 L'angle d'inclinaison influence directement la protection solaire et l'évacuation de l'eau de pluie</text>
+  <text x="80" y="710" class="note-text">🔹 Un angle trop faible (< 10°) peut entraîner une stagnation d'eau sur la toile</text>
+  <text x="80" y="730" class="note-text">🔹 Un angle trop élevé (> 25°) réduit l'avancée effective et la protection contre le soleil bas</text>
+  <text x="80" y="750" class="note-text" style="font-weight: bold; fill: #e74c3c;">⚠️ Avec le service "Prêt à Poser", l'angle est pré-réglé en usine - Aucun ajustement nécessaire !</text>
+  
+  <!-- Logo et signature -->
+  <text x="1050" y="770" text-anchor="end" style="font-family: Arial; font-size: 16px; font-weight: bold; fill: #3498db;">STORAL.FR</text>
+  <text x="1050" y="790" text-anchor="end" style="font-family: Arial; font-size: 12px; fill: #95a5a6;">Schéma technique - Document non contractuel</text>
+</svg>

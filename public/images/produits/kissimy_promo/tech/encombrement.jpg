@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" style="background:#f8f9fa">
+  <defs>
+    <style>
+      .dimension-line { stroke: #e74c3c; stroke-width: 2; fill: none; }
+      .dimension-arrow { fill: #e74c3c; }
+      .dimension-text { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #e74c3c; }
+      .label-text { font-family: Arial, sans-serif; font-size: 16px; font-weight: 600; fill: #2c3e50; }
+      .note-text { font-family: Arial, sans-serif; font-size: 14px; fill: #7f8c8d; }
+      .main-stroke { stroke: #34495e; stroke-width: 3; fill: none; }
+      .wall { fill: #95a5a6; stroke: #7f8c8d; stroke-width: 2; }
+      .coffre { fill: #3498db; stroke: #2c3e50; stroke-width: 2; }
+      .toile { fill: #f39c12; stroke: #d68910; stroke-width: 2; opacity: 0.7; }
+      .fixation { fill: #7f8c8d; stroke: #34495e; stroke-width: 2; }
+    </style>
+    
+    <!-- Marqueur flèche pour les côtes -->
+    <marker id="arrowhead-red" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+      <polygon points="0 0, 10 5, 0 10" class="dimension-arrow" />
+    </marker>
+  </defs>
+  
+  <!-- Titre -->
+  <text x="600" y="40" text-anchor="middle" style="font-family: Arial; font-size: 28px; font-weight: bold; fill: #2c3e50;">
+    DIMENSIONS DU COFFRE ET ENCOMBREMENT MURAL
+  </text>
+  
+  <!-- Mur (Vue de côté) -->
+  <rect x="50" y="100" width="30" height="500" class="wall"/>
+  <text x="35" y="360" text-anchor="middle" transform="rotate(-90, 35, 360)" class="label-text" style="font-size: 14px;">MUR</text>
+  
+  <!-- Support de fixation -->
+  <rect x="80" y="220" width="40" height="20" class="fixation"/>
+  <circle cx="100" cy="230" r="4" style="fill: #2c3e50;"/>
+  <text x="100" y="270" text-anchor="middle" class="note-text">Support mural</text>
+  
+  <!-- Coffre du store (vue de côté - carré) -->
+  <rect x="120" y="200" width="180" height="80" class="coffre" rx="5"/>
+  <text x="210" y="245" text-anchor="middle" class="label-text" style="fill: white;">COFFRE</text>
+  
+  <!-- Tube d'enroulement -->
+  <circle cx="210" cy="240" r="25" style="fill: #95a5a6; stroke: #7f8c8d; stroke-width: 2;"/>
+  
+  <!-- Toile partiellement déroulée -->
+  <path d="M 300 240 L 500 340 L 500 360 L 300 260 Z" class="toile"/>
+  
+  <!-- Bras articulé -->
+  <line x1="300" y1="240" x2="500" y2="340" style="stroke: #34495e; stroke-width: 4;"/>
+  <circle cx="300" cy="240" r="6" style="fill: #2c3e50;"/>
+  <circle cx="400" cy="290" r="5" style="fill: #2c3e50;"/>
+  <circle cx="500" cy="340" r="6" style="fill: #2c3e50;"/>
+  <text x="405" y="310" class="note-text">Bras articulé</text>
+  
+  <!-- Barre de charge -->
+  <rect x="495" y="340" width="10" height="100" style="fill: #7f8c8d; stroke: #34495e; stroke-width: 2;"/>
+  
+  <!-- CÔTE 1: Hauteur du coffre -->
+  <line x1="340" y1="200" x2="340" y2="280" class="dimension-line" marker-start="url(#arrowhead-red)" marker-end="url(#arrowhead-red)"/>
+  <text x="360" y="245" class="dimension-text">H coffre</text>
+  <text x="360" y="265" class="dimension-text" style="font-size: 16px;">(22-28 cm)</text>
+  
+  <!-- CÔTE 2: Hauteur totale utile -->
+  <line x1="30" y1="180" x2="30" y2="300" class="dimension-line" marker-start="url(#arrowhead-red)" marker-end="url(#arrowhead-red)"/>
+  <text x="8" y="245" class="dimension-text" transform="rotate(-90, 8, 245)">Hauteur totale utile</text>
+  <text x="8" y="270" class="dimension-text" transform="rotate(-90, 8, 270)" style="font-size: 16px;">(30-35 cm)</text>
+  
+  <!-- CÔTE 3: Distance mur-coffre -->
+  <line x1="80" y1="150" x2="120" y2="150" class="dimension-line" marker-start="url(#arrowhead-red)" marker-end="url(#arrowhead-red)"/>
+  <text x="100" y="140" text-anchor="middle" class="dimension-text" style="font-size: 14px;">≈ 4 cm</text>
+  
+  <!-- CÔTE 4: Largeur coffre -->
+  <line x1="120" y1="320" x2="300" y2="320" class="dimension-line" marker-start="url(#arrowhead-red)" marker-end="url(#arrowhead-red)"/>
+  <text x="210" y="310" text-anchor="middle" class="dimension-text" style="font-size: 14px;">L coffre (variable selon largeur toile)</text>
+  
+  <!-- VUE DE FACE (à droite) -->
+  <text x="900" y="140" text-anchor="middle" style="font-family: Arial; font-size: 20px; font-weight: bold; fill: #2c3e50;">VUE DE FACE</text>
+  
+  <!-- Mur vue de face -->
+  <rect x="700" y="160" width="400" height="30" class="wall"/>
+  
+  <!-- Coffre vue de face -->
+  <rect x="750" y="190" width="300" height="80" class="coffre" rx="5"/>
+  <text x="900" y="235" text-anchor="middle" class="label-text" style="fill: white; font-size: 18px;">COFFRE (vue frontale)</text>
+  
+  <!-- Supports de fixation vue de face -->
+  <rect x="770" y="200" width="30" height="40" class="fixation"/>
+  <rect x="1000" y="200" width="30" height="40" class="fixation"/>
+  <circle cx="785" cy="220" r="3" style="fill: #2c3e50;"/>
+  <circle cx="1015" cy="220" r="3" style="fill: #2c3e50;"/>
+  
+  <!-- CÔTE: Largeur store -->
+  <line x1="750" y1="310" x2="1050" y2="310" class="dimension-line" marker-start="url(#arrowhead-red)" marker-end="url(#arrowhead-red)"/>
+  <text x="900" y="330" text-anchor="middle" class="dimension-text">Largeur totale (L)</text>
+  <text x="900" y="350" text-anchor="middle" class="dimension-text" style="font-size: 16px;">1.50m à 7.00m selon modèle</text>
+  
+  <!-- Distance entre fixations -->
+  <line x1="785" y1="380" x2="1015" y2="380" class="dimension-line" marker-start="url(#arrowhead-red)" marker-end="url(#arrowhead-red)"/>
+  <text x="900" y="400" text-anchor="middle" class="dimension-text" style="font-size: 14px;">Entraxe fixations ≈ L - 0.50m</text>
+  
+  <!-- LÉGENDE ET INFORMATIONS -->
+  <rect x="50" y="450" width="550" height="300" style="fill: white; stroke: #bdc3c7; stroke-width: 2;" rx="10"/>
+  <text x="325" y="485" text-anchor="middle" style="font-family: Arial; font-size: 20px; font-weight: bold; fill: #2c3e50;">📐 INFORMATIONS TECHNIQUES</text>
+  
+  <!-- Points clés -->
+  <text x="80" y="520" class="label-text">🔹 ENCOMBREMENT MURAL :</text>
+  <text x="100" y="545" class="note-text">• Hauteur totale utile nécessaire au-dessus de la baie : 30 à 35 cm selon modèle</text>
+  <text x="100" y="570" class="note-text">• Distance mur-coffre : environ 4 cm (support + coffre)</text>
+  <text x="100" y="595" class="note-text">• Prévoir un espace dégagé pour le déploiement complet du coffre</text>
+  
+  <text x="80" y="630" class="label-text">🔹 FIXATION MURALE :</text>
+  <text x="100" y="655" class="note-text">• Supports de fixation en acier galvanisé (fournis)</text>
+  <text x="100" y="680" class="note-text">• Fixation sur mur béton, brique ou ossature bois renforcée</text>
+  <text x="100" y="705" class="note-text">• 2 à 4 points de fixation selon largeur du store (charge ≈ 50-100 kg)</text>
+  
+  <text x="80" y="735" class="label-text">⚠️ IMPORTANT :</text>
+  <text x="100" y="760" class="note-text" style="font-weight: bold; fill: #e74c3c;">Vérifier que le mur peut supporter le poids total du store (coffre + toile + armature)</text>
+  
+  <!-- Logo et signature -->
+  <text x="1050" y="770" text-anchor="end" style="font-family: Arial; font-size: 16px; font-weight: bold; fill: #3498db;">STORAL.FR</text>
+  <text x="1050" y="790" text-anchor="end" style="font-family: Arial; font-size: 12px; fill: #95a5a6;">Schéma technique - Document non contractuel</text>
+</svg>
