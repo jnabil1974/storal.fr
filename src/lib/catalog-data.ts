@@ -166,7 +166,7 @@ export interface StoreModel {
   slug?: string; // URL-friendly version du name (ex: "storal-compact")
   marketingRange?: string; // GAMME_COMPACT, GAMME_ARMOR, GAMME_EXCELLENCE, etc.
   type: 'coffre' | 'monobloc' | 'traditionnel' | 'specialite';
-  shape: 'carre' | 'galbe';
+  shape?: 'carre' | 'galbe'; // Uniquement pour les stores coffre
   is_promo: boolean;
   description: string;
   features: string[];
@@ -174,6 +174,10 @@ export interface StoreModel {
   image: string;
   // Types de toiles compatibles (codes: ORCH, ORCH_MAX, SATTLER)
   compatible_toile_types?: string[];
+  // Type de bras (argument commercial important)
+  arm_type: 'standard' | 'renforce' | 'ultra_renforce';
+  // Classe au vent selon la norme NF EN 13561 (Août 2015) - Classe 2 = Standard haute performance (70 N/m²)
+  wind_class: 'classe_2';
   // Logique pour déterminer le nombre de bras (impacte le prix LED)
   armLogic: 'standard_2' | 'force_2_3_4' | 'couples_4_6';
   // Largeur Minimale de fabrication pour chaque avancée { 1500: 1840 }
@@ -385,11 +389,13 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     type: "coffre",
     shape: "galbe",
     is_promo: true,
-    description: "L'essentiel du store coffre à prix serré. Moteur Sunea iO inclus.",
-    features: ["PRIX PROMO", "Moteur Sunea iO", "Option LED Bras"],
+    description: "L'essentiel du store coffre à prix serré. Moteur Sunea iO inclus. LED disponibles intégrées dans les bras.",
+    features: ["PRIX PROMO", "Moteur Sunea iO", "LED intégrées dans les bras (option)"],
     image: "/images/stores/KISSIMY.png",
     compatible_toile_types: ['ORCH'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 4830, max_projection: 3000, allowed_colors: ['9010', '1015', '7016'] },
+    arm_type: 'standard',
+    wind_class: 'classe_2',
     armLogic: 'standard_2',
     minWidths: { 1500: 1835, 1750: 2085, 2000: 2335, 2500: 2835, 3000: 3355 },
     buyPrices: {
@@ -422,11 +428,13 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     type: "coffre",
     shape: "galbe",
     is_promo: false,
-    description: "Le best-seller polyvalent jusqu'à 3.25m d'avancée.",
-    features: ["Robuste", "Polyvalent", "Sur mesure"],
+    description: "Le best-seller polyvalent jusqu'à 3.25m d'avancée. LED disponibles intégrées dans les bras.",
+    features: ["Robuste", "Polyvalent", "LED intégrées dans les bras (option)"],
     image: "/images/stores/KITANGUY.png",
     compatible_toile_types: ['ORCH', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 5850, max_projection: 3250 },
+    arm_type: 'standard',
+    wind_class: 'classe_2',
     armLogic: 'standard_2',
     minWidths: { 1500: 1895, 1750: 2145, 2000: 2395, 2500: 2895, 3000: 3415, 3250: 3645 },
   buyPrices: {
@@ -464,11 +472,13 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     type: "coffre",
     shape: "galbe",
     is_promo: false,
-    description: "Design premium avec éclairage LED intégré au coffre.",
-    features: ["Nouveau Design", "LED Coffre", "Finition Luxe"],
+    description: "Design premium avec LED encastrées dans le coffre ET intégrées dans les bras (option). Double éclairage pour une ambiance unique.",
+    features: ["Nouveau Design", "LED coffre encastrées", "LED bras intégrées (option)"],
     image: "/images/stores/KITANGUY_2.png",
     compatible_toile_types: ['ORCH', 'SATT'],
     compatibility: { led_arms: true, led_box: true, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 5850, max_projection: 3250 },
+    arm_type: 'standard',
+    wind_class: 'classe_2',
     armLogic: 'standard_2',
     minWidths: { 1500: 1910, 1750: 2160, 2000: 2410, 2500: 2910, 3000: 3410, 3250: 3660 },
     buyPrices: {
@@ -507,11 +517,13 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     type: "coffre",
     shape: "carre",
     is_promo: false,
-    description: "Design cubique ultra-tendance pour architecture moderne.",
-    features: ["Coffre Carré", "Design épuré", "Avancée 3.5m"],
+    description: "Design cubique ultra-tendance pour architecture moderne. LED encastrées dans le coffre ET intégrées dans les bras (option).",
+    features: ["Coffre Carré", "LED coffre encastrées", "LED bras intégrées (option)"],
     image: "/images/stores/HELIOM.png",
     compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: true, lambrequin_fixe: false, lambrequin_enroulable: false, max_width: 6000, max_projection: 3500 },
+    arm_type: 'standard',
+    wind_class: 'classe_2',
     armLogic: 'standard_2',
     minWidths: { 1500: 2340, 2000: 2840, 2500: 3340, 2750: 3590, 3000: 3840, 3250: 4090, 3500: 4340 },
     buyPrices: {
@@ -550,11 +562,13 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     type: "coffre",
     shape: "carre",
     is_promo: false,
-    description: "Version renforcée jusqu'à 4m d'avancée avec option lambrequin.",
-    features: ["Avancée 4m", "Lambrequin Enroulable", "Bras Renforcés"],
+    description: "Version renforcée jusqu'à 4m d'avancée avec lambrequin enroulable. LED encastrées dans le coffre ET intégrées dans les bras (option).",
+    features: ["Avancée 4m", "LED coffre + bras (option)", "Lambrequin Enroulable"],
     image: "/images/stores/HELIOM.png",
     compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: true, lambrequin_fixe: false, lambrequin_enroulable: true, max_width: 6000, max_projection: 4000 },
+    arm_type: 'standard',
+    wind_class: 'classe_2',
     armLogic: 'standard_2',
     minWidths: { 2500: 3420, 2750: 3670, 3000: 3920, 3250: 4170, 3500: 4420, 4000: 4920 },
     buyPrices: {
@@ -609,11 +623,13 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     type: "coffre",
     shape: "carre",
     is_promo: false,
-    description: "La nouveauté 2026. Polyvalent avec option lambrequin enroulable.",
-    features: ["Nouveauté", "Lambrequin Optionnel", "Éclairage Bras"],
+    description: "La nouveauté 2026. Polyvalent avec lambrequin enroulable optionnel. LED intégrées dans les bras (option).",
+    features: ["Nouveauté", "Lambrequin Optionnel", "LED bras intégrées (option)"],
     image: "/images/stores/KALY_O.png",
     compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 6000, max_projection: 3500 },
+    arm_type: 'standard',
+    wind_class: 'classe_2',
     armLogic: 'standard_2',
     minWidths: { 1500: 2160, 2000: 2660, 2500: 3160, 2750: 3410, 3000: 3720, 3250: 3970, 3500: 4220 },
     buyPrices: {
@@ -669,11 +685,13 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     type: "coffre",
     shape: "galbe",
     is_promo: false, // Promo dynamique selon largeur
-    description: "Le géant des terrasses, jusqu'à 12m de large.",
-    features: ["Jusqu'à 12m", "Bras Renforcés", "Idéal CHR"],
+    description: "Le géant des terrasses, jusqu'à 12m de large. Bras ultra-renforcés certifiés Classe 2 (NF EN 13561). LED intégrées dans les bras (option).",
+    features: ["Jusqu'à 12m", "Bras Ultra-Renforcés", "LED bras intégrées (option)"],
     image: "/images/stores/DYNASTA.png",
     compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 4000, allowed_colors: ['9010', '1015', '7016'] },
+    arm_type: 'ultra_renforce',
+    wind_class: 'classe_2',
     armLogic: 'couples_4_6',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3250: 3880, 3500: 4130, 4000: 4630 },
     buyPrices: {
@@ -720,11 +738,13 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     type: "coffre",
     shape: "galbe",
     is_promo: false,
-    description: "Le haut de gamme absolu jusqu'à 12m. Design fluide.",
-    features: ["Jusqu'à 12m", "Finition Luxe", "Lambrequin Enroulable"],
+    description: "Le haut de gamme absolu jusqu'à 12m. Bras ultra-renforcés certifiés Classe 2 (NF EN 13561). LED intégrées dans les bras (option).",
+    features: ["Jusqu'à 12m", "Finition Luxe", "LED bras intégrées (option)"],
     image: "/images/stores/BELHARRA.png",
     compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 12000, max_projection: 4000 },
+    arm_type: 'ultra_renforce',
+    wind_class: 'classe_2',
     armLogic: 'couples_4_6',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3250: 3880, 3500: 4130, 4000: 4630 },
     buyPrices: {
@@ -783,11 +803,13 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     type: "coffre",
     shape: "galbe",
     is_promo: false,
-    description: "Nouveau Design, store semi-coffre avec bras standards SB100.",
-    features: ["Auvent Intégré", "Bras SB100", "Jusqu'à 12m"],
+    description: "Store semi-coffre avec auvent intégré jusqu'à 12m. Bras ultra-renforcés certifiés Classe 2 (NF EN 13561). LED encastrées dans le coffre ET intégrées dans les bras (option).",
+    features: ["Auvent Intégré", "LED coffre + bras (option)", "Jusqu'à 12m"],
     image: "/images/stores/BELHARRA_2.png",
     compatible_toile_types: ['ORCH', 'SATT'],
     compatibility: { led_arms: true, led_box: true, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 12000, max_projection: 3000 },
+    arm_type: 'ultra_renforce',
+    wind_class: 'classe_2',
     armLogic: 'couples_4_6',
     minWidths: { 1500: 2050, 2000: 2050, 2500: 3130, 2750: 3380, 3000: 3630 },
     buyPrices: {
@@ -838,13 +860,14 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     name: "STORAL CLASSIQUE",
     marketingRange: "GAMME_CLASSIQUE",
     type: "monobloc",
-    shape: "carre",
     is_promo: false,
-    description: "Store monobloc sans coffre avec tube carré 40×40. Solution économique et compacte.",
-    features: ["Encombrement réduit", "Prix attractif", "Installation simple"],
+    description: "Store monobloc sans coffre avec tube carré 40×40. Solution économique et compacte. LED intégrées dans les bras (option).",
+    features: ["Encombrement réduit", "LED bras intégrées (option)", "Installation simple"],
     image: "/images/stores/store_monobloc.png",
     compatible_toile_types: ['ORCH'],
-    compatibility: { led_arms: false, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 6000, max_projection: 3000 },
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 6000, max_projection: 3000 },
+    arm_type: 'standard',
+    wind_class: 'classe_2',
     armLogic: 'standard_2',
     minWidths: { 1500: 1800, 2000: 2300, 2500: 2800, 3000: 3300 },
     buyPrices: {
@@ -877,13 +900,14 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     name: "STORAL CLASSIQUE +",
     marketingRange: "GAMME_CLASSIQUE",
     type: "monobloc",
-    shape: "carre",
     is_promo: false,
-    description: "Store monobloc sans coffre avec tube carré 40×40. Idéal pour hauteur de pose réduite.",
-    features: ["Encombrement réduit", "Tube carré 40×40", "Option Auvent"],
-    image: "/images/stores/store_monobloc.png",
+    description: "Store monobloc sans coffre avec tube carré 40×40 jusqu'à 12m. Bras renforcés. LED intégrées dans les bras (option).",
+    features: ["Jusqu'à 12m", "Tube carré 40×40", "LED bras intégrées (option)"],
+    image: "/images/stores/store semi coffre.png",
     compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 4000 },
+    arm_type: 'renforce',
+    wind_class: 'classe_2',
     armLogic: 'couples_4_6',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3050, 3000: 3550, 3500: 4050, 4000: 4550 },
     buyPrices: {
@@ -920,13 +944,14 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     name: "STORAL TRADITION",
     marketingRange: "GAMME_TRADITION",
     type: "traditionnel",
-    shape: "galbe",
     is_promo: false,
-    description: "Le store traditionnel par excellence, idéal pour les balcons et budgets serrés.",
-    features: ["Prix économique", "Installation simple", "Option Auvent"],
+    description: "Le store traditionnel par excellence, idéal pour les balcons et budgets serrés. LED intégrées dans les bras (option).",
+    features: ["Prix économique", "Installation simple", "LED bras intégrées (option)"],
     image: "/images/stores/store_traditionnel.png",
     compatible_toile_types: ['ORCH'],
-    compatibility: { led_arms: false, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 6000, max_projection: 3000 },
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 6000, max_projection: 3000 },
+    arm_type: 'standard',
+    wind_class: 'classe_2',
     armLogic: 'standard_2',
     minWidths: { 1500: 1800, 2000: 2300, 2500: 2800, 3000: 3300 },
     buyPrices: {
@@ -952,20 +977,107 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
   },
 
-  // --- 13. BRAS CROISÉS - STORAL BRAS CROISÉS (Spécialité pour balcons étroits) ---
+  // --- 13. MENTON - STORAL TRADITION + (Traditionnel Renforcé) ---
+  "menton": {
+    id: "menton",
+    slug: "store-banne-traditionnel-renforce-menton",
+    name: "STORAL TRADITION +",
+    marketingRange: "GAMME_TRADITION",
+    type: "traditionnel",
+    is_promo: false,
+    description: "Version renforcée du store traditionnel pour dimensions supérieures jusqu'à 8m. LED intégrées dans les bras (option).",
+    features: ["Renforcé", "Jusqu'à 8m", "LED bras intégrées (option)"],
+    image: "/images/stores/store_traditionnel.png",
+    compatible_toile_types: ['ORCH', 'SATT'],
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 8000, max_projection: 3500 },
+    arm_type: 'standard',
+    wind_class: 'classe_2',
+    armLogic: 'standard_2',
+    minWidths: { 1500: 1800, 2000: 2300, 2500: 2800, 3000: 3300, 3500: 3800 },
+    buyPrices: {
+      1500: [{ maxW: 3000, priceHT: 950 }, { maxW: 4000, priceHT: 1050 }, { maxW: 5000, priceHT: 1220 }, { maxW: 6000, priceHT: 1400 }, { maxW: 8000, priceHT: 1800 }],
+      2000: [{ maxW: 3000, priceHT: 1020 }, { maxW: 4000, priceHT: 1150 }, { maxW: 5000, priceHT: 1340 }, { maxW: 6000, priceHT: 1550 }, { maxW: 8000, priceHT: 2000 }],
+      2500: [{ maxW: 3000, priceHT: 1120 }, { maxW: 4000, priceHT: 1280 }, { maxW: 5000, priceHT: 1480 }, { maxW: 6000, priceHT: 1730 }, { maxW: 8000, priceHT: 2250 }],
+      3000: [{ maxW: 3000, priceHT: 1250 }, { maxW: 4000, priceHT: 1450 }, { maxW: 5000, priceHT: 1680 }, { maxW: 6000, priceHT: 1950 }, { maxW: 8000, priceHT: 2550 }],
+      3500: [{ maxW: 4000, priceHT: 1580 }, { maxW: 5000, priceHT: 1820 }, { maxW: 6000, priceHT: 2120 }, { maxW: 8000, priceHT: 2800 }]
+    },
+    ceilingMountPrices: [
+      { maxW: 6000, price: 120 },
+      { maxW: 8000, price: 180 }
+    ],
+    salesCoefficient: 1.7,  // Version renforcée
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'disassembled',
+    deliveryNote: "Store livré démonté - Installation par nos soins ou par un professionnel recommandé",
+    colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
+  },
+
+  // --- 14. LISBONNE - STORAL TRADITION 18M (Traditionnel Grande Portée) ---
+  "lisbonne": {
+    id: "lisbonne",
+    slug: "store-banne-traditionnel-grande-portee-18m",
+    name: "STORAL TRADITION 18M",
+    marketingRange: "GAMME_TRADITION",
+    type: "traditionnel",
+    is_promo: false,
+    description: "Le store traditionnel pour très grandes dimensions jusqu'à 18m. Bras ultra-renforcés certifiés Classe 2 (NF EN 13561). LED intégrées dans les bras (option).",
+    features: ["Jusqu'à 18m", "Bras Ultra-Renforcés", "LED bras intégrées (option)"],
+    image: "/images/stores/store_traditionnel.png",
+    compatible_toile_types: ['ORCH', 'SATT'],
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 18000, max_projection: 4000 },
+    arm_type: 'ultra_renforce',
+    wind_class: 'classe_2',
+    armLogic: 'couples_4_6',
+    minWidths: { 2000: 6000, 2500: 7000, 3000: 8000, 3500: 9000, 4000: 10000 },
+    buyPrices: {
+      2000: [{ maxW: 8000, priceHT: 2500 }, { maxW: 10000, priceHT: 3200 }, { maxW: 12000, priceHT: 4000 }, { maxW: 15000, priceHT: 5200 }, { maxW: 18000, priceHT: 6800 }],
+      2500: [{ maxW: 8000, priceHT: 2800 }, { maxW: 10000, priceHT: 3600 }, { maxW: 12000, priceHT: 4500 }, { maxW: 15000, priceHT: 5800 }, { maxW: 18000, priceHT: 7600 }],
+      3000: [{ maxW: 8000, priceHT: 3200 }, { maxW: 10000, priceHT: 4100 }, { maxW: 12000, priceHT: 5100 }, { maxW: 15000, priceHT: 6600 }, { maxW: 18000, priceHT: 8600 }],
+      3500: [{ maxW: 8000, priceHT: 3600 }, { maxW: 10000, priceHT: 4600 }, { maxW: 12000, priceHT: 5700 }, { maxW: 15000, priceHT: 7400 }, { maxW: 18000, priceHT: 9600 }],
+      4000: [{ maxW: 8000, priceHT: 4100 }, { maxW: 10000, priceHT: 5200 }, { maxW: 12000, priceHT: 6400 }, { maxW: 15000, priceHT: 8300 }, { maxW: 18000, priceHT: 10800 }]
+    },
+    ceilingMountPrices: [
+      { maxW: 10000, price: 250 },
+      { maxW: 15000, price: 400 },
+      { maxW: 18000, price: 550 }
+    ],
+    salesCoefficient: 1.7,  // Projet sur mesure XXL
+    optionsCoefficients: {
+      LED_ARMS: 2.0,
+      LED_CASSETTE: 2.0,
+      LAMBREQUIN_FIXE: 1.5,
+      LAMBREQUIN_ENROULABLE: 1.8,
+      CEILING_MOUNT: 1.6,
+      FRAME_COLOR_CUSTOM: 1.8
+    },
+    deliveryType: 'disassembled',
+    deliveryNote: "Store livré démonté par transporteur spécialisé - Installation professionnelle obligatoire",
+    colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
+    deliveryWarningThreshold: 6000  // Alerte livraison complexe
+  },
+
+  // --- 15. BRAS CROISÉS - STORAL BRAS CROISÉS (Spécialité pour balcons étroits) ---
   "bras_croises": {
     id: "bras_croises",
     slug: "store-banne-balcon-etroit-bras-croises",
     name: "STORAL BRAS CROISÉS",
     marketingRange: "GAMME_SPECIAL",
     type: "specialite",
-    shape: "carre",
     is_promo: false,
-    description: "La solution exclusive pour les terrasses et balcons étroits où l'avancée est supérieure à la largeur. Bras superposés avec mécanique spéciale.",
-    features: ["Configuration Unique", "Bras Superposés", "Avancée > Largeur", "Option Auvent"],
-    image: "/images/stores/store_monobloc.png",
+    description: "La solution exclusive pour les terrasses et balcons étroits où l'avancée est supérieure à la largeur. Bras superposés avec mécanique spéciale. LED intégrées dans les bras (option).",
+    features: ["Configuration Unique", "Bras Superposés", "LED bras intégrées (option)"],
+    image: "/images/stores/store coffre.png",
     compatible_toile_types: ['ORCH', 'SATT'],
-    compatibility: { led_arms: false, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 4000, max_projection: 3500 },
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 4000, max_projection: 3500 },
+    arm_type: 'standard',
+    wind_class: 'classe_2',
     armLogic: 'standard_2',
     minWidths: { 1500: 1100, 2000: 1600, 2500: 2100, 3000: 2600, 3500: 3100 },
     buyPrices: {
@@ -1383,10 +1495,14 @@ export const products = {
   antibes: { label: "STORAL CLASSIQUE", marketingRange: "GAMME_CLASSIQUE" },
   madrid: { label: "STORAL CLASSIQUE +", marketingRange: "GAMME_CLASSIQUE" },
 
+  // --- GAMME TRADITION ---
+  genes: { label: "STORAL TRADITION", marketingRange: "GAMME_TRADITION" },
+  menton: { label: "STORAL TRADITION +", marketingRange: "GAMME_TRADITION" },
+  lisbonne: { label: "STORAL TRADITION 18M", marketingRange: "GAMME_TRADITION" },
+
   // --- SPÉCIAUX ---
   kalyo: { label: "STORAL K", marketingRange: "GAMME_KARE_COMPACT" },
-  bras_croises: { label: "STORAL BRAS CROISÉS", marketingRange: "GAMME_SPECIAL" },
-  genes: { label: "STORAL TRADITION", marketingRange: "GAMME_TRADITION" }
+  bras_croises: { label: "STORAL BRAS CROISÉS", marketingRange: "GAMME_SPECIAL" }
 };
 
 // ==========================================
@@ -1564,5 +1680,7 @@ export const META_DESCRIPTIONS: Record<string, string> = {
   'store-banne-coffre-traditionnel-antibes': "Retrouvez le charme du classique avec le STORAL ANTIBES. Coffre de protection traditionnel, mécanisme éprouvé et large choix de toiles.",
   'store-banne-coffre-robuste-madrid': "Le STORAL MADRID offre une robustesse à toute épreuve pour un usage intensif. Fiabilité mécanique et esthétique intemporelle pour votre maison.",
   'store-banne-loggia-sans-coffre': "Idéal pour les loggias et balcons abrités, le STORAL TRADITION offre une protection solaire efficace et économique sans encombrement inutile.",
+  'store-banne-traditionnel-renforce-menton': "Le STORAL TRADITION+ offre une structure renforcée jusqu'à 8m. Installation professionnelle pour terrasses de grandes dimensions. Économique et robuste.",
+  'store-banne-traditionnel-grande-portee-18m': "Le store TRADITION 18M pour projets XXL : jusqu'à 18 mètres de large ! Solution professionnelle pour restaurants, CHR et grandes structures. Prix sur devis.",
   'store-banne-balcon-etroit-bras-croises': "La solution pour les terrasses étroites : les bras croisés permettent une avancée supérieure à la largeur du store. Ingénieux et pratique.",
 };
