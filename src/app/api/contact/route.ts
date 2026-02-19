@@ -59,11 +59,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Erreur vérification reCAPTCHA' }, { status: 500 });
     }
 
+    console.log('📧 Vérification RESEND_API_KEY:', { hasKey: !!RESEND_API_KEY, from: EMAIL_FROM, bcc: EMAIL_BCC });
     if (!RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY manquant');
       return NextResponse.json({ error: 'Service email non configuré' }, { status: 500 });
     }
 
     // Envoi email
+    console.log('📧 Préparation envoi email:', { name, email, subject, title });
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
         <h2 style="color:#0066cc;">Nouveau message de contact</h2>
@@ -101,14 +104,19 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(emailBody),
     });
 
+    console.log('📧 Réponse Resend API:', { status: res.status, ok: res.ok });
     const data = await res.json();
+    console.log('📧 Data Resend:', data);
+    
     if (!res.ok) {
+      console.error('❌ Erreur envoi email:', { status: res.status, data });
       return NextResponse.json(
         { error: 'Erreur envoi email', details: data },
         { status: res.status }
       );
     }
 
+    console.log('✅ Email envoyé avec succès:', data.id);
     return NextResponse.json({ ok: true, id: data.id });
   } catch (err) {
     console.error('Contact API error:', err);
