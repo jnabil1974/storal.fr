@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     const emailBody = {
       from: EMAIL_FROM,
-      to: 'admin@storal.fr',
+      to: 'njlaiel@gmail.com', // Temporaire : domaine test Resend limité à cette adresse
       bcc: EMAIL_BCC,
       reply_to: email,
       subject: `Contact: ${title || subject || 'Demande de renseignements'} - ${name}`,
