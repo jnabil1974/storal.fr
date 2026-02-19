@@ -354,35 +354,48 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </section>
 
       {/* ========================================
-          BLOC 3 : MENTION PRÊT À POSER (<= 6m)
+          BLOC 3 : MENTION PRÊT À POSER
       ======================================== */}
-      {dimensions.maxWidth <= 6000 && (
-        <section className="bg-gradient-to-r from-green-50 to-emerald-50 border-y border-green-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex items-start gap-6">
-              <div className="flex-shrink-0">
-                <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center text-3xl">
-                  🌟
-                </div>
+      <section className="bg-gradient-to-r from-green-50 to-emerald-50 border-y border-green-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-start gap-6">
+            <div className="flex-shrink-0">
+              <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center text-3xl">
+                🌟
               </div>
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                  100% Prêt à poser : Zéro réglage, zéro tracas !
-                </h2>
-                <p className="text-gray-700 text-lg leading-relaxed">
-                  Contrairement aux modèles standards, votre store vous est livré <strong className="text-green-700">entièrement assemblé et paramétré</strong>. 
-                  Plus besoin de passer du temps à ajuster les butées ou les fins de course — tout est déjà configuré en usine par nos techniciens. 
-                  Vous n&apos;avez qu&apos;à le fixer au mur, et c&apos;est prêt !
-                </p>
-                <div className="mt-4 flex items-center gap-2 text-green-700 font-semibold">
-                  <Truck className="w-5 h-5" />
-                  <span>Livraison rapide partout en France</span>
-                </div>
+            </div>
+            <div className="flex-1">
+              {dimensions.maxWidth <= 6000 ? (
+                <>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                    100% Prêt à poser : Zéro réglage, zéro tracas !
+                  </h2>
+                  <p className="text-gray-700 text-lg leading-relaxed">
+                    Contrairement aux modèles standards, votre store vous est livré <strong className="text-green-700">entièrement assemblé et paramétré</strong>. 
+                    Plus besoin de passer du temps à ajuster les butées ou les fins de course — tout est déjà configuré en usine par nos techniciens. 
+                    Vous n&apos;avez qu&apos;à le fixer au mur, et c&apos;est prêt !
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                    Prêt à poser pour dimensions ≤ 6m
+                  </h2>
+                  <p className="text-gray-700 text-lg leading-relaxed">
+                    <strong className="text-green-700">Si vous configurez une largeur de 6 mètres ou moins</strong>, votre store vous sera livré entièrement assemblé et paramétré. 
+                    Plus besoin de passer du temps à ajuster les butées ou les fins de course — tout est déjà configuré en usine par nos techniciens. 
+                    Vous n&apos;avez qu&apos;à le fixer au mur, et c&apos;est prêt !
+                  </p>
+                </>
+              )}
+              <div className="mt-4 flex items-center gap-2 text-green-700 font-semibold">
+                <Truck className="w-5 h-5" />
+                <span>Livraison rapide partout en France</span>
               </div>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* ========================================
           BLOC 4 : FICHE TECHNIQUE & QUALITÉ
