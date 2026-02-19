@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
+const RECAPTCHA_ENABLED = RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY.length > 0;
 
 function AuthPageContent() {
   const { signIn, signUp } = useAuth();
@@ -23,21 +24,27 @@ function AuthPageContent() {
     setError('');
     setMessage('');
 
-    if (!executeRecaptcha) {
+    // Si reCAPTCHA n'est pas configuré, continuer sans vérification
+    if (!RECAPTCHA_ENABLED) {
+      console.warn('⚠️ reCAPTCHA non configuré - authentification sans vérification');
+    } else if (!executeRecaptcha) {
       setError('reCAPTCHA non initialisé');
       return;
     }
 
     setLoading(true);
     try {
-      const recaptchaToken = await executeRecaptcha('auth_submit');
-      const verifyRes = await fetch('/api/recaptcha', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recaptchaToken }),
-      });
-      if (!verifyRes.ok) {
-        throw new Error('Vérification reCAPTCHA échouée');
+      // Vérifier reCAPTCHA seulement s'il est configuré
+      if (RECAPTCHA_ENABLED && executeRecaptcha) {
+        const recaptchaToken = await executeRecaptcha('auth_submit');
+        const verifyRes = await fetch('/api/recaptcha', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recaptchaToken }),
+        });
+        if (!verifyRes.ok) {
+          throw new Error('Vérification reCAPTCHA échouée');
+        }
       }
 
       if (mode === 'login') {
@@ -112,6 +119,11 @@ function AuthPageContent() {
 }
 
 export default function AuthPage() {
+  // Si reCAPTCHA n'est pas configuré, afficher le contenu sans le provider
+  if (!RECAPTCHA_ENABLED) {
+    return <AuthPageContent />;
+  }
+  
   return (
     <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY} scriptProps={{ async: true, defer: true }}>
       <AuthPageContent />
