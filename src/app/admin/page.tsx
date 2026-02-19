@@ -313,6 +313,27 @@ export default function AdminDashboard() {
             </svg>
           </Link>
         </div>
+
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-gray-100 group hover:scale-[1.02] celestial-glow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Coefficients</p>
+              <p className="text-4xl font-black text-emerald-600 mt-3">💰</p>
+            </div>
+            <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-4 shadow-lg group-hover:shadow-xl transition-all">
+              <span className="text-4xl">📈</span>
+            </div>
+          </div>
+          <Link 
+            href="/admin/coefficients"
+            className="text-sm text-emerald-600 hover:text-emerald-700 font-bold mt-5 inline-flex items-center gap-2 uppercase tracking-wider"
+          >
+            Gérer marges
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </Link>
+        </div>
       </div>
 
       {/* Commandes récentes */}
