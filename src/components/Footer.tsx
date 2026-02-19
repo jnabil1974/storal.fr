@@ -172,6 +172,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/zones-intervention" className="text-sm hover:text-white transition">
+                  Zones d'intervention
+                </Link>
+              </li>
+              <li>
                 <Link href="/auth" className="text-sm hover:text-white transition text-gray-400">
                   Espace Client / Connexion
                 </Link>

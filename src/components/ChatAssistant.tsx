@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
 import { STORE_MODELS, type StoreModel, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
+import { calculateInstallationCostWithZone } from '@/lib/intervention-zones';
 import VisualShowroom from './VisualShowroom';
 import { useShowroom } from '@/contexts/ShowroomContext';
 import type { ProductType } from '@/types/products';
@@ -124,6 +125,8 @@ interface Cart {
   ledArms?: boolean; // LED bras
   ledBox?: boolean; // LED coffre
   obstacles?: string | null; // Obstacles éventuels
+  codePostal?: string | null; // Code postal pour calcul frais de pose
+  fraisDeplacement?: number; // Frais de déplacement calculés
 }
 
 interface ChatAssistantProps {
@@ -349,8 +352,19 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
     }
   }, [cart, addItem, router]);
 
-  // 🔥 Calcul dynamique de la pose selon la largeur en cm
-  const calculateInstallationCost = (widthCm: number): number => {
+  // 🔥 Calcul dynamique de la pose selon la largeur et la zone géographique
+  const calculateInstallationCost = (widthCm: number, codePostal?: string | null): number => {
+    // Si code postal disponible, utiliser le calcul par zone
+    if (codePostal && codePostal.length === 5) {
+      const result = calculateInstallationCostWithZone(widthCm, codePostal);
+      // Stocker les frais de déplacement dans le cart pour affichage
+      if (cart) {
+        setCart(prev => ({ ...prev!, fraisDeplacement: result.fraisDeplacement }));
+      }
+      return result.total; // Retourne pose base + frais déplacement
+    }
+    
+    // Fallback : calcul standard sans frais de déplacement
     if (widthCm <= 6000) {
       return 500;  // 500€ HT forfait jusqu'à 6m
     } else {
@@ -436,8 +450,8 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       // ✅ Fix: Utiliser cart.fabricId au lieu de fabric_color de l'IA
       const actualFabricId = cart.fabricId || fabric_color;
       
-      // Calculate installation cost
-      const poseActuelle = width && avec_pose ? calculateInstallationCost(width) : 0;
+      // Calculate installation cost with zone
+      const poseActuelle = width && avec_pose ? calculateInstallationCost(width, cart.codePostal) : 0;
       
       // Calculate TTC prices
       const calculateTTC = (priceHT: number) => {
@@ -492,7 +506,8 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         orientation,
         install_height,
         cable_exit,
-        obstacles
+        obstacles,
+        code_postal  // Code postal pour frais de déplacement
       } = input;
       
       // ✅ Fix: Utiliser cart.fabricId au lieu de fabric_color de l'IA
@@ -560,6 +575,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         installHeight: install_height,
         cableExit: cable_exit,
         obstacles,
+        codePostal: code_postal,  // Code postal pour zone d'intervention
         ledArms: includes_led_arms,
         ledBox: includes_led_box,
       });
@@ -1115,8 +1131,8 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
     const standardHT = standard_price_ht || standard_price || input.confort || 0;
     const premiumHT = premium_price_ht || premium_price || input.premium || 0;
     
-    // 💰 Recalculer la pose avec la nouvelle formule (500€ + 100€/m > 6m)
-    const poseActuelle = width && avec_pose ? calculateInstallationCost(width) : 0;
+    // 💰 Recalculer la pose avec la formule par zone géographique
+    const poseActuelle = width && avec_pose ? calculateInstallationCost(width, cart?.codePostal) : 0;
     
     // Calculate TTC for each tier
     const calculateTTC = (priceHT: number, tauxTVA: number, montantPose: number, inclure: boolean) => {
@@ -1679,7 +1695,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
   const calculateEcoOffer = (input: any) => {
     const { eco_price_ht, eco_price, standard, with_motor, avec_pose = false, taux_tva = 20, width = 3000 } = input;
     const ecoHT = eco_price_ht || eco_price || standard || 0;
-    const poseActuelle = width && avec_pose ? calculateInstallationCost(width) : 0;
+    const poseActuelle = width && avec_pose ? calculateInstallationCost(width, cart?.codePostal) : 0;
     const totalHT = avec_pose ? ecoHT + poseActuelle : ecoHT;
     const tvaMontant = Math.round(totalHT * (taux_tva / 100));
     const totalTTC = totalHT + tvaMontant;
@@ -1689,7 +1705,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
   const calculateStandardOffer = (input: any) => {
     const { standard_price_ht, standard_price, confort, with_motor, avec_pose = false, taux_tva = 20, width = 3000 } = input;
     const standardHT = standard_price_ht || standard_price || confort || 0;
-    const poseActuelle = width && avec_pose ? calculateInstallationCost(width) : 0;
+    const poseActuelle = width && avec_pose ? calculateInstallationCost(width, cart?.codePostal) : 0;
     const totalHT = avec_pose ? standardHT + poseActuelle : standardHT;
     const tvaMontant = Math.round(totalHT * (taux_tva / 100));
     const totalTTC = totalHT + tvaMontant;
@@ -1699,7 +1715,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
   const calculatePremiumOffer = (input: any) => {
     const { premium_price_ht, premium_price, premium, with_motor, avec_pose = false, taux_tva = 20, width = 3000 } = input;
     const premiumHT = premium_price_ht || premium_price || premium || 0;
-    const poseActuelle = width && avec_pose ? calculateInstallationCost(width) : 0;
+    const poseActuelle = width && avec_pose ? calculateInstallationCost(width, cart?.codePostal) : 0;
     const totalHT = avec_pose ? premiumHT + poseActuelle : premiumHT;
     const tvaMontant = Math.round(totalHT * (taux_tva / 100));
     const totalTTC = totalHT + tvaMontant;

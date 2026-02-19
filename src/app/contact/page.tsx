@@ -13,6 +13,7 @@ function ContactFormContent() {
     name: '',
     email: '',
     phone: '',
+    codePostal: '',
     subject: '',
     title: '',
     message: '',
@@ -20,6 +21,11 @@ function ContactFormContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [zoneCheck, setZoneCheck] = useState<{
+    checking: boolean;
+    message: string;
+    disponible?: boolean;
+  } | null>(null);
 
   // Préremplir depuis les paramètres URL
   useEffect(() => {
@@ -42,6 +48,33 @@ function ContactFormContent() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    
+    // Vérification zone d'intervention pour le code postal
+    if (e.target.name === 'codePostal' && e.target.value.length === 5) {
+      checkZone(e.target.value);
+    } else if (e.target.name === 'codePostal') {
+      setZoneCheck(null);
+    }
+  };
+
+  const checkZone = async (codePostal: string) => {
+    setZoneCheck({ checking: true, message: 'Vérification en cours...' });
+    
+    try {
+      const res = await fetch(`/api/check-zone?codePostal=${codePostal}`);
+      const data = await res.json();
+      
+      setZoneCheck({
+        checking: false,
+        message: data.message,
+        disponible: data.disponible,
+      });
+    } catch (err) {
+      setZoneCheck({
+        checking: false,
+        message: 'Erreur lors de la vérification',
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -148,6 +181,32 @@ function ContactFormContent() {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Code postal
+                </label>
+                <input
+                  type="text"
+                  name="codePostal"
+                  value={formData.codePostal}
+                  onChange={handleChange}
+                  maxLength={5}
+                  pattern="\d{5}"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                  placeholder="75001"
+                />
+                {zoneCheck && (
+                  <p className={`mt-2 text-sm ${
+                    zoneCheck.checking ? 'text-gray-600' :
+                    zoneCheck.disponible ? 'text-green-600' : 'text-orange-600'
+                  }`}>
+                    {zoneCheck.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Sujet

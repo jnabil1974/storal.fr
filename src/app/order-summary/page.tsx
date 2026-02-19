@@ -31,6 +31,8 @@ interface Cart {
   sousCoffrePrice?: number;
   poseHT?: number;
   tvaAmount?: number;
+  codePostal?: string | null;
+  fraisDeplacement?: number;
 }
 
 const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
@@ -1084,13 +1086,21 @@ function OrderSummaryPageContent() {
 
             {/* Installation */}
             {cart.poseHT && cart.poseHT > 0 && (
-              <div className="flex justify-between text-gray-700 mt-4 pt-3 border-t border-gray-300">
-                <span className="flex items-center">
-                  <span className="text-green-500 mr-2">🔧</span>
-                  Installation professionnelle (HT)
-                </span>
-                <span className="font-semibold">{cart.poseHT.toFixed(2)} €</span>
-              </div>
+              <>
+                <div className="flex justify-between text-gray-700 mt-4 pt-3 border-t border-gray-300">
+                  <span className="flex items-center">
+                    <span className="text-green-500 mr-2">🔧</span>
+                    Installation professionnelle (HT)
+                  </span>
+                  <span className="font-semibold">{cart.poseHT.toFixed(2)} €</span>
+                </div>
+                {cart.fraisDeplacement !== undefined && cart.fraisDeplacement > 0 && (
+                  <div className="flex justify-between text-sm text-gray-600 ml-6">
+                    <span>• Dont frais de déplacement</span>
+                    <span>{cart.fraisDeplacement.toFixed(2)} €</span>
+                  </div>
+                )}
+              </>
             )}
 
             {/* TVA */}

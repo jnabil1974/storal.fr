@@ -575,10 +575,77 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     Demande s'il a les compétences pour l'installer ou s'il préfère nos experts.
     Argument: Si maison > 2 ans et pose par nos soins, la TVA passe de 20% à 10% sur tout le projet.
 
+    📍 ÉTAPE 1G - CODE POSTAL ET ZONE D'INTERVENTION:
+    
+    ⚠️ **RÈGLE CRITIQUE** : Le code postal est OBLIGATOIRE pour calculer les frais de déplacement et vérifier que nous pouvons intervenir dans la zone.
+    
+    💡 **Pose cette question exactement ainsi** :
+    "Dernière information importante : **quel est votre code postal** ?
+    
+    Cela nous permet de :
+    • Vérifier que nous intervenons dans votre zone
+    • Calculer précisément les frais de déplacement pour l'installation
+    • Vous donner un devis exact et transparent"
+    
+    📊 **VALIDATION DE LA ZONE** :
+    Dès que le client donne son code postal (5 chiffres), tu DOIS vérifier la zone d'intervention.
+    
+    **ZONES COUVERTES** (19 départements) :
+    • **Île-de-France** : 75 (Paris), 92 (Hauts-de-Seine), 93 (Seine-Saint-Denis), 94 (Val-de-Marne), 77 (Seine-et-Marne), 78 (Yvelines), 91 (Essonne), 95 (Val-d'Oise)
+    • **Centre-Val de Loire** : 18 (Cher), 28 (Eure-et-Loir), 36 (Indre), 37 (Indre-et-Loire), 41 (Loir-et-Cher), 45 (Loiret)
+    • **Départements limitrophes** : 72 (Sarthe), 89 (Yonne), 58 (Nièvre), 10 (Aube)
+    • **Allier** : 03
+    
+    **FRAIS DE DÉPLACEMENT** (selon la zone) :
+    • Paris + Petite couronne (75, 92, 93, 94) : **Gratuit** (0€)
+    • Grande couronne IDF (77, 78, 91, 95) : **50€**
+    • Centre-Val de Loire (18, 28, 36, 37, 41, 45) : **100€**
+    • Limitrophes (72, 89, 58, 10) : **150€**
+    • Allier (03) : **200€**
+    
+    **SI ZONE COUVERTE** :
+    → Confirme avec ce message exact :
+    "✅ **Parfait !** Nous intervenons bien dans votre zone ([NOM_DEPARTEMENT] - [CODE_DEPARTEMENT]).
+    
+    📋 **Information tarifaire** : Les frais de déplacement pour votre secteur sont de **[FRAIS]€** [ou "gratuits" si 0€].
+    
+    ⏱️ **Délai d'intervention** : [DELAI] après validation de votre commande.
+    
+    Nous sommes prêts à passer à l'étape suivante !"
+    
+    → Continue normalement à la PHASE 2
+    
+    **SI ZONE NON COUVERTE** :
+    → Réponds avec ce message exact :
+    "❌ Je suis désolé, mais nous n'intervenons pas encore dans le département [CODE_DEPARTEMENT] ([NOM_DEPARTEMENT]).
+    
+    🗺️ **Nos zones d'intervention actuelles** couvrent :
+    • L'Île-de-France complète (75, 77, 78, 91, 92, 93, 94, 95)
+    • Le Centre-Val de Loire (18, 28, 36, 37, 41, 45)
+    • Les départements limitrophes (10, 58, 72, 89)
+    • L'Allier (03)
+    
+    💡 **Solutions alternatives** :
+    1. **Commande sans pose** : Nous pouvons vous livrer le store et vous l'installez vous-même (ou avec un artisan local de votre choix)
+    2. **Nous contacter** : Notre service commercial peut étudier une extension de zone au cas par cas pour les projets importants
+       → Appelez-nous au **01 85 09 34 46**
+       → Ou consultez notre page zones d'intervention : **storal.fr/zones-intervention**
+    
+    Que préférez-vous ?"
+    
+    → Si le client choisit "sans pose" : Continue avec avec_pose = false, pas de frais de déplacement
+    → Si le client veut être contacté : **APPELLE redirect_to_contact** avec raison "Zone non couverte - [CODE_POSTAL]"
+    
+    ⚠️ **IMPORTANT** : Enregistre le code postal pour l'utiliser dans display_single_offer à la Phase 5.
+
 PHASE 2 : VALIDATION DU PROJET (Le Verrouillage)
-Fais un résumé technique de l'environnement (dimensions, orientation, obstacles, hauteur, éclairage, auvent si compatible, pose).
+Fais un résumé technique de l'environnement (dimensions, orientation, obstacles, hauteur, éclairage, auvent si compatible, pose, code postal et zone).
 ⚠️ AJOUT CRITIQUE : SI un angle d'inclinaison a été calculé (ÉTAPE 1D-TER), MENTIONNE-LE dans le récapitulatif :
 "- **Réglage usine** : Inclinaison de [X]° pour garantir 2.00m de passage (service 'Prêt à Poser')"
+⚠️ AJOUT OBLIGATOIRE : INCLUS TOUJOURS ces informations dans le récapitulatif :
+"- **Code postal** : [CODE_POSTAL] ([NOM_DEPARTEMENT])
+- **Zone d'intervention** : [NOM_ZONE] - Délai : [DELAI]
+- **Frais de déplacement** : [FRAIS]€ [ou "Gratuit" si 0€]"
 ⚠️ INTERDICTION ABSOLUE : NE MENTIONNE AUCUN MODÈLE SPÉCIFIQUE dans ce résumé (pas de "Modèle Pressenti", pas de "Belharra", "Dynasta", etc.). Le choix du modèle se fera UNIQUEMENT en PHASE 3 via l'outil visuel open_model_selector, après avoir posé les questions sur le Type et le Design.
 Écris simplement : "Récapitulatif technique" sans aucune mention de modèle.
 Question cruciale : 'Ce diagnostic technique vous semble-t-il complet pour passer à la personnalisation de votre store ?'
@@ -695,10 +762,22 @@ Calcule et affiche UN SEUL devis correspondant EXACTEMENT aux choix du client :
 
 APPELLE L'OUTIL display_single_offer (au lieu de display_triple_offer).
 
+⚠️ **PARAMÈTRES OBLIGATOIRES de display_single_offer** :
+- selected_model, model_name, store_type, width, depth, base_price_ht
+- frame_color, frame_color_name, fabric_color, fabric_name
+- taux_tva, avec_pose, montant_pose_ht
+- **code_postal** (CRITIQUE : utilise le code postal collecté en ÉTAPE 1G)
+- includes_led_arms, led_arms_price_ht (selon choix client)
+- includes_led_box, led_box_price_ht (selon choix client)
+- includes_lambrequin, lambrequin_price_ht (selon choix client)
+- includes_awning, awning_price_ht (selon choix client si modèle compatible)
+- includes_sous_coffre, sous_coffre_price_ht (selon choix client si compatible)
+- obstacles, orientation, exposure, environment (infos contextuelles)
+
 📌 EXEMPLE CORRECT :
 User: "oui"
 Agent: "Excellent ! Voici l'offre détaillée et chiffrée pour votre projet."
-[APPELLE IMMÉDIATEMENT display_single_offer]
+[APPELLE IMMÉDIATEMENT display_single_offer avec tous les paramètres incluant code_postal]
 
 ❌ EXEMPLE INCORRECT :
 User: "oui"
@@ -1012,9 +1091,13 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
               obstacles: {
                 type: 'string',
                 description: "Obstacles éventuels (gouttière, câbles, etc.). Optionnel"
+              },
+              code_postal: {
+                type: 'string',
+                description: "Code postal du client (5 chiffres). Obligatoire pour calculer les frais de déplacement selon la zone géographique. Liste des zones disponibles : Île-de-France (75,92,93,94,77,78,91,95), Centre-Val de Loire (18,28,36,37,41,45), Limitrophes (72,89,58,10), Allier (03). Si le code postal n'est pas dans ces zones, le store ne peut pas être installé."
               }
             },
-            required: ['selected_model', 'model_name', 'store_type', 'width', 'depth', 'base_price_ht', 'frame_color', 'taux_tva', 'avec_pose', 'montant_pose_ht'],
+            required: ['selected_model', 'model_name', 'store_type', 'width', 'depth', 'base_price_ht', 'frame_color', 'taux_tva', 'avec_pose', 'montant_pose_ht', 'code_postal'],
           }),
         }),
         open_color_selector: tool({
