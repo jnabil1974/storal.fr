@@ -437,7 +437,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 Dimensions du Coffre et Encombrement Mural
               </h3>
               <TechnicalSchemaImage
-                src={`/images/produits/${model.id}/tech/encombrement.jpg`}
+                src={`/images/produits/${model.id}/tech/encombrement.svg`}
                 alt={`Schéma technique encombrement coffre store banne ${model.name} - Dimensions et fixation murale`}
               />
               <p className="text-sm text-gray-600 mt-4 leading-relaxed">
@@ -453,7 +453,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 Angle d'Inclinaison et Projection Maximale
               </h3>
               <TechnicalSchemaImage
-                src={`/images/produits/${model.id}/tech/inclinaison.jpg`}
+                src={`/images/produits/${model.id}/tech/inclinaison.svg`}
                 alt={`Schéma technique inclinaison et projection store ${model.name} - Angle réglable et avancée maximale`}
               />
               <p className="text-sm text-gray-600 mt-4 leading-relaxed">
