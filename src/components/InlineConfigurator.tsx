@@ -144,14 +144,14 @@ export default function InlineConfigurator({ model }: InlineConfiguratorProps) {
             {/* Prix Final - Déplacé ici */}
             <div className="border-t-2 border-blue-600 pt-6">
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 text-center">
-                <div className="text-sm font-bold text-blue-700 uppercase tracking-wider mb-2">
+                <div className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-3">
                   Prix Configuré
                 </div>
                 {priceResult ? (
                   <>
                     {promoApplied && discount > 0 && (
                       <div className="mb-3 bg-green-100 border-2 border-green-500 rounded-lg p-3">
-                        <div className="text-lg font-black text-green-800">
+                        <div className="text-base font-bold text-green-800">
                           🎉 Vous économisez {discount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
                         </div>
                         <div className="text-sm text-green-700 mt-1 line-through">
@@ -159,15 +159,18 @@ export default function InlineConfigurator({ model }: InlineConfiguratorProps) {
                         </div>
                       </div>
                     )}
-                    <div className="text-5xl font-black text-blue-900 mb-2">
-                      {finalPriceWithPromo.toLocaleString('fr-FR')}€
+                    <div className="flex items-baseline justify-center gap-2">
+                      <span className="text-3xl font-semibold text-blue-900">
+                        {finalPriceWithPromo.toLocaleString('fr-FR')}
+                      </span>
+                      <span className="text-lg font-normal text-blue-700">€ TTC</span>
                     </div>
-                    <div className="text-sm text-blue-600 font-medium">
-                      TTC • TVA réduite 10% • Installation comprise
+                    <div className="text-xs text-blue-600 font-medium mt-2">
+                      TVA réduite 10% • Installation comprise
                     </div>
                   </>
                 ) : (
-                  <div className="text-red-600 font-bold text-lg">
+                  <div className="text-red-600 font-bold text-base">
                     ⚠️ Configuration impossible
                     <div className="text-sm font-normal mt-1">Ajustez les dimensions</div>
                   </div>

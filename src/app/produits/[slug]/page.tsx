@@ -172,40 +172,50 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 ))}
               </div>
 
-              {/* Prix minimum en évidence */}
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-6 shadow-lg">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-sm font-semibold uppercase tracking-wide">À partir de</span>
-                  <span className="text-4xl font-black">{minPrice}€</span>
-                  <span className="text-sm font-medium opacity-90">TTC</span>
+              {/* Prix minimum discret */}
+              <div className="bg-gradient-to-r from-gray-100 to-gray-50 rounded-xl p-5 border border-gray-200">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-gray-600">À partir de</span>
+                  <span className="text-2xl font-semibold text-gray-900">{minPrice}</span>
+                  <span className="text-sm font-normal text-gray-500">€ TTC</span>
                 </div>
-                <p className="text-blue-100 text-sm mt-2">
-                  Prix pour les dimensions minimales • Configurez ci-dessous pour votre projet
+                <p className="text-gray-500 text-xs mt-1">
+                  Prix pour les dimensions minimales
                 </p>
               </div>
+
+              {/* Bouton d'ancrage vers le configurateur */}
+              <a
+                href="#configurateur"
+                className="block w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-center font-bold text-lg py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('configurateur')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+              >
+                🚀 Configurer mon store
+              </a>
             </div>
           </div>
         </div>
       </section>
 
       {/* ========================================
-          BLOC 1.5 : CONFIGURATEUR EXPRESS
-      ======================================== */}
-      <section className="bg-gradient-to-br from-blue-50 to-indigo-50 py-12 border-y border-blue-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <InlineConfigurator model={model} />
-        </div>
-      </section>
-
-      {/* ========================================
-          BLOC 1.6 : FICHE TECHNIQUE & QUALITÉ
+          BLOC 1.5 : FICHE TECHNIQUE & QUALITÉ
       ======================================== */}
       <section className="bg-white py-12 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ProductSpecifications />
         </div>
       </section>
-
+      {/* ========================================
+          BLOC 1.6 : CONFIGURATEUR EXPRESS
+      ======================================== */}
+      <section id="configurateur" className="bg-gradient-to-br from-blue-50 to-indigo-50 py-12 border-y border-blue-100 scroll-mt-4">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <InlineConfigurator model={model} />
+        </div>
+      </section>
       {/* ========================================
           BLOC 2 : RÉASSURANCE TECHNIQUE
       ======================================== */}
