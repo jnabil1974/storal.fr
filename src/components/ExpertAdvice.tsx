@@ -54,6 +54,36 @@ Le jour J, nos techniciens se déplacent chez vous avec votre store. Ils s'occup
 
 **4. Et si vous n'êtes pas dans un département couvert par nos équipes ?**
 Ne vous inquiétez pas ! Nous livrons votre store "Prêt à poser" (moteur et fins de course déjà réglés en usine) directement chez vous. Si vous ne souhaitez pas l'installer vous-même, appelez-nous au 01 85 09 34 46. Nos conseillers chercheront avec vous la meilleure solution pour faire intervenir un artisan partenaire près de chez vous.`
+    },
+    {
+      title: "🛡️ Que couvre exactement la garantie de 12 ans sur vos stores bannes ?",
+      content: `Chez STORAL, nous concevons nos stores sur-mesure pour qu'ils durent. C'est pourquoi nous proposons l'une des garanties les plus solides du marché français, allant jusqu'à 12 ans sur nos modèles premium comme le STORAL ARMOR +.
+
+Voici le détail de ce qui est couvert pour votre tranquillité d'esprit :
+
+**L'Armature (Garantie 12 ans) :** Toute la structure en aluminium extrudé (le coffre, les bras articulés, la barre de charge) et la visserie en Inox A2 sont garanties contre tout vice de fabrication ou défaut de résistance anormale.
+
+**La Toile Acrylique (Garantie 10 ans) :** Nos toiles teintées masse (290g/m²) sont garanties imputrescibles (contre la moisissure) et contre la perte anormale de leurs couleurs face aux UV.
+
+**La Motorisation (Garantie 5 ans) :** Le moteur, la télécommande et l'automatisme (si vous avez choisi l'option capteur vent/soleil) sont couverts par une garantie constructeur de 5 ans pièces et main-d'œuvre (si nous avons réalisé la pose).
+
+**L'Éclairage LED (Garantie 2 ans) :** Les bandeaux LED intégrés dans les bras ou le coffre bénéficient d'une garantie standard de 2 ans.
+
+Notre service client reste à votre disposition en France pour toute question technique tout au long de la vie de votre store !`
+    },
+    {
+      title: "🌬️ Jusqu'à quelle vitesse de vent mon store peut-il résister ?",
+      content: `C'est une excellente question pour la longévité de votre store ! Nos modèles (comme l'Excellence ou l'Armor +) bénéficient d'une certification européenne Classe 2 (Norme NF EN 13561).
+
+**Concrètement, qu'est-ce que cela signifie ?**
+
+La Classe 2 garantit que l'armature et les bras de votre store sont conçus pour supporter des vents de force 5 sur l'échelle de Beaufort.
+
+Cela correspond à des rafales allant jusqu'à environ 38 km/h (vent qualifié de "bonne brise" par les météorologues).
+
+**Notre conseil d'expert :** Un store banne est avant tout conçu pour vous protéger du soleil, pas des tempêtes ! Même si nos bras en aluminium extrudé sont extrêmement robustes, nous vous recommandons de toujours replier votre store dès que le vent commence à secouer la toile ou que vous vous absentez.
+
+**💡 Astuce sécurité :** Pour une sérénité totale, optez pour notre capteur vent (anémomètre) en option. Il repliera automatiquement votre store dans son coffre de protection si les rafales deviennent trop fortes.`
     }
   ];
 
