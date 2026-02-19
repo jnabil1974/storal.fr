@@ -155,7 +155,7 @@ export default function CartPageClient() {
             <div className="lg:col-span-2 space-y-6">
               {cart.items.map((item, index) => {
                 // 🔧 Récupérer modelId depuis configuration.modelId (ID original) ou fallback sur productId
-                const modelId = item.configuration?.modelId || item.productId as string;
+                const modelId = ('modelKey' in item.configuration ? item.configuration.modelKey : null) || item.productId as string;
                 
                 const modelData = modelId && STORE_MODELS[modelId as keyof typeof STORE_MODELS] 
                   ? STORE_MODELS[modelId as keyof typeof STORE_MODELS]
@@ -235,8 +235,8 @@ export default function CartPageClient() {
                           </p>
                           <div className="flex gap-4 flex-wrap">
                             {/* Couleur coffre */}
-                            {item.configuration?.frameColor && (() => {
-                              const frameColor = FRAME_COLORS.find(c => c.id === item.configuration.frameColor);
+                            {'frameColor' in item.configuration && item.configuration.frameColor && (() => {
+                              const frameColor = FRAME_COLORS.find(c => c.id === (item.configuration as any).frameColor);
                               return frameColor ? (
                                 <div key="frame" className="flex flex-col items-center gap-2">
                                   <div className="w-20 h-20 rounded-lg border-2 border-gray-300 shadow-md relative overflow-hidden bg-gray-100">
@@ -268,8 +268,8 @@ export default function CartPageClient() {
                             })()}
                             
                             {/* Couleur toile */}
-                            {item.configuration?.fabricColor && (() => {
-                              const fabric = FABRICS.find(f => f.id === item.configuration.fabricColor);
+                            {'fabricColor' in item.configuration && item.configuration.fabricColor && (() => {
+                              const fabric = FABRICS.find(f => f.id === (item.configuration as any).fabricColor);
                               return fabric && fabric.image_url ? (
                                 <div key="fabric" className="flex flex-col items-center gap-2">
                                   <div className="w-20 h-20 rounded-lg border-2 border-gray-300 shadow-md bg-gray-100 relative overflow-hidden">
@@ -296,71 +296,75 @@ export default function CartPageClient() {
                         </div>
 
                         {/* Informations de pose */}
-                        {(item.configuration?.terraceLength || item.configuration?.terraceWidth || 
-                          item.configuration?.environment || item.configuration?.orientation || 
-                          item.configuration?.installHeight || item.configuration?.cableExit || 
-                          item.configuration?.obstacles) && (
+                        {(('terraceLength' in item.configuration && item.configuration.terraceLength) || 
+                          ('terraceWidth' in item.configuration && item.configuration.terraceWidth) || 
+                          ('environment' in item.configuration && item.configuration.environment) || 
+                          ('orientation' in item.configuration && item.configuration.orientation) || 
+                          ('installHeight' in item.configuration && item.configuration.installHeight) || 
+                          ('cableExit' in item.configuration && item.configuration.cableExit) || 
+                          ('obstacles' in item.configuration && item.configuration.obstacles)) && (
                           <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 p-4 rounded-lg mb-4">
                             <p className="font-bold text-gray-800 mb-3 flex items-center gap-2">
                               📋 Informations de pose
                             </p>
                             <div className="space-y-2 text-sm">
-                              {item.configuration.terraceLength && (
+                              {'terraceLength' in item.configuration && item.configuration.terraceLength && (
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-700">Longueur terrasse:</span>
                                   <span className="font-semibold text-gray-900">
-                                    {(item.configuration.terraceLength / 100).toFixed(2)} m
+                                    {((item.configuration as any).terraceLength / 100).toFixed(2)} m
                                   </span>
                                 </div>
                               )}
-                              {item.configuration.terraceWidth && (
+                              {'terraceWidth' in item.configuration && item.configuration.terraceWidth && (
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-700">Largeur terrasse:</span>
                                   <span className="font-semibold text-gray-900">
-                                    {(item.configuration.terraceWidth / 100).toFixed(2)} m
+                                    {((item.configuration as any).terraceWidth / 100).toFixed(2)} m
                                   </span>
                                 </div>
                               )}
-                              {item.configuration.environment && (
+                              {'environment' in item.configuration && item.configuration.environment && (
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-700">Environnement:</span>
-                                  <span className="font-semibold text-gray-900">{item.configuration.environment}</span>
+                                  <span className="font-semibold text-gray-900">{(item.configuration as any).environment}</span>
                                 </div>
                               )}
-                              {item.configuration.orientation && (
+                              {'orientation' in item.configuration && item.configuration.orientation && (
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-700">Orientation:</span>
-                                  <span className="font-semibold text-gray-900">{item.configuration.orientation}</span>
+                                  <span className="font-semibold text-gray-900">{(item.configuration as any).orientation}</span>
                                 </div>
                               )}
-                              {item.configuration.installHeight && (
+                              {'installHeight' in item.configuration && item.configuration.installHeight && (
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-700">Hauteur de pose:</span>
                                   <span className="font-semibold text-gray-900">
-                                    {Number(item.configuration.installHeight).toFixed(2)} m
+                                    {Number((item.configuration as any).installHeight).toFixed(2)} m
                                   </span>
                                 </div>
                               )}
-                              {item.configuration.cableExit && (
+                              {'cableExit' in item.configuration && item.configuration.cableExit && (
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-700">Sortie de câble:</span>
-                                  <span className="font-semibold text-gray-900">{item.configuration.cableExit}</span>
+                                  <span className="font-semibold text-gray-900">{(item.configuration as any).cableExit}</span>
                                 </div>
                               )}
-                              {item.configuration.obstacles && (
+                              {'obstacles' in item.configuration && item.configuration.obstacles && (
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-700">Obstacles:</span>
-                                  <span className="font-semibold text-gray-900">{item.configuration.obstacles}</span>
+                                  <span className="font-semibold text-gray-900">{(item.configuration as any).obstacles}</span>
                                 </div>
                               )}
-                              {(item.configuration.ledArms || item.configuration.ledBox) && (
+                              {(('ledArms' in item.configuration && item.configuration.ledArms) || 
+                                ('ledBox' in item.configuration && item.configuration.ledBox)) && (
                                 <div className="pt-2 border-t border-blue-200">
                                   <span className="text-gray-700 font-semibold">Options éclairage:</span>
                                   <ul className="mt-1 space-y-1 ml-4">
-                                    {item.configuration.ledArms && (
+                                    {'ledArms' in item.configuration && item.configuration.ledArms && (
                                       <li className="text-gray-900">✓ LED intégré dans les bras</li>
                                     )}
-                                    {item.configuration.ledBox && (
+                                    {'ledBox' in item.configuration && item.configuration.ledBox && (
                                       <li className="text-gray-900">✓ LED coffre</li>
                                     )}
                                   </ul>

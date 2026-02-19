@@ -862,7 +862,7 @@ export default function ConfirmationPage() {
                   <p className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
                     📝 Paiement par chèque
                   </p>
-                  <p className="text-gray-700 mb-4 font-medium">
+                  <p className="text-gray-900 mb-4 font-medium">
                     Veuillez envoyer votre chèque à l'ordre de:
                   </p>
                   <div className="bg-white p-4 rounded-lg border-2 border-yellow-400 mb-4 shadow-sm">
@@ -873,9 +873,9 @@ export default function ConfirmationPage() {
                     </p>
                   </div>
                   <div className="bg-yellow-100 p-3 rounded-lg border border-yellow-400">
-                    <p className="text-sm text-gray-800">
+                    <p className="text-sm text-gray-900">
                       <strong>Montant:</strong> <span className="text-lg font-bold text-blue-700">{Number(order.totalAmount).toFixed(2)}€</span><br />
-                      <strong>Référence commande:</strong> <span className="font-mono font-bold bg-white px-2 py-1 rounded">{order.id.slice(0, 8)}</span>
+                      <strong>Référence commande:</strong> <span className="font-mono font-bold bg-white px-2 py-1 rounded text-gray-900">{order.id.slice(0, 8)}</span>
                     </p>
                   </div>
                 </div>
@@ -886,23 +886,22 @@ export default function ConfirmationPage() {
                   <p className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
                     🏦 Paiement par virement bancaire
                   </p>
-                  <p className="text-gray-700 mb-4 font-medium">
+                  <p className="text-gray-900 mb-4 font-medium">
                     Veuillez effectuer le virement sur le compte suivant:
                   </p>
                   <div className="bg-white p-4 rounded-lg border-2 border-blue-400 mb-4 font-mono text-sm shadow-sm">
-                    <p className="mb-1"><strong className="text-gray-700">Titulaire:</strong> <span className="text-blue-700">Storal SARL</span></p>
-                    <p className="mb-1"><strong className="text-gray-700">IBAN:</strong> <span className="text-blue-700">FR76 1234 5678 9012 3456 7890 123</span></p>
-                    <p className="mb-1"><strong className="text-gray-700">BIC:</strong> <span className="text-blue-700">BNPAFRPPXXX</span></p>
-                    <p><strong className="text-gray-700">Banque:</strong> <span className="text-blue-700">BNP Paribas</span></p>
+                    <p className="mb-1"><strong className="text-gray-900">Titulaire:</strong> <span className="text-blue-700 font-bold">STORAL</span></p>
+                    <p className="mb-1"><strong className="text-gray-900">IBAN:</strong> <span className="text-blue-700 font-bold">FR76 1741 8000 0100 0120 5149 571</span></p>
+                    <p><strong className="text-gray-900">BIC:</strong> <span className="text-blue-700 font-bold">SNNNFR22XXX</span></p>
                   </div>
                   <div className="bg-blue-100 p-3 rounded-lg border border-blue-400 mb-3">
-                    <p className="text-sm text-gray-800 mb-2">
+                    <p className="text-sm text-gray-900 mb-2">
                       <strong>Montant:</strong> <span className="text-lg font-bold text-blue-700">{Number(order.totalAmount).toFixed(2)}€</span><br />
-                      <strong>Référence à indiquer:</strong> <span className="font-mono bg-yellow-200 px-2 py-1 rounded font-bold">{order.id.slice(0, 8)}</span>
+                      <strong>Référence à indiquer:</strong> <span className="font-mono bg-yellow-200 px-2 py-1 rounded font-bold text-gray-900">{order.id.slice(0, 8)}</span>
                     </p>
                   </div>
                   <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3">
-                    <p className="text-sm text-gray-800 font-semibold flex items-start gap-2">
+                    <p className="text-sm text-gray-900 font-semibold flex items-start gap-2">
                       <span className="text-lg">⚠️</span>
                       <span>N'oubliez pas d'indiquer la référence dans le libellé du virement</span>
                     </p>
@@ -922,7 +921,7 @@ export default function ConfirmationPage() {
                 <div className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">1</div>
                 <div className="flex-1">
                   <p className="font-bold text-gray-900 mb-1">📧 Confirmation par email</p>
-                  <p className="text-sm text-gray-700">Vous recevrez un email de confirmation dans quelques minutes</p>
+                  <p className="text-sm text-gray-900">Vous recevrez un email de confirmation dans quelques minutes</p>
                 </div>
               </div>
 
@@ -931,7 +930,7 @@ export default function ConfirmationPage() {
                   <div className="flex-shrink-0 w-10 h-10 bg-yellow-600 text-white rounded-full flex items-center justify-center font-bold text-lg">2</div>
                   <div className="flex-1">
                     <p className="font-bold text-gray-900 mb-1">💳 Validation du paiement</p>
-                    <p className="text-sm text-gray-700">Réception et validation de votre paiement sous 2-3 jours ouvrés</p>
+                    <p className="text-sm text-gray-900">Réception et validation de votre paiement sous 2-3 jours ouvrés</p>
                   </div>
                 </div>
               )}
@@ -940,7 +939,7 @@ export default function ConfirmationPage() {
                 <div className="flex-shrink-0 w-10 h-10 bg-cyan-600 text-white rounded-full flex items-center justify-center font-bold text-lg">{order.paymentMethod !== 'stripe' ? '3' : '2'}</div>
                 <div className="flex-1">
                   <p className="font-bold text-gray-900 mb-1">🎥 Validation technique</p>
-                  <p className="text-sm text-gray-700">Un technicien vous contactera par téléphone ou visio pour valider les aspects techniques de votre projet</p>
+                  <p className="text-sm text-gray-900">Un technicien vous contactera par téléphone ou visio pour valider les aspects techniques de votre projet</p>
                 </div>
               </div>
 
@@ -948,7 +947,7 @@ export default function ConfirmationPage() {
                 <div className="flex-shrink-0 w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg">{order.paymentMethod !== 'stripe' ? '4' : '3'}</div>
                 <div className="flex-1">
                   <p className="font-bold text-gray-900 mb-1">📦 Préparation de commande</p>
-                  <p className="text-sm text-gray-700">Nos équipes préparent votre commande avec soin</p>
+                  <p className="text-sm text-gray-900">Nos équipes préparent votre commande avec soin</p>
                 </div>
               </div>
 
@@ -956,7 +955,7 @@ export default function ConfirmationPage() {
                 <div className="flex-shrink-0 w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-lg">{order.paymentMethod !== 'stripe' ? '5' : '4'}</div>
                 <div className="flex-1">
                   <p className="font-bold text-gray-900 mb-1">🚚 Livraison programmée</p>
-                  <p className="text-sm text-gray-700">Vous recevrez un SMS pour planifier la livraison</p>
+                  <p className="text-sm text-gray-900">Vous recevrez un SMS pour planifier la livraison</p>
                 </div>
               </div>
             </div>

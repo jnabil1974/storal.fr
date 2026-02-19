@@ -195,6 +195,12 @@ export interface StoreModel {
     manual: { maxW: number, price: number }[];
     motorized: { maxW: number, price: number }[];
   };
+  // Option auvent et joues : prix selon largeur (spécifique à certains modèles)
+  auventEtJouesPrices?: { maxW: number, price: number }[];
+  // Option lambrequin fixe avec toile différente : prix selon largeur
+  lambrequinFixeDifferentFabricPrices?: { maxW: number, price: number }[];
+  // Prix spécifique LED coffre pour ce modèle (si absent, utilise OPTIONS_PRICES.LED_CASSETTE par défaut)
+  ledCoffretPrice?: number;
   // Coefficient de vente spécifique au modèle (si absent, utilise COEFF_MARGE par défaut)
   salesCoefficient?: number;
   // Coefficients spécifiques pour les options de ce produit (surcharge OPTIONS_COEFFICIENTS global)
@@ -260,7 +266,7 @@ export const CATALOG_SETTINGS = {
   // Frais de transport pour stores de grande dimension
   TRANSPORT: {
     SEUIL_LARGEUR_MM: 3650,  // Seuil de déclenchement en millimètres de largeur
-    FRAIS_HT: 150,           // Frais de transport en € HT (appliqués si largeur > seuil)
+    FRAIS_HT: 139,           // Frais de transport en € HT (appliqués si largeur > seuil)
   }
 };
 
@@ -394,6 +400,7 @@ export const FABRIC_OPTIONS = {
 export const STORE_MODELS: Record<string, StoreModel> = {
 
   // --- 1. KISSIMY PROMO - STORAL COMPACT (Page 34) ---
+  // Tarifs mis à jour le 19/02/2026
   "kissimy_promo": {
     id: "kissimy_promo",
     slug: "store-banne-coffre-compact-sur-mesure",
@@ -418,6 +425,9 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     2500: [{ maxW: 3650, priceHT: 1165 }, { maxW: 4830, priceHT: 1225 }],
     3000: [{ maxW: 3650, priceHT: 1224 }, { maxW: 4830, priceHT: 1295 }]
     },
+    ceilingMountPrices: [
+      { maxW: 4830, price: 39 }  // Forfait fixe peu importe la dimension
+    ],
     salesCoefficient: 1.65,  // Marge réduite pour l'entrée de gamme promo
     optionsCoefficients: {
       LED_ARMS: 2.0,
@@ -445,6 +455,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
   },
 
   // --- 2. KITANGUY - STORAL COMPACT + (Page 34-35) ---
+  // Tarifs mis à jour le 19/02/2026
   "kitanguy": {
     id: "kitanguy",
     slug: "store-banne-coffre-compact-renforce",
@@ -468,11 +479,10 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     2000: [{ maxW: 2470, priceHT: 1428 }, { maxW: 3650, priceHT: 1516 }, { maxW: 4830, priceHT: 1660 }, { maxW: 5610, priceHT: 1765 }, { maxW: 5850, priceHT: 1904 }],
     2500: [{ maxW: 3650, priceHT: 1577 }, { maxW: 4830, priceHT: 1735 }, { maxW: 5610, priceHT: 1879 }, { maxW: 5850, priceHT: 2033 }],
     3000: [{ maxW: 3650, priceHT: 1649 }, { maxW: 4830, priceHT: 1822 }, { maxW: 5610, priceHT: 2024 }, { maxW: 5850, priceHT: 2186 }],
-    3250: [{ maxW: 3650, priceHT: 1735 }, { maxW: 4830, priceHT: 1917 }, { maxW: 5610, priceHT: 2148 }]
+    3250: [{ maxW: 4830, priceHT: 1735 }, { maxW: 5610, priceHT: 1917 }, { maxW: 5850, priceHT: 2148 }]
     },
     ceilingMountPrices: [
-      { maxW: 3650, price: 0 },
-      { maxW: 5850, price: 38 }
+      { maxW: 5850, price: 39 }  // Forfait fixe peu importe la dimension
     ],
     salesCoefficient: 1.8,  // Coefficient standard
     optionsCoefficients: {
@@ -501,6 +511,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
   },
 
   // --- 3. KITANGUY 2 - STORAL EXCELLENCE (Page 36) ---
+  // Tarifs mis à jour le 19/02/2026
   "kitanguy_2": {
     id: "kitanguy_2",
     slug: "store-banne-coffre-excellence-led",
@@ -527,9 +538,9 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       3250: [{ maxW: 4830, priceHT: 1839 }, { maxW: 5610, priceHT: 2032 }, { maxW: 5850, priceHT: 2277 }]
     },
     ceilingMountPrices: [
-      { maxW: 3650, price: 0 },
-      { maxW: 5850, price: 38 }
+      { maxW: 5850, price: 39 }  // Forfait fixe peu importe la dimension
     ],
+    ledCoffretPrice: 362,  // Prix LED coffre spécifique pour ce modèle
     salesCoefficient: 2.0,  // Haut de gamme
     optionsCoefficients: {
       LED_ARMS: 2.0,
@@ -558,6 +569,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
   },
 
   // --- 4. HELIOM - STORAL KUBE (Page 38) ---
+  // Tarifs mis à jour le 19/02/2026
   "heliom": {
     id: "heliom",
     slug: "store-banne-coffre-rectangulaire-kube",
@@ -585,9 +597,10 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       3500: [{ maxW: 5290, priceHT: 2541 }, { maxW: 6000, priceHT: 2641 }]
     },
     ceilingMountPrices: [
-      { maxW: 3580, price: 297 },
-      { maxW: 6000, price: 444 }
+      { maxW: 2400, price: 307 }, { maxW: 3580, price: 307 }, { maxW: 4200, price: 460 },
+      { maxW: 5290, price: 460 }, { maxW: 6000, price: 460 }
     ],
+    ledCoffretPrice: 362,  // Prix LED coffre spécifique pour ce modèle
     salesCoefficient: 1.9,  // Design premium
     optionsCoefficients: {
       LED_ARMS: 2.0,
@@ -615,6 +628,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
   },
 
   // --- 5. HELIOM PLUS - STORAL KUBE + (Page 38) ---
+  // Tarifs mis à jour le 19/02/2026
   "heliom_plus": {
     id: "heliom_plus",
     slug: "store-banne-design-architecte-kube",
@@ -641,25 +655,26 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       4000: [{ maxW: 5290, priceHT: 2838 }, { maxW: 6000, priceHT: 2938 }]
     },
     ceilingMountPrices: [
-      { maxW: 3580, price: 297 },
-      { maxW: 6000, price: 444 }
+      { maxW: 2400, price: 307 }, { maxW: 3580, price: 307 }, { maxW: 4200, price: 460 },
+      { maxW: 5290, price: 460 }, { maxW: 6000, price: 460 }
     ],
     lambrequinEnroulablePrices: {
       manual: [
-        { maxW: 2390, price: 358 },
+        { maxW: 2400, price: 358 },
         { maxW: 3580, price: 416 },
-        { maxW: 4760, price: 451 },
-        { maxW: 5610, price: 614 },
-        { maxW: 6000, price: 633 }
+        { maxW: 4200, price: 451 },
+        { maxW: 5290, price: 650 },
+        { maxW: 6000, price: 667 }
       ],
       motorized: [
-        { maxW: 2390, price: 598 },
+        { maxW: 2400, price: 598 },
         { maxW: 3580, price: 656 },
-        { maxW: 4760, price: 683 },
-        { maxW: 5610, price: 802 },
-        { maxW: 6000, price: 838 }
+        { maxW: 4200, price: 683 },
+        { maxW: 5290, price: 892 },
+        { maxW: 6000, price: 912 }
       ]
     },
+    ledCoffretPrice: 362,  // Prix LED coffre spécifique pour ce modèle
     salesCoefficient: 2.0,  // Design premium avec lambrequin
     optionsCoefficients: {
       LED_ARMS: 2.0,
@@ -676,6 +691,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
   },
 
   // --- 6. KALY'O - STORAL K (Page 44) ---
+  // Tarifs mis à jour le 19/02/2026
   "kalyo": {
     id: "kalyo",
     slug: "store-banne-carre-coffre-compact",
@@ -703,8 +719,8 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       3500: [{ maxW: 4760, priceHT: 2423 }, { maxW: 5610, priceHT: 2705 }, { maxW: 6000, priceHT: 2914 }]
     },
     ceilingMountPrices: [
-      { maxW: 3580, price: 135 },
-      { maxW: 6000, price: 231 }
+      { maxW: 2400, price: 140 }, { maxW: 3580, price: 140 }, { maxW: 4760, price: 239 },
+      { maxW: 5610, price: 239 }, { maxW: 6000, price: 239 }
     ],
     lambrequinEnroulablePrices: {
       manual: [
@@ -750,6 +766,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
   },
   // RÈGLE IMPORTANTE : Largeur <6m = Prix PROMO + Couleurs limitées (9010, 1015, 7016)
   //                    Largeur ≥6m = Prix STANDARD + Toutes couleurs incluses
+  // Tarifs mis à jour le 19/02/2026
   "dynasta": {
     id: "dynasta",
     slug: "store-banne-grande-largeur-armor",
@@ -761,30 +778,26 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Le géant des terrasses, jusqu'à 12m de large. Bras ultra-renforcés certifiés Classe 2 (NF EN 13561). LED intégrées dans les bras (option).",
     features: ["Jusqu'à 12m", "Bras Ultra-Renforcés", "LED bras intégrées (option)"],
     image: "/images/stores/DYNASTA.png",
-    compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
+    compatible_toile_types: ['ORCH', 'SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 4000, allowed_colors: ['9010', '1015', '7016'] },
     arm_type: 'ultra_renforce',
     wind_class: 'classe_2',
     armLogic: 'couples_4_6',
     minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3250: 3880, 3500: 4130, 4000: 4630 },
     buyPrices: {
-     1500: [{ maxW: 4760, priceHT: 1850 }, { maxW: 5610, priceHT: 2041 }, { maxW: 6000, priceHT: 2175 }, { maxW: 7110, priceHT: 2744 }, { maxW: 8280, priceHT: 3204 }, { maxW: 9450, priceHT: 3284 }, { maxW: 10620, priceHT: 3577 }, { maxW: 11220, priceHT: 3747 }, { maxW: 12000, priceHT: 3961 }],
-     2000: [{ maxW: 4760, priceHT: 1910 }, { maxW: 5610, priceHT: 2114 }, { maxW: 6000, priceHT: 2265 }, { maxW: 7110, priceHT: 2841 }, { maxW: 8280, priceHT: 3317 }, { maxW: 9450, priceHT: 3409 }, { maxW: 10620, priceHT: 3717 }, { maxW: 11220, priceHT: 3898 }, { maxW: 12000, priceHT: 4126 }],
-     2500: [{ maxW: 4760, priceHT: 1989 }, { maxW: 5610, priceHT: 2207 }, { maxW: 6000, priceHT: 2366 }, { maxW: 7110, priceHT: 2975 }, { maxW: 8280, priceHT: 3460 }, { maxW: 9450, priceHT: 3569 }, { maxW: 10620, priceHT: 3886 }, { maxW: 11220, priceHT: 4083 }, { maxW: 12000, priceHT: 4326 }],
-     2750: [{ maxW: 4760, priceHT: 2012 }, { maxW: 5610, priceHT: 2234 }, { maxW: 6000, priceHT: 2405 }, { maxW: 7110, priceHT: 3012 }, { maxW: 8280, priceHT: 3506 }, { maxW: 9450, priceHT: 3617 }, { maxW: 10620, priceHT: 3944 }, { maxW: 11220, priceHT: 4145 }, { maxW: 12000, priceHT: 4396 }],
-     3000: [{ maxW: 4760, priceHT: 2055 }, { maxW: 5610, priceHT: 2283 }, { maxW: 6000, priceHT: 2468 }, { maxW: 7110, priceHT: 3087 }, { maxW: 8280, priceHT: 3587 }, { maxW: 9450, priceHT: 3703 }, { maxW: 10620, priceHT: 4038 }, { maxW: 11220, priceHT: 4248 }, { maxW: 12000, priceHT: 4515 }],
-     3250: [{ maxW: 4760, priceHT: 2177 }, { maxW: 5610, priceHT: 2411 }, { maxW: 6000, priceHT: 2602 }, { maxW: 7110, priceHT: 3336 }, { maxW: 8280, priceHT: 3769 }, { maxW: 9450, priceHT: 3917 }, { maxW: 10620, priceHT: 4274 }, { maxW: 11220, priceHT: 4478 }, { maxW: 12000, priceHT: 4746 }],
-     3500: [{ maxW: 4760, priceHT: 2217 }, { maxW: 5610, priceHT: 2456 }, { maxW: 6000, priceHT: 2653 }, { maxW: 7110, priceHT: 3362 }, { maxW: 8280, priceHT: 3809 }, { maxW: 9450, priceHT: 3990 }, { maxW: 10620, priceHT: 4350 }, { maxW: 11220, priceHT: 4562 }, { maxW: 12000, priceHT: 4839 }],
-     4000: [{ maxW: 4760, priceHT: 2315 }, { maxW: 5610, priceHT: 2568 }, { maxW: 6000, priceHT: 2777 }, { maxW: 7110, priceHT: 3451 }, { maxW: 8280, priceHT: 3896 }, { maxW: 9450, priceHT: 4169 }, { maxW: 10620, priceHT: 4545 }, { maxW: 11220, priceHT: 4767 }, { maxW: 12000, priceHT: 5057 }] 
+     1500: [{ maxW: 4760, priceHT: 1650 }, { maxW: 5610, priceHT: 1741 }, { maxW: 6000, priceHT: 1775 }, { maxW: 7110, priceHT: 2744 }, { maxW: 8280, priceHT: 3204 }, { maxW: 9450, priceHT: 3284 }, { maxW: 10620, priceHT: 3577 }, { maxW: 11220, priceHT: 3747 }, { maxW: 12000, priceHT: 3961 }],
+     2000: [{ maxW: 4760, priceHT: 19710 }, { maxW: 5610, priceHT: 1814 }, { maxW: 6000, priceHT: 1865 }, { maxW: 7110, priceHT: 2841 }, { maxW: 8280, priceHT: 3317 }, { maxW: 9450, priceHT: 3409 }, { maxW: 10620, priceHT: 3717 }, { maxW: 11220, priceHT: 3898 }, { maxW: 12000, priceHT: 4126 }],
+     2500: [{ maxW: 4760, priceHT: 1789 }, { maxW: 5610, priceHT: 1907 }, { maxW: 6000, priceHT: 1966 }, { maxW: 7110, priceHT: 2975 }, { maxW: 8280, priceHT: 3460 }, { maxW: 9450, priceHT: 3569 }, { maxW: 10620, priceHT: 3886 }, { maxW: 11220, priceHT: 4083 }, { maxW: 12000, priceHT: 4326 }],
+     2750: [{ maxW: 4760, priceHT: 1812 }, { maxW: 5610, priceHT: 1934 }, { maxW: 6000, priceHT: 2005 }, { maxW: 7110, priceHT: 3012 }, { maxW: 8280, priceHT: 3506 }, { maxW: 9450, priceHT: 3617 }, { maxW: 10620, priceHT: 3944 }, { maxW: 11220, priceHT: 4145 }, { maxW: 12000, priceHT: 4396 }],
+     3000: [{ maxW: 4760, priceHT: 1855 }, { maxW: 5610, priceHT: 1983 }, { maxW: 6000, priceHT: 2068 }, { maxW: 7110, priceHT: 3087 }, { maxW: 8280, priceHT: 3587 }, { maxW: 9450, priceHT: 3703 }, { maxW: 10620, priceHT: 4038 }, { maxW: 11220, priceHT: 4248 }, { maxW: 12000, priceHT: 4515 }],
+     3250: [{ maxW: 4760, priceHT: 1977 }, { maxW: 5610, priceHT: 2111 }, { maxW: 6000, priceHT: 2202 }, { maxW: 7110, priceHT: 3336 }, { maxW: 8280, priceHT: 3769 }, { maxW: 9450, priceHT: 3917 }, { maxW: 10620, priceHT: 4274 }, { maxW: 11220, priceHT: 4478 }, { maxW: 12000, priceHT: 4746 }],
+     3500: [{ maxW: 4760, priceHT: 2017 }, { maxW: 5610, priceHT: 2156 }, { maxW: 6000, priceHT: 2253 }, { maxW: 7110, priceHT: 3362 }, { maxW: 8280, priceHT: 3809 }, { maxW: 9450, priceHT: 3990 }, { maxW: 10620, priceHT: 4350 }, { maxW: 11220, priceHT: 4562 }, { maxW: 12000, priceHT: 4839 }],
+     4000: [{ maxW: 4760, priceHT: 2115 }, { maxW: 5610, priceHT: 2268 }, { maxW: 6000, priceHT: 2277 }, { maxW: 7110, priceHT: 3451 }, { maxW: 8280, priceHT: 3896 }, { maxW: 9450, priceHT: 4169 }, { maxW: 10620, priceHT: 4545 }, { maxW: 11220, priceHT: 4767 }, { maxW: 12000, priceHT: 5057 }] 
    },
     ceilingMountPrices: [
-      { maxW: 5610, price: 526 },
-      { maxW: 6000, price: 554 },
-      { maxW: 7110, price: 764 },
-      { maxW: 8280, price: 1020 },
-      { maxW: 10620, price: 1036 },
-      { maxW: 11220, price: 1184 },
-      { maxW: 12000, price: 1250 }
+      { maxW: 4760, price: 544 }, { maxW: 5610, price: 544 }, { maxW: 6000, price: 573 },
+      { maxW: 7110, price: 791 }, { maxW: 8280, price: 1056 }, { maxW: 9450, price: 1072 },
+      { maxW: 10620, price: 1072 }, { maxW: 11220, price: 1225 }, { maxW: 12000, price: 1294 }
     ],
     salesCoefficient: 1.8,  // Standard
     optionsCoefficients: {
@@ -815,6 +828,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
   },
 
   // --- 8. BELHARRA - STORAL ARMOR + (Page 40) ---
+  // Tarifs mis à jour le 19/02/2026
   "belharra": {
     id: "belharra",
     slug: "store-banne-coffre-armor-design",
@@ -826,41 +840,63 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     description: "Le haut de gamme absolu jusqu'à 12m. Bras ultra-renforcés certifiés Classe 2 (NF EN 13561). LED intégrées dans les bras (option).",
     features: ["Jusqu'à 12m", "Finition Luxe", "LED bras intégrées (option)"],
     image: "/images/stores/BELHARRA.png",
-    compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
+    compatible_toile_types: ['ORCH','SATT'],
     compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 12000, max_projection: 4000 },
     arm_type: 'ultra_renforce',
     wind_class: 'classe_2',
     armLogic: 'couples_4_6',
-    minWidths: { 1500: 2050, 2000: 2550, 2500: 3130, 2750: 3380, 3000: 3630, 3250: 3880, 3500: 4130, 4000: 4630 },
+    minWidths: { 1500: 2400, 2000: 2050, 2500: 3130, 2750: 3380, 3000: 3630, 3250: 3880, 3500: 4130, 4000: 4630 },
     buyPrices: {
-      1500: [{ maxW: 4760, priceHT: 2068 }, { maxW: 5610, priceHT: 2285 }, { maxW: 6000, priceHT: 2437 }, { maxW: 7110, priceHT: 3073 }, { maxW: 8280, priceHT: 3588 }, { maxW: 9450, priceHT: 3678 }, { maxW: 10620, priceHT: 4008 }, { maxW: 11220, priceHT: 4197 }, { maxW: 12000, priceHT: 4433 }],
-      2000: [{ maxW: 4760, priceHT: 2137 }, { maxW: 5610, priceHT: 2367 }, { maxW: 6000, priceHT: 2533 }, { maxW: 7110, priceHT: 3241 }, { maxW: 8280, priceHT: 3717 }, { maxW: 9450, priceHT: 3817 }, { maxW: 10620, priceHT: 4163 }, { maxW: 11220, priceHT: 4365 }, { maxW: 12000, priceHT: 4621 }],
-      2500: [{ maxW: 4760, priceHT: 2228 }, { maxW: 5610, priceHT: 2471 }, { maxW: 6000, priceHT: 2651 }, { maxW: 7110, priceHT: 3331 }, { maxW: 8280, priceHT: 3877 }, { maxW: 9450, priceHT: 3994 }, { maxW: 10620, priceHT: 4353 }, { maxW: 11220, priceHT: 4572 }, { maxW: 12000, priceHT: 4847 }],
-      2750: [{ maxW: 4760, priceHT: 2255 }, { maxW: 5610, priceHT: 2503 }, { maxW: 6000, priceHT: 2692 }, { maxW: 7110, priceHT: 3412 }, { maxW: 8280, priceHT: 3924 }, { maxW: 9450, priceHT: 4050 }, { maxW: 10620, priceHT: 4418 }, { maxW: 11220, priceHT: 4643 }, { maxW: 12000, priceHT: 4924 }],
-      3000: [{ maxW: 4760, priceHT: 2395 }, { maxW: 5610, priceHT: 2721 }, { maxW: 6000, priceHT: 2932 }, { maxW: 7110, priceHT: 3712 }, { maxW: 8280, priceHT: 4179 }, { maxW: 9450, priceHT: 4310 }, { maxW: 10620, priceHT: 4699 }, { maxW: 11220, priceHT: 4922 }, { maxW: 12000, priceHT: 5212 }],
-      3250: [{ maxW: 4760, priceHT: 2439 }, { maxW: 5610, priceHT: 2774 }, { maxW: 6000, priceHT: 2992 }, { maxW: 7110, priceHT: 3740 }, { maxW: 8280, priceHT: 4220 }, { maxW: 9450, priceHT: 4389 }, { maxW: 10620, priceHT: 4787 }, { maxW: 11220, priceHT: 5015 }, { maxW: 12000, priceHT: 5318 }],
-      3500: [{ maxW: 4760, priceHT: 2482 }, { maxW: 5610, priceHT: 2826 }, { maxW: 6000, priceHT: 3052 }, { maxW: 7110, priceHT: 3769 }, { maxW: 8280, priceHT: 4259 }, { maxW: 9450, priceHT: 4467 }, { maxW: 10620, priceHT: 4875 }, { maxW: 11220, priceHT: 5109 }, { maxW: 12000, priceHT: 5422 }],
-      4000: [{ maxW: 4760, priceHT: 2596 }, { maxW: 5610, priceHT: 2951 }, { maxW: 6000, priceHT: 3192 }, { maxW: 7110, priceHT: 3866 }, { maxW: 8280, priceHT: 4330 }, { maxW: 9450, priceHT: 4670 }, { maxW: 10620, priceHT: 5090 }, { maxW: 11220, priceHT: 5343 }, { maxW: 12000, priceHT: 5668 }]
+      1500: [
+        { maxW: 4760, priceHT: 1868 }, { maxW: 5610, priceHT: 1985 }, { maxW: 6000, priceHT: 2037 }, // Belharra Promo
+        { maxW: 7110, priceHT: 3073 }, { maxW: 8280, priceHT: 3588 }, { maxW: 9450, priceHT: 3678 }, // Belharra Standard
+        { maxW: 10620, priceHT: 4008 }, { maxW: 11220, priceHT: 4197 }, { maxW: 12000, priceHT: 4433 }
+      ],
+      2000: [
+        { maxW: 4760, priceHT: 1937 }, { maxW: 5610, priceHT: 2067 }, { maxW: 6000, priceHT: 2133 }, // Belharra Promo
+        { maxW: 7110, priceHT: 3183 }, { maxW: 8280, priceHT: 3714 }, { maxW: 9450, priceHT: 3817 }, // Belharra Standard
+        { maxW: 10620, priceHT: 4163 }, { maxW: 11220, priceHT: 4365 }, { maxW: 12000, priceHT: 4621 }
+      ],
+      2500: [
+        { maxW: 4760, priceHT: 2028 }, { maxW: 5610, priceHT: 2171 }, { maxW: 6000, priceHT: 2251 }, // Belharra Promo
+        { maxW: 7110, priceHT: 3331 }, { maxW: 8280, priceHT: 3877 }, { maxW: 9450, priceHT: 3994 }, // Belharra Standard
+        { maxW: 10620, priceHT: 4353 }, { maxW: 11220, priceHT: 4572 }, { maxW: 12000, priceHT: 4847 }
+      ],
+      2750: [
+        { maxW: 4760, priceHT: 2055 }, { maxW: 5610, priceHT: 2203 }, { maxW: 6000, priceHT: 2292 }, // Belharra Promo
+        { maxW: 7110, priceHT: 3373 }, { maxW: 8280, priceHT: 3924 }, { maxW: 9450, priceHT: 4050 }, // Belharra Standard
+        { maxW: 10620, priceHT: 4418 }, { maxW: 11220, priceHT: 4643 }, { maxW: 12000, priceHT: 4924 }
+      ],
+      3000: [
+        { maxW: 4760, priceHT: 2101 }, { maxW: 5610, priceHT: 2258 }, { maxW: 6000, priceHT: 2362 }, // Belharra Promo
+        { maxW: 7110, priceHT: 3456 }, { maxW: 8280, priceHT: 4017 }, { maxW: 9450, priceHT: 4151 }, // Belharra Standard
+        { maxW: 10620, priceHT: 4523 }, { maxW: 11220, priceHT: 4756 }, { maxW: 12000, priceHT: 5056 }
+      ],
+      3250: [
+        { maxW: 4760, priceHT: 2239 }, { maxW: 5610, priceHT: 2474 }, { maxW: 6000, priceHT: 2592 }, // Belharra Promo
+        { maxW: 7110, priceHT: 3740 }, { maxW: 8280, priceHT: 4220 }, { maxW: 9450, priceHT: 4389 }, // Belharra Standard
+        { maxW: 10620, priceHT: 4787 }, { maxW: 11220, priceHT: 5015 }, { maxW: 12000, priceHT: 5318 }
+      ],
+      3500: [
+        { maxW: 4760, priceHT: 2282 }, { maxW: 5610, priceHT: 2526 }, { maxW: 6000, priceHT: 2652 }, // Belharra Promo
+        { maxW: 7110, priceHT: 3769 }, { maxW: 8280, priceHT: 4259 }, { maxW: 9450, priceHT: 4467 }, // Belharra Standard
+        { maxW: 10620, priceHT: 4875 }, { maxW: 11220, priceHT: 5109 }, { maxW: 12000, priceHT: 5422 }
+      ],
+      4000: [
+        { maxW: 4760, priceHT: 2396 }, { maxW: 5610, priceHT: 2651 }, { maxW: 6000, priceHT: 2792 }, // Belharra Promo
+        { maxW: 7110, priceHT: 3866 }, { maxW: 8280, priceHT: 4330 }, { maxW: 9450, priceHT: 4670 }, // Belharra Standard
+        { maxW: 10620, priceHT: 5090 }, { maxW: 11220, priceHT: 5343 }, { maxW: 12000, priceHT: 5668 }
+      ]
     },
     ceilingMountPrices: [
-      { maxW: 5610, price: 544 },
-      { maxW: 6000, price: 573 },
-      { maxW: 7110, price: 791 },
-      { maxW: 8280, price: 1020 },
-      { maxW: 10620, price: 1072 },
-      { maxW: 11220, price: 1225 },
-      { maxW: 12000, price: 1294 }
+      { maxW: 4760, price: 544 }, { maxW: 5610, price: 544 }, { maxW: 6000, price: 573 },
+      { maxW: 7110, price: 791 }, { maxW: 8280, price: 1056 }, { maxW: 9450, price: 1072 },
+      { maxW: 10620, price: 1072 }, { maxW: 11220, price: 1225 }, { maxW: 12000, price: 1294 }
     ],
     lambrequinEnroulablePrices: {
-      manual: [
-        { maxW: 4760, price: 472},
-        { maxW: 5610, price: 650 },
-        { maxW: 6000, price: 667 }
-      ],
+      manual: [],
       motorized: [
-        { maxW: 4760, price: 715 },
-        { maxW: 5610, price: 892 },
-        { maxW: 6000, price: 912 }
+        { maxW: 4760, price: 715 }, { maxW: 5610, price: 892 }, { maxW: 6000, price: 912 }
       ]
     },
     salesCoefficient: 1.9,  // Premium
@@ -892,6 +928,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
   },
 
   // --- 9. BELHARRA 2 - STORAL EXCELLENCE + (Bras SB100 Standard) ---
+  // Tarifs mis à jour le 19/02/2026
   "belharra_2": {
     id: "belharra_2",
     slug: "store-banne-excellence-grandes-dimensions",
@@ -904,37 +941,29 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     features: ["Auvent Intégré", "LED coffre + bras (option)", "Jusqu'à 12m"],
     image: "/images/stores/BELHARRA_2.png",
     compatible_toile_types: ['ORCH', 'SATT'],
-    compatibility: { led_arms: true, led_box: true, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 12000, max_projection: 3000 },
+    compatibility: { led_arms: true, led_box: true, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 12000, max_projection: 4000 },
     arm_type: 'ultra_renforce',
     wind_class: 'classe_2',
     armLogic: 'couples_4_6',
-    minWidths: { 1500: 2050, 2000: 2050, 2500: 3130, 2750: 3380, 3000: 3630 },
+    minWidths: { 1500: 2400, 2000: 2050, 2500: 3130, 2750: 3380, 3000: 3630, 3250: 3880, 3500: 4130, 4000: 4630 },
     buyPrices: {
       1500: [{ maxW: 2400, priceHT: 1666 }, { maxW: 3580, priceHT: 1932 }, { maxW: 4760, priceHT: 2269 }, { maxW: 5610, priceHT: 2507 }, { maxW: 6000, priceHT: 2673 }, { maxW: 7110, priceHT: 3371 }, { maxW: 8280, priceHT: 3936 }, { maxW: 9450, priceHT: 4035 }, { maxW: 10620, priceHT: 4397 }, { maxW: 11220, priceHT: 4605 }, { maxW: 12000, priceHT: 4863 }],
-      2000: [{ maxW: 2400, priceHT: 1992 }, { maxW: 3580, priceHT: 2344 }, { maxW: 4760, priceHT: 2597 }, { maxW: 6000, priceHT: 2779 }, { maxW: 7110, priceHT: 3492 }, { maxW: 8280, priceHT: 4075 }, { maxW: 9450, priceHT: 4188 }, { maxW: 10620, priceHT: 4567 }, { maxW: 11220, priceHT: 4789 }, { maxW: 12000, priceHT: 5069 }],
+      2000: [{ maxW: 3580, priceHT: 1992 }, { maxW: 4760, priceHT: 2344 }, { maxW: 5610, priceHT: 2597 }, { maxW: 6000, priceHT: 2779 }, { maxW: 7110, priceHT: 3492 }, { maxW: 8280, priceHT: 4075 }, { maxW: 9450, priceHT: 4188 }, { maxW: 10620, priceHT: 4567 }, { maxW: 11220, priceHT: 4789 }, { maxW: 12000, priceHT: 5069 }],
       2500: [{ maxW: 3580, priceHT: 2073 }, { maxW: 4760, priceHT: 2445 }, { maxW: 5610, priceHT: 2711 }, { maxW: 6000, priceHT: 2908 }, { maxW: 7110, priceHT: 3655 }, { maxW: 8280, priceHT: 4254 }, { maxW: 9450, priceHT: 4382 }, { maxW: 10620, priceHT: 4775 }, { maxW: 11220, priceHT: 5016 }, { maxW: 12000, priceHT: 5318 }],
       2750: [{ maxW: 3580, priceHT: 2098 }, { maxW: 4760, priceHT: 2474 }, { maxW: 5610, priceHT: 2746 }, { maxW: 6000, priceHT: 2954 }, { maxW: 7110, priceHT: 3700 }, { maxW: 8280, priceHT: 4305 }, { maxW: 9450, priceHT: 4443 }, { maxW: 10620, priceHT: 4847 }, { maxW: 11220, priceHT: 5094 }, { maxW: 12000, priceHT: 5402 }],
-      3000: [{ maxW: 4760, priceHT: 2524 }, { maxW: 5610, priceHT: 2806 }, { maxW: 6000, priceHT: 3030 }, { maxW: 7110, priceHT: 3791 }, { maxW: 8280, priceHT: 4407 }, { maxW: 9450, priceHT: 4554 }, { maxW: 10620, priceHT: 4962 }, { maxW: 11220, priceHT: 5217 }, { maxW: 12000, priceHT: 5547 }]
+      3000: [{ maxW: 4760, priceHT: 2524 }, { maxW: 5610, priceHT: 2806 }, { maxW: 6000, priceHT: 3030 }, { maxW: 7110, priceHT: 3791 }, { maxW: 8280, priceHT: 4407 }, { maxW: 9450, priceHT: 4554 }, { maxW: 10620, priceHT: 4962 }, { maxW: 11220, priceHT: 5217 }, { maxW: 12000, priceHT: 5547 }],
+      3250: [{ maxW: 4760, priceHT: 2675 }, { maxW: 5610, priceHT: 3043 }, { maxW: 6000, priceHT: 3283 }, { maxW: 7110, priceHT: 4103 }, { maxW: 8280, priceHT: 4630 }, { maxW: 9450, priceHT: 4815 }, { maxW: 10620, priceHT: 5252 }, { maxW: 11220, priceHT: 5502 }, { maxW: 12000, priceHT: 5834 }],
+      3500: [{ maxW: 4760, priceHT: 2723 }, { maxW: 5610, priceHT: 3101 }, { maxW: 6000, priceHT: 3348 }, { maxW: 7110, priceHT: 4135 }, { maxW: 8280, priceHT: 4673 }, { maxW: 9450, priceHT: 4901 }, { maxW: 10620, priceHT: 5349 }, { maxW: 11220, priceHT: 5606 }, { maxW: 12000, priceHT: 5948 }],
+      4000: [{ maxW: 4760, priceHT: 2848 }, { maxW: 5610, priceHT: 3237 }, { maxW: 6000, priceHT: 3502 }, { maxW: 7110, priceHT: 4241 }, { maxW: 8280, priceHT: 4751 }, { maxW: 9450, priceHT: 5123 }, { maxW: 10620, priceHT: 5584 }, { maxW: 11220, priceHT: 5862 }, { maxW: 12000, priceHT: 6218 }]
     },
     ceilingMountPrices: [
-      { maxW: 2400, price: 388 }, { maxW: 3580, price: 388 }, { maxW: 4760, price: 544 }, { maxW: 5610, price: 544 },
-      { maxW: 6000, price: 573 }, { maxW: 7110, price: 791 }, { maxW: 8280, price: 1056 }, { maxW: 9450, price: 1072 },
-      { maxW: 10620, price: 1072 }, { maxW: 11220, price: 1225 }, { maxW: 12000, price: 1294 }
+      { maxW: 3580, price: 388 },{ maxW: 5610, price: 544 },{ maxW: 6000, price: 573 }, { maxW: 7110, price: 791 }, { maxW: 8280, price: 1056 }, { maxW: 10620, price: 1072 }, { maxW: 11220, price: 1225 }, { maxW: 12000, price: 1294 }
     ],
     lambrequinEnroulablePrices: {
-      manual: [
-        { maxW: 2400, price: 361 },
-        { maxW: 3580, price: 472 },
-        { maxW: 5610, price: 650 },
-        { maxW: 6000, price: 667 }
-      ],
-      motorized: [
-        { maxW: 2400, price: 476 },
-        { maxW: 3580, price: 631 },
-        { maxW: 5610, price: 859 },
-        { maxW: 6000, price: 878 }
-      ]
+      manual: [],
+      motorized: [{ maxW: 2400, price: 476 }, { maxW: 3580, price: 631 }, { maxW: 4760, price: 688 }, { maxW: 5610, price: 859 }, { maxW: 6000, price: 878 }]
     },
+    ledCoffretPrice: 362,  // Prix LED coffre spécifique pour ce modèle
     salesCoefficient: 2.1,  // Très haut de gamme
     optionsCoefficients: {
       LED_ARMS: 2.0,
@@ -963,6 +992,7 @@ export const STORE_MODELS: Record<string, StoreModel> = {
   },
 
   // --- 10. ANTIBES - STORAL CLASSIQUE (Monobloc Standard) ---
+  // Tarifs mis à jour le 19/02/2026
   "antibes": {
     id: "antibes",
     slug: "store-banne-coffre-traditionnel-antibes",
@@ -970,23 +1000,55 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     marketingRange: "GAMME_CLASSIQUE",
     type: "monobloc",
     is_promo: false,
-    description: "Store monobloc sans coffre avec tube carré 40×40. Solution économique et compacte. LED intégrées dans les bras (option).",
-    features: ["Encombrement réduit", "LED bras intégrées (option)", "Installation simple"],
+    description: "Store monobloc sans coffre avec tube carré 40×40 jusqu'à 12m. Solution économique et compacte avec lambrequin fixe compris. LED intégrées dans les bras, auvent et joues (options).",
+    features: ["Jusqu'à 12m", "Lambrequin fixe compris", "LED bras intégrées (option)", "Auvent et Joues (option)"],
     image: "/images/stores/store_monobloc.png",
-    compatible_toile_types: ['ORCH'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 6000, max_projection: 3000 },
+    compatible_toile_types: ['ORCH', 'SATT'],
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 3000 },
     arm_type: 'standard',
     wind_class: 'classe_2',
     armLogic: 'standard_2',
-    minWidths: { 1500: 1800, 2000: 2300, 2500: 2800, 3000: 3300 },
+    minWidths: { 1500: 2390, 1750: 2390, 2000: 2390, 2500: 3570, 3000: 4750 },
     buyPrices: {
-      1500: [{ maxW: 3000, priceHT: 800 }, { maxW: 4000, priceHT: 900 }, { maxW: 5000, priceHT: 1050 }, { maxW: 6000, priceHT: 1200 }],
-      2000: [{ maxW: 3000, priceHT: 880 }, { maxW: 4000, priceHT: 1000 }, { maxW: 5000, priceHT: 1180 }, { maxW: 6000, priceHT: 1350 }],
-      2500: [{ maxW: 3000, priceHT: 980 }, { maxW: 4000, priceHT: 1140 }, { maxW: 5000, priceHT: 1340 }, { maxW: 6000, priceHT: 1530 }],
-      3000: [{ maxW: 3000, priceHT: 1100 }, { maxW: 4000, priceHT: 1300 }, { maxW: 5000, priceHT: 1530 }, { maxW: 6000, priceHT: 1750 }]
+      1500: [
+        { maxW: 2390, priceHT: 1019 }, { maxW: 3570, priceHT: 1253 }, { maxW: 4750, priceHT: 1122 }, 
+        { maxW: 5610, priceHT: 1409 }, { maxW: 6000, priceHT: 1529 }, { maxW: 7110, priceHT: 1989 }, 
+        { maxW: 8280, priceHT: 2140 }, { maxW: 9450, priceHT: 2333 }, { maxW: 10790, priceHT: 2501 }, 
+        { maxW: 11220, priceHT: 2663 }, { maxW: 12000, priceHT: 2777 }
+      ],
+      1750: [
+        { maxW: 2390, priceHT: 1027 }, { maxW: 3570, priceHT: 1131 }, { maxW: 4750, priceHT: 1260 }, 
+        { maxW: 5610, priceHT: 1416 }, { maxW: 6000, priceHT: 1540 }, { maxW: 7110, priceHT: 1992 }, 
+        { maxW: 8280, priceHT: 2146 }, { maxW: 9450, priceHT: 2341 }, { maxW: 10790, priceHT: 2507 }, 
+        { maxW: 11220, priceHT: 2670 }, { maxW: 12000, priceHT: 2784 }
+      ],
+      2000: [
+        { maxW: 2390, priceHT: 1032 }, { maxW: 3570, priceHT: 1137 }, { maxW: 4750, priceHT: 1268 }, 
+        { maxW: 5610, priceHT: 1421 }, { maxW: 6000, priceHT: 1546 }, { maxW: 7110, priceHT: 2007 }, 
+        { maxW: 8280, priceHT: 2160 }, { maxW: 9450, priceHT: 2355 }, { maxW: 10790, priceHT: 2517 }, 
+        { maxW: 11220, priceHT: 2681 }, { maxW: 12000, priceHT: 2800 }
+      ],
+      2500: [
+        { maxW: 3570, priceHT: 1144 }, { maxW: 4750, priceHT: 1272 }, { maxW: 5610, priceHT: 1426 }, 
+        { maxW: 6000, priceHT: 1554 }, { maxW: 7110, priceHT: 2035 }, { maxW: 8280, priceHT: 2186 }, 
+        { maxW: 9450, priceHT: 2376 }, { maxW: 10790, priceHT: 2543 }, { maxW: 11220, priceHT: 2705 }, 
+        { maxW: 12000, priceHT: 2826 }
+      ],
+      3000: [
+        { maxW: 4750, priceHT: 1293 }, { maxW: 5610, priceHT: 1447 }, { maxW: 6000, priceHT: 1572 }, 
+        { maxW: 7110, priceHT: 2072 }, { maxW: 8280, priceHT: 2416 }, { maxW: 9450, priceHT: 2226 }, 
+        { maxW: 10790, priceHT: 2585 }, { maxW: 11220, priceHT: 2748 }, { maxW: 12000, priceHT: 2872 }
+      ]
     },
     ceilingMountPrices: [
-      { maxW: 6000, price: 100 }
+      { maxW: 4750, price: 28 }, { maxW: 5610, price: 42 }, { maxW: 6000, price: 45 },
+      { maxW: 7110, price: 55 }, { maxW: 11220, price: 81 }, { maxW: 12000, price: 84 }
+    ],
+    auventEtJouesPrices: [
+      { maxW: 2390, price: 218 }, { maxW: 3570, price: 279 }, { maxW: 4750, price: 298 },
+      { maxW: 5610, price: 318 }, { maxW: 6000, price: 377 }, { maxW: 7110, price: 493 },
+      { maxW: 8280, price: 586 }, { maxW: 9450, price: 544 }, { maxW: 10790, price: 667 },
+      { maxW: 11220, price: 704 }, { maxW: 12000, price: 729 }
     ],
     salesCoefficient: 1.8,  // Standard monobloc
     optionsCoefficients: {
@@ -995,14 +1057,17 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       LAMBREQUIN_FIXE: 1.5,
       LAMBREQUIN_ENROULABLE: 1.8,
       CEILING_MOUNT: 1.6,
+      AUVENT: 1.7,
       FRAME_COLOR_CUSTOM: 1.8
     },
     deliveryType: 'ready_to_install',
-    deliveryNote: "Store livré fini, toile réglée et prêt à poser",
-    colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser. Surtaxe transport pour stores > 3.65m.",
+    colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
+    deliveryWarningThreshold: 3650  // Alerte et surtaxe transport si > 3.65m
   },
 
   // --- 11. MADRID - STORAL CLASSIQUE + (Monobloc Standard) ---
+  // Tarifs mis à jour le 19/02/2026
   "madrid": {
     id: "madrid",
     slug: "store-banne-coffre-robuste-madrid",
@@ -1010,26 +1075,84 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     marketingRange: "GAMME_CLASSIQUE",
     type: "monobloc",
     is_promo: false,
-    description: "Store monobloc sans coffre avec tube carré 40×40 jusqu'à 12m. Bras renforcés. LED intégrées dans les bras (option).",
-    features: ["Jusqu'à 12m", "Tube carré 40×40", "LED bras intégrées (option)"],
+    description: "Store monobloc sans coffre avec tube carré 40×40 jusqu'à 18m. Bras renforcés. LED intégrées dans les bras, auvent et joues, lambrequin déroulant (options).",
+    features: ["Jusqu'à 18m", "Tube carré 40×40", "LED bras intégrées (option)", "Auvent et Joues (option)", "Lambrequin déroulant (option)"],
     image: "/images/stores/store semi coffre.png",
     compatible_toile_types: ['ORCH', 'ORCH_MAX', 'SATT'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 4000 },
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 18000, max_projection: 4000 },
     arm_type: 'renforce',
     wind_class: 'classe_2',
     armLogic: 'couples_4_6',
-    minWidths: { 1500: 2050, 2000: 2550, 2500: 3050, 3000: 3550, 3500: 4050, 4000: 4550 },
+    minWidths: { 1500: 2390, 2000: 2390, 2500: 3570, 3000: 3570, 3500: 4750, 4000: 4750 },
     buyPrices: {
-      1500: [{ maxW: 4000, priceHT: 1450 }, { maxW: 6000, priceHT: 1650 }, { maxW: 8000, priceHT: 2100 }, { maxW: 10000, priceHT: 2650 }, { maxW: 12000, priceHT: 3200 }],
-      2000: [{ maxW: 4000, priceHT: 1550 }, { maxW: 6000, priceHT: 1800 }, { maxW: 8000, priceHT: 2300 }, { maxW: 10000, priceHT: 2900 }, { maxW: 12000, priceHT: 3500 }],
-      2500: [{ maxW: 4000, priceHT: 1680 }, { maxW: 6000, priceHT: 1950 }, { maxW: 8000, priceHT: 2500 }, { maxW: 10000, priceHT: 3150 }, { maxW: 12000, priceHT: 3800 }],
-      3000: [{ maxW: 4000, priceHT: 1820 }, { maxW: 6000, priceHT: 2150 }, { maxW: 8000, priceHT: 2750 }, { maxW: 10000, priceHT: 3450 }, { maxW: 12000, priceHT: 4150 }],
-      3500: [{ maxW: 4000, priceHT: 1980 }, { maxW: 6000, priceHT: 2350 }, { maxW: 8000, priceHT: 3000 }, { maxW: 10000, priceHT: 3750 }, { maxW: 12000, priceHT: 4500 }],
-      4000: [{ maxW: 4000, priceHT: 2150 }, { maxW: 6000, priceHT: 2550 }, { maxW: 8000, priceHT: 3250 }, { maxW: 10000, priceHT: 4050 }, { maxW: 12000, priceHT: 4850 }]
+      1500: [
+        { maxW: 2390, priceHT: 1053 }, { maxW: 3570, priceHT: 1185 }, { maxW: 4750, priceHT: 1308 }, 
+        { maxW: 5610, priceHT: 1458 }, { maxW: 6000, priceHT: 1588 }, { maxW: 7110, priceHT: 2123 }, 
+        { maxW: 8280, priceHT: 2265 }, { maxW: 9450, priceHT: 2442 }, { maxW: 10790, priceHT: 2584 }, 
+        { maxW: 11220, priceHT: 2755 }, { maxW: 12000, priceHT: 2887 }, { maxW: 12970, priceHT: 3417 }, 
+        { maxW: 14140, priceHT: 3506 }, { maxW: 15310, priceHT: 3742 }, { maxW: 16480, priceHT: 3841 }, 
+        { maxW: 16830, priceHT: 3938 }, { maxW: 18000, priceHT: 4132 }
+      ],
+      2000: [
+        { maxW: 2390, priceHT: 1094 }, { maxW: 3570, priceHT: 1241 }, { maxW: 4750, priceHT: 1383 }, 
+        { maxW: 5610, priceHT: 1548 }, { maxW: 6000, priceHT: 1691 }, { maxW: 7110, priceHT: 2263 }, 
+        { maxW: 8280, priceHT: 2419 }, { maxW: 9450, priceHT: 2612 }, { maxW: 10790, priceHT: 2776 }, 
+        { maxW: 11220, priceHT: 2962 }, { maxW: 12000, priceHT: 3097 }, { maxW: 12970, priceHT: 3651 }, 
+        { maxW: 14140, priceHT: 3766 }, { maxW: 15310, priceHT: 4017 }, { maxW: 16480, priceHT: 4132 }, 
+        { maxW: 16830, priceHT: 4246 }, { maxW: 18000, priceHT: 4444 }
+      ],
+      2500: [
+        { maxW: 3570, priceHT: 1320 }, { maxW: 4750, priceHT: 1479 }, { maxW: 5610, priceHT: 1655 }, 
+        { maxW: 6000, priceHT: 1821 }, { maxW: 7110, priceHT: 2451 }, { maxW: 8280, priceHT: 2625 }, 
+        { maxW: 9450, priceHT: 2839 }, { maxW: 10790, priceHT: 3020 }, { maxW: 11220, priceHT: 3223 }, 
+        { maxW: 12000, priceHT: 3358 }, { maxW: 12970, priceHT: 3978 }, { maxW: 14140, priceHT: 4112 }, 
+        { maxW: 15310, priceHT: 4381 }, { maxW: 16480, priceHT: 4514 }, { maxW: 16830, priceHT: 4645 }, 
+        { maxW: 18000, priceHT: 4849 }
+      ],
+      3000: [
+        { maxW: 3570, priceHT: 1387 }, { maxW: 4750, priceHT: 1564 }, { maxW: 5610, priceHT: 1754 }, 
+        { maxW: 6000, priceHT: 1932 }, { maxW: 7110, priceHT: 2586 }, { maxW: 8280, priceHT: 2777 }, 
+        { maxW: 9450, priceHT: 3007 }, { maxW: 10790, priceHT: 3207 }, { maxW: 11220, priceHT: 3427 }, 
+        { maxW: 12000, priceHT: 3568 }, { maxW: 12970, priceHT: 4211 }, { maxW: 14140, priceHT: 4360 }, 
+        { maxW: 15310, priceHT: 4650 }, { maxW: 16480, priceHT: 4799 }, { maxW: 16830, priceHT: 4947 }, 
+        { maxW: 18000, priceHT: 5153 }
+      ],
+      3500: [
+        { maxW: 4750, priceHT: 1676 }, { maxW: 5610, priceHT: 1882 }, { maxW: 6000, priceHT: 2078 }, 
+        { maxW: 7110, priceHT: 2681 }, { maxW: 8280, priceHT: 2979 }, { maxW: 9450, priceHT: 3253 }, 
+        { maxW: 10790, priceHT: 3469 }, { maxW: 11220, priceHT: 3705 }, { maxW: 12000, priceHT: 3853 }, 
+        { maxW: 12970, priceHT: 4554 }, { maxW: 14140, priceHT: 4719 }, { maxW: 15310, priceHT: 5029 }, 
+        { maxW: 16480, priceHT: 5197 }, { maxW: 16830, priceHT: 5364 }, { maxW: 18000, priceHT: 5581 }
+      ],
+      4000: [
+        { maxW: 4750, priceHT: 1857 }, { maxW: 5610, priceHT: 2075 }, { maxW: 6000, priceHT: 2298 }, 
+        { maxW: 7110, priceHT: 2914 }, { maxW: 8280, priceHT: 3117 }, { maxW: 9450, priceHT: 3583 }, 
+        { maxW: 10790, priceHT: 3821 }, { maxW: 11220, priceHT: 4074 }, { maxW: 12000, priceHT: 4230 }, 
+        { maxW: 12970, priceHT: 4801 }, { maxW: 14140, priceHT: 5215 }, { maxW: 15310, priceHT: 5542 }, 
+        { maxW: 16480, priceHT: 5725 }, { maxW: 16830, priceHT: 5904 }, { maxW: 18000, priceHT: 6145 }
+      ]
     },
     ceilingMountPrices: [
-      { maxW: 6000, price: 150 },
-      { maxW: 12000, price: 300 }
+      { maxW: 3570, price: 20 }, { maxW: 6000, price: 50 }, { maxW: 7110, price: 59 },
+      { maxW: 10635, price: 70 }, { maxW: 12000, price: 73 }, { maxW: 14140, price: 99 },
+      { maxW: 18000, price: 102 }
+    ],
+    lambrequinEnroulablePrices: {
+      manual: [
+        { maxW: 2390, price: 321 }, { maxW: 3570, price: 437 }, { maxW: 4750, price: 524 },
+        { maxW: 5610, price: 610 }, { maxW: 6000, price: 653 }
+      ],
+      motorized: [
+        { maxW: 2390, price: 576 }, { maxW: 3570, price: 723 }, { maxW: 4750, price: 808 },
+        { maxW: 5610, price: 895 }, { maxW: 6000, price: 938 }
+      ]
+    },
+    auventEtJouesPrices: [
+      { maxW: 2390, price: 218 }, { maxW: 3570, price: 279 }, { maxW: 4750, price: 298 },
+      { maxW: 5610, price: 318 }, { maxW: 6000, price: 377 }, { maxW: 7110, price: 493 },
+      { maxW: 8280, price: 544 }, { maxW: 9450, price: 586 }, { maxW: 10790, price: 667 },
+      { maxW: 11220, price: 704 }, { maxW: 12000, price: 729 }, { maxW: 14140, price: 876 },
+      { maxW: 15310, price: 886 }, { maxW: 18000, price: 1003 }
     ],
     salesCoefficient: 1.9,  // Premium monobloc
     optionsCoefficients: {
@@ -1038,15 +1161,17 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       LAMBREQUIN_FIXE: 1.5,
       LAMBREQUIN_ENROULABLE: 1.8,
       CEILING_MOUNT: 1.6,
+      AUVENT: 1.7,
       FRAME_COLOR_CUSTOM: 1.8
     },
     deliveryType: 'ready_up_to_6m',
-    deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 parties.",
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 parties. Surtaxe transport pour stores > 3.65m.",
     colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
-    deliveryWarningThreshold: 6000  // Alerte si > 6m
+    deliveryWarningThreshold: 3650  // Alerte et surtaxe transport si > 3.65m
   },
 
   // --- 12. GENES - STORAL TRADITION (Traditionnel Standard) ---
+  // Tarifs mis à jour le 19/02/2026
   "genes": {
     id: "genes",
     slug: "store-banne-loggia-sans-coffre",
@@ -1058,35 +1183,38 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     features: ["Prix économique", "Installation simple", "LED bras intégrées (option)"],
     image: "/images/stores/store_traditionnel.png",
     compatible_toile_types: ['ORCH'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 6000, max_projection: 3000 },
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 5550, max_projection: 2500 },
     arm_type: 'standard',
     wind_class: 'classe_2',
     armLogic: 'standard_2',
-    minWidths: { 1500: 1800, 2000: 2300, 2500: 2800, 3000: 3300 },
+    minWidths: { 1500: 2390, 1750: 2390, 2000: 2390, 2500: 2750 },
     buyPrices: {
-      1500: [{ maxW: 3000, priceHT: 850 }, { maxW: 4000, priceHT: 950 }, { maxW: 5000, priceHT: 1100 }, { maxW: 6000, priceHT: 1250 }],
-      2000: [{ maxW: 3000, priceHT: 920 }, { maxW: 4000, priceHT: 1050 }, { maxW: 5000, priceHT: 1220 }, { maxW: 6000, priceHT: 1400 }],
-      2500: [{ maxW: 3000, priceHT: 1020 }, { maxW: 4000, priceHT: 1180 }, { maxW: 5000, priceHT: 1380 }, { maxW: 6000, priceHT: 1580 }],
-      3000: [{ maxW: 3000, priceHT: 1150 }, { maxW: 4000, priceHT: 1350 }, { maxW: 5000, priceHT: 1580 }, { maxW: 6000, priceHT: 1800 }]
+      1500: [{ maxW: 2390, priceHT: 672 }, { maxW: 3570, priceHT: 751 }, { maxW: 4750, priceHT: 854 }, { maxW: 5550, priceHT: 953 }],
+      1750: [{ maxW: 2390, priceHT: 677 }, { maxW: 3570, priceHT: 758 }, { maxW: 4750, priceHT: 859 }, { maxW: 5550, priceHT: 958 }],
+      2000: [{ maxW: 2390, priceHT: 682 }, { maxW: 3570, priceHT: 767 }, { maxW: 4750, priceHT: 867 }, { maxW: 5550, priceHT: 967 }],
+      2500: [{ maxW: 2750, priceHT: 776 }, { maxW: 4750, priceHT: 875 }]
     },
-    ceilingMountPrices: [
-      { maxW: 6000, price: 100 }
+    auventEtJouesPrices: [
+      { maxW: 2390, price: 203 }, { maxW: 3570, price: 288 }, { maxW: 4750, price: 300 }, { maxW: 5550, price: 352 }
+    ],
+    lambrequinFixeDifferentFabricPrices: [
+      { maxW: 2390, price: 80 }, { maxW: 3570, price: 92 }, { maxW: 4750, price: 106 }, { maxW: 5550, price: 112 }
     ],
     salesCoefficient: 1.6,  // Économique
     optionsCoefficients: {
       LED_ARMS: 2.0,
       LED_CASSETTE: 2.0,
       LAMBREQUIN_FIXE: 1.5,
-      LAMBREQUIN_ENROULABLE: 1.8,
-      CEILING_MOUNT: 1.6,
-      FRAME_COLOR_CUSTOM: 1.8
+      FRAME_COLOR_CUSTOM: 1.8,
+      AUVENT: 1.7
     },
     deliveryType: 'disassembled',
-    deliveryNote: "Store livré démonté (pose par nos soins ou par un professionnel recommandé)",
+    deliveryNote: "Store livré démonté (pose par nos soins ou par un professionnel recommandé). Fixation plafond sans plus-value.",
     colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
   },
 
   // --- 13. MENTON - STORAL TRADITION + (Traditionnel Renforcé) ---
+  // Tarifs mis à jour le 19/02/2026
   "menton": {
     id: "menton",
     slug: "store-banne-traditionnel-renforce-menton",
@@ -1094,41 +1222,41 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     marketingRange: "GAMME_TRADITION",
     type: "traditionnel",
     is_promo: false,
-    description: "Version renforcée du store traditionnel pour dimensions supérieures jusqu'à 8m. LED intégrées dans les bras (option).",
-    features: ["Renforcé", "Jusqu'à 8m", "LED bras intégrées (option)"],
+    description: "Version renforcée du store traditionnel pour dimensions supérieures jusqu'à 12m. LED intégrées dans les bras (option).",
+    features: ["Renforcé", "Jusqu'à 12m", "LED bras intégrées (option)"],
     image: "/images/stores/store_traditionnel.png",
     compatible_toile_types: ['ORCH', 'SATT'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 8000, max_projection: 3500 },
-    arm_type: 'standard',
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 12000, max_projection: 3000 },
+    arm_type: 'renforce',
     wind_class: 'classe_2',
     armLogic: 'standard_2',
-    minWidths: { 1500: 1800, 2000: 2300, 2500: 2800, 3000: 3300, 3500: 3800 },
+    minWidths: { 1500: 2390, 1750: 2390, 2000: 2390, 2500: 3570, 3000: 4750 },
     buyPrices: {
-      1500: [{ maxW: 3000, priceHT: 950 }, { maxW: 4000, priceHT: 1050 }, { maxW: 5000, priceHT: 1220 }, { maxW: 6000, priceHT: 1400 }, { maxW: 8000, priceHT: 1800 }],
-      2000: [{ maxW: 3000, priceHT: 1020 }, { maxW: 4000, priceHT: 1150 }, { maxW: 5000, priceHT: 1340 }, { maxW: 6000, priceHT: 1550 }, { maxW: 8000, priceHT: 2000 }],
-      2500: [{ maxW: 3000, priceHT: 1120 }, { maxW: 4000, priceHT: 1280 }, { maxW: 5000, priceHT: 1480 }, { maxW: 6000, priceHT: 1730 }, { maxW: 8000, priceHT: 2250 }],
-      3000: [{ maxW: 3000, priceHT: 1250 }, { maxW: 4000, priceHT: 1450 }, { maxW: 5000, priceHT: 1680 }, { maxW: 6000, priceHT: 1950 }, { maxW: 8000, priceHT: 2550 }],
-      3500: [{ maxW: 4000, priceHT: 1580 }, { maxW: 5000, priceHT: 1820 }, { maxW: 6000, priceHT: 2120 }, { maxW: 8000, priceHT: 2800 }]
+      1500: [{ maxW: 2390, priceHT: 973 }, { maxW: 3570, priceHT: 1075 }, { maxW: 4750, priceHT: 1173 }, { maxW: 5700, priceHT: 1285 }, { maxW: 6000, priceHT: 1414 }, { maxW: 7110, priceHT: 1924 }, { maxW: 8280, priceHT: 2053 }, { maxW: 9450, priceHT: 2169 }, { maxW: 10750, priceHT: 2302 }, { maxW: 11400, priceHT: 2398 }, { maxW: 12000, priceHT: 2490 }],
+      1750: [{ maxW: 2390, priceHT: 980 }, { maxW: 3570, priceHT: 1081 }, { maxW: 4750, priceHT: 1184 }, { maxW: 5700, priceHT: 1292 }, { maxW: 6000, priceHT: 1417 }, { maxW: 7110, priceHT: 1934 }, { maxW: 8280, priceHT: 2068 }, { maxW: 9450, priceHT: 2180 }, { maxW: 10750, priceHT: 2316 }, { maxW: 11400, priceHT: 2409 }, { maxW: 12000, priceHT: 2501 }],
+      2000: [{ maxW: 2390, priceHT: 984 }, { maxW: 3570, priceHT: 1087 }, { maxW: 4750, priceHT: 1189 }, { maxW: 5700, priceHT: 1296 }, { maxW: 6000, priceHT: 1424 }, { maxW: 7110, priceHT: 1947 }, { maxW: 8280, priceHT: 2077 }, { maxW: 9450, priceHT: 2191 }, { maxW: 10750, priceHT: 2329 }, { maxW: 11400, priceHT: 2422 }, { maxW: 12000, priceHT: 2514 }],
+      2500: [{ maxW: 3570, priceHT: 1100 }, { maxW: 4750, priceHT: 1204 }, { maxW: 5700, priceHT: 1314 }, { maxW: 6000, priceHT: 1439 }, { maxW: 7110, priceHT: 1974 }, { maxW: 8280, priceHT: 2104 }, { maxW: 9450, priceHT: 2218 }, { maxW: 10750, priceHT: 2357 }, { maxW: 11400, priceHT: 2449 }, { maxW: 12000, priceHT: 2549 }],
+      3000: [{ maxW: 4750, priceHT: 1222 }, { maxW: 5700, priceHT: 1331 }, { maxW: 6000, priceHT: 1463 }, { maxW: 7110, priceHT: 2016 }, { maxW: 8280, priceHT: 2148 }, { maxW: 9450, priceHT: 2265 }, { maxW: 10750, priceHT: 2400 }, { maxW: 11400, priceHT: 2496 }, { maxW: 12000, priceHT: 2595 }]
     },
-    ceilingMountPrices: [
-      { maxW: 6000, price: 120 },
-      { maxW: 8000, price: 180 }
+    auventEtJouesPrices: [
+      { maxW: 2390, price: 215 }, { maxW: 3570, price: 221 }, { maxW: 4750, price: 277 }, { maxW: 5700, price: 335 }, { maxW: 6000, price: 358 }, { maxW: 7110, price: 448 }, { maxW: 8280, price: 511 }, { maxW: 9450, price: 560 }, { maxW: 10750, price: 618 }, { maxW: 11400, price: 671 }, { maxW: 12000, price: 717 }
     ],
     salesCoefficient: 1.7,  // Version renforcée
     optionsCoefficients: {
       LED_ARMS: 2.0,
       LED_CASSETTE: 2.0,
       LAMBREQUIN_FIXE: 1.5,
-      LAMBREQUIN_ENROULABLE: 1.8,
       CEILING_MOUNT: 1.6,
-      FRAME_COLOR_CUSTOM: 1.8
+      FRAME_COLOR_CUSTOM: 1.8,
+      AUVENT: 1.7
     },
     deliveryType: 'disassembled',
-    deliveryNote: "Store livré démonté - Installation par nos soins ou par un professionnel recommandé",
+    deliveryNote: "Store livré démonté - Installation par nos soins ou par un professionnel recommandé. Fixation plafond sans plus-value.",
     colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
   },
 
   // --- 14. LISBONNE - STORAL TRADITION 18M (Traditionnel Grande Portée) ---
+  // Tarifs mis à jour le 19/02/2026
   "lisbonne": {
     id: "lisbonne",
     slug: "store-banne-traditionnel-grande-portee-18m",
@@ -1140,22 +1268,28 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     features: ["Jusqu'à 18m", "Bras Ultra-Renforcés", "LED bras intégrées (option)"],
     image: "/images/stores/store_traditionnel.png",
     compatible_toile_types: ['ORCH', 'SATT'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 18000, max_projection: 4000 },
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 18000, max_projection: 4000 },
     arm_type: 'ultra_renforce',
     wind_class: 'classe_2',
     armLogic: 'couples_4_6',
-    minWidths: { 2000: 6000, 2500: 7000, 3000: 8000, 3500: 9000, 4000: 10000 },
+    minWidths: { 1500: 2750, 2000: 3250, 2500: 3750, 3000: 4250, 3500: 4750, 4000: 4750 },
     buyPrices: {
-      2000: [{ maxW: 8000, priceHT: 2500 }, { maxW: 10000, priceHT: 3200 }, { maxW: 12000, priceHT: 4000 }, { maxW: 15000, priceHT: 5200 }, { maxW: 18000, priceHT: 6800 }],
-      2500: [{ maxW: 8000, priceHT: 2800 }, { maxW: 10000, priceHT: 3600 }, { maxW: 12000, priceHT: 4500 }, { maxW: 15000, priceHT: 5800 }, { maxW: 18000, priceHT: 7600 }],
-      3000: [{ maxW: 8000, priceHT: 3200 }, { maxW: 10000, priceHT: 4100 }, { maxW: 12000, priceHT: 5100 }, { maxW: 15000, priceHT: 6600 }, { maxW: 18000, priceHT: 8600 }],
-      3500: [{ maxW: 8000, priceHT: 3600 }, { maxW: 10000, priceHT: 4600 }, { maxW: 12000, priceHT: 5700 }, { maxW: 15000, priceHT: 7400 }, { maxW: 18000, priceHT: 9600 }],
-      4000: [{ maxW: 8000, priceHT: 4100 }, { maxW: 10000, priceHT: 5200 }, { maxW: 12000, priceHT: 6400 }, { maxW: 15000, priceHT: 8300 }, { maxW: 18000, priceHT: 10800 }]
+      1500: [{ maxW: 2750, priceHT: 1044 }, { maxW: 3250, priceHT: 1107 }, { maxW: 3750, priceHT: 1169 }, { maxW: 4250, priceHT: 1232 }, { maxW: 4750, priceHT: 1294 }, { maxW: 5250, priceHT: 1357 }, { maxW: 5750, priceHT: 1419 }, { maxW: 6250, priceHT: 1482 }, { maxW: 6750, priceHT: 1544 }, { maxW: 7250, priceHT: 1607 }, { maxW: 7750, priceHT: 1669 }, { maxW: 8000, priceHT: 1700 }],
+      2000: [{ maxW: 3250, priceHT: 1169 }, { maxW: 3750, priceHT: 1232 }, { maxW: 4250, priceHT: 1294 }, { maxW: 4750, priceHT: 1357 }, { maxW: 5250, priceHT: 1419 }, { maxW: 5750, priceHT: 1482 }, { maxW: 6250, priceHT: 1544 }, { maxW: 6750, priceHT: 1607 }, { maxW: 7250, priceHT: 1669 }, { maxW: 7750, priceHT: 1732 }, { maxW: 8000, priceHT: 1763 }],
+      2500: [{ maxW: 3750, priceHT: 1294 }, { maxW: 4250, priceHT: 1357 }, { maxW: 4750, priceHT: 1419 }, { maxW: 5250, priceHT: 1482 }, { maxW: 5750, priceHT: 1544 }, { maxW: 6250, priceHT: 1607 }, { maxW: 6750, priceHT: 1669 }, { maxW: 7250, priceHT: 1732 }, { maxW: 7750, priceHT: 1794 }, { maxW: 8000, priceHT: 1825 }],
+      3000: [{ maxW: 4250, priceHT: 1419 }, { maxW: 4750, priceHT: 1482 }, { maxW: 5250, priceHT: 1544 }, { maxW: 5750, priceHT: 1607 }, { maxW: 6250, priceHT: 1669 }, { maxW: 6750, priceHT: 1732 }, { maxW: 7250, priceHT: 1794 }, { maxW: 7750, priceHT: 1857 }, { maxW: 8000, priceHT: 1888 }],
+      3500: [{ maxW: 4750, priceHT: 1544 }, { maxW: 5250, priceHT: 1607 }, { maxW: 5750, priceHT: 1669 }, { maxW: 6250, priceHT: 1732 }, { maxW: 6750, priceHT: 1794 }, { maxW: 7250, priceHT: 1857 }, { maxW: 7750, priceHT: 1919 }, { maxW: 8000, priceHT: 1950 }],
+      4000: [{ maxW: 4750, priceHT: 1669 }, { maxW: 5250, priceHT: 1732 }, { maxW: 5700, priceHT: 1922 }, { maxW: 6000, priceHT: 2140 }, { maxW: 6500, priceHT: 2265 }, { maxW: 7000, priceHT: 2390 }, { maxW: 7500, priceHT: 2515 }, { maxW: 8000, priceHT: 2640 }]
+    },
+    auventEtJouesPrices: [
+      { maxW: 3000, price: 200 }, { maxW: 3500, price: 200 }, { maxW: 4000, price: 210 }, { maxW: 4500, price: 220 }, { maxW: 5000, price: 230 }, { maxW: 5500, price: 240 }, { maxW: 6000, price: 250 }, { maxW: 6500, price: 260 }, { maxW: 7000, price: 270 }, { maxW: 7500, price: 280 }, { maxW: 8000, price: 290 }, { maxW: 8500, price: 300 }, { maxW: 9000, price: 310 }, { maxW: 9500, price: 320 }
+    ],
+    lambrequinEnroulablePrices: {
+      manual: [{ maxW: 2390, price: 321 }, { maxW: 3570, price: 437 }, { maxW: 4750, price: 524 }, { maxW: 5700, price: 610 }, { maxW: 6000, price: 653 }],
+      motorized: [{ maxW: 2390, price: 576 }, { maxW: 3570, price: 723 }, { maxW: 4750, price: 808 }, { maxW: 5700, price: 895 }, { maxW: 6000, price: 938 }]
     },
     ceilingMountPrices: [
-      { maxW: 10000, price: 250 },
-      { maxW: 15000, price: 400 },
-      { maxW: 18000, price: 550 }
+      { maxW: 3570, price: 40 }, { maxW: 5700, price: 78 }, { maxW: 6000, price: 93 }, { maxW: 7110, price: 126 }, { maxW: 8280, price: 136 }, { maxW: 9450, price: 159 }, { maxW: 11220, price: 168 }, { maxW: 12000, price: 177 }, { maxW: 14140, price: 186 }, { maxW: 18000, price: 198 }
     ],
     salesCoefficient: 1.7,  // Projet sur mesure XXL
     optionsCoefficients: {
@@ -1164,15 +1298,17 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       LAMBREQUIN_FIXE: 1.5,
       LAMBREQUIN_ENROULABLE: 1.8,
       CEILING_MOUNT: 1.6,
-      FRAME_COLOR_CUSTOM: 1.8
+      FRAME_COLOR_CUSTOM: 1.8,
+      AUVENT: 1.7
     },
     deliveryType: 'disassembled',
     deliveryNote: "Store livré démonté par transporteur spécialisé - Installation professionnelle obligatoire",
     colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
-    deliveryWarningThreshold: 6000  // Alerte livraison complexe
+    deliveryWarningThreshold: 4000  // Alerte livraison complexe
   },
 
   // --- 15. BRAS CROISÉS - STORAL BRAS CROISÉS (Spécialité pour balcons étroits) ---
+  // Tarifs mis à jour le 19/02/2026
   "bras_croises": {
     id: "bras_croises",
     slug: "store-banne-balcon-etroit-bras-croises",
@@ -1180,24 +1316,37 @@ export const STORE_MODELS: Record<string, StoreModel> = {
     marketingRange: "GAMME_SPECIAL",
     type: "specialite",
     is_promo: false,
-    description: "La solution exclusive pour les terrasses et balcons étroits où l'avancée est supérieure à la largeur. Bras superposés avec mécanique spéciale. LED intégrées dans les bras (option).",
-    features: ["Configuration Unique", "Bras Superposés", "LED bras intégrées (option)"],
+    description: "La solution exclusive pour les terrasses et balcons étroits où l'avancée est supérieure à la largeur. Bras superposés avec mécanique spéciale. LED intégrées dans les bras (option uniquement 2 bras), auvent et joues, lambrequin déroulant (options).",
+    features: ["Configuration Unique", "Bras Superposés", "LED 2 bras (option)", "Auvent et Joues (option)", "Lambrequin déroulant (option)"],
     image: "/images/stores/store coffre.png",
     compatible_toile_types: ['ORCH', 'SATT'],
-    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: false, max_width: 4000, max_projection: 3500 },
+    compatibility: { led_arms: true, led_box: false, lambrequin_fixe: true, lambrequin_enroulable: true, max_width: 3835, max_projection: 3500 },
     arm_type: 'standard',
     wind_class: 'classe_2',
     armLogic: 'standard_2',
-    minWidths: { 1500: 1100, 2000: 1600, 2500: 2100, 3000: 2600, 3500: 3100 },
+    minWidths: { 1500: 1100, 2000: 1100, 2500: 2390, 2750: 2390, 3000: 2390, 3250: 2390, 3500: 2390 },
     buyPrices: {
-      1500: [{ maxW: 1500, priceHT: 950 + 120 }, { maxW: 2500, priceHT: 1150 + 120 }, { maxW: 3500, priceHT: 1400 + 120 }, { maxW: 4000, priceHT: 1500 + 120 }],
-      2000: [{ maxW: 1500, priceHT: 1050 + 120 }, { maxW: 2500, priceHT: 1300 + 120 }, { maxW: 3500, priceHT: 1600 + 120 }, { maxW: 4000, priceHT: 1700 + 120 }],
-      2500: [{ maxW: 1500, priceHT: 1180 + 120 }, { maxW: 2500, priceHT: 1450 + 120 }, { maxW: 3500, priceHT: 1780 + 120 }, { maxW: 4000, priceHT: 1900 + 120 }],
-      3000: [{ maxW: 1500, priceHT: 1350 + 120 }, { maxW: 2500, priceHT: 1650 + 120 }, { maxW: 3500, priceHT: 2000 + 120 }, { maxW: 4000, priceHT: 2150 + 120 }],
-      3500: [{ maxW: 1500, priceHT: 1550 + 120 }, { maxW: 2500, priceHT: 1900 + 120 }, { maxW: 3500, priceHT: 2300 + 120 }, { maxW: 4000, priceHT: 2450 + 120 }]
+      1500: [{ maxW: 2390, priceHT: 1144 }],
+      2000: [{ maxW: 2390, priceHT: 1162 }],
+      2500: [{ maxW: 2390, priceHT: 1196 }, { maxW: 3570, priceHT: 1304 }],
+      2750: [{ maxW: 2390, priceHT: 1206 }, { maxW: 3570, priceHT: 1315 }],
+      3000: [{ maxW: 2390, priceHT: 1218 }, { maxW: 3570, priceHT: 1322 }],
+      3250: [{ maxW: 2390, priceHT: 1233 }, { maxW: 3570, priceHT: 1341 }, { maxW: 3835, priceHT: 1473 }],
+      3500: [{ maxW: 2390, priceHT: 1244 }, { maxW: 3570, priceHT: 1350 }, { maxW: 3835, priceHT: 1492 }]
     },
     ceilingMountPrices: [
-      { maxW: 4000, price: 150 }
+      { maxW: 2390, price: 20 }, { maxW: 3570, price: 23 }, { maxW: 3835, price: 27 }
+    ],
+    lambrequinEnroulablePrices: {
+      manual: [
+        { maxW: 2390, price: 321 }, { maxW: 3570, price: 437 }, { maxW: 3835, price: 524 }
+      ],
+      motorized: [
+        { maxW: 2390, price: 576 }, { maxW: 3570, price: 723 }, { maxW: 3835, price: 808 }
+      ]
+    },
+    auventEtJouesPrices: [
+      { maxW: 2390, price: 218 }, { maxW: 3570, price: 279 }, { maxW: 3835, price: 298 }
     ],
     salesCoefficient: 1.9,  // Spécialité
     optionsCoefficients: {
@@ -1206,10 +1355,11 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       LAMBREQUIN_FIXE: 1.5,
       LAMBREQUIN_ENROULABLE: 1.8,
       CEILING_MOUNT: 1.6,
+      AUVENT: 1.7,
       FRAME_COLOR_CUSTOM: 1.8
     },
     deliveryType: 'ready_to_install',
-    deliveryNote: "Store livré fini, toile réglée et prêt à poser",
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser. Solution spéciale pour balcons étroits.",
     colorStrategy: 'STANDARD_ALL'  // Toutes couleurs incluses
   }
 };
@@ -1445,7 +1595,7 @@ export function calculateFinalPrice(config: {
   }
   
   if (config.options.ledBox && model.compatibility.led_box) {
-    totalAchatHT += OPTIONS_PRICES.LED_CASSETTE;
+    totalAchatHT += model.ledCoffretPrice ?? OPTIONS_PRICES.LED_CASSETTE;
   }
   
   if (config.options.isCustomColor) {
@@ -1511,7 +1661,8 @@ export function calculateFinalPrice(config: {
   
   // LED Coffre
   if (config.options.ledBox && model.compatibility.led_box) {
-    totalVenteHT += OPTIONS_PRICES.LED_CASSETTE * getOptionCoeff('LED_CASSETTE');
+    const ledCoffrePriceHT = model.ledCoffretPrice ?? OPTIONS_PRICES.LED_CASSETTE;
+    totalVenteHT += ledCoffrePriceHT * getOptionCoeff('LED_CASSETTE');
   }
   
   // RAL spécifique

@@ -563,12 +563,20 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     💡 ÉTAPE 1E - ÉCLAIRAGE:
     Demande s'il souhaite utiliser le store le soir (LED dans les bras ou le coffre).
     
+    ☂️ ÉTAPE 1E-BIS - AUVENT ET JOUES (SI COMPATIBLE):
+    Si le modèle choisi dispose de l'option Auvent et Joues (modèles: ANTIBES, MADRID, GENES, MENTON, LISBONNE, BRAS CROISÉS):
+    → Propose cette option en expliquant les bénéfices :
+       • Protection latérale contre le soleil rasant (matin/soir)
+       • Réduction du vis-à-vis avec les voisins (intimité)
+       • Amélioration de l'esthétique globale du store (finitions latérales)
+    → Question type : "Souhaitez-vous ajouter un auvent avec joues latérales pour compléter la protection et améliorer l'intimité ?"
+    
     💳 ÉTAPE 1F - LA POSE & TVA:
     Demande s'il a les compétences pour l'installer ou s'il préfère nos experts.
     Argument: Si maison > 2 ans et pose par nos soins, la TVA passe de 20% à 10% sur tout le projet.
 
 PHASE 2 : VALIDATION DU PROJET (Le Verrouillage)
-Fais un résumé technique de l'environnement (dimensions, orientation, obstacles, hauteur, éclairage, pose).
+Fais un résumé technique de l'environnement (dimensions, orientation, obstacles, hauteur, éclairage, auvent si compatible, pose).
 ⚠️ AJOUT CRITIQUE : SI un angle d'inclinaison a été calculé (ÉTAPE 1D-TER), MENTIONNE-LE dans le récapitulatif :
 "- **Réglage usine** : Inclinaison de [X]° pour garantir 2.00m de passage (service 'Prêt à Poser')"
 ⚠️ INTERDICTION ABSOLUE : NE MENTIONNE AUCUN MODÈLE SPÉCIFIQUE dans ce résumé (pas de "Modèle Pressenti", pas de "Belharra", "Dynasta", etc.). Le choix du modèle se fera UNIQUEMENT en PHASE 3 via l'outil visuel open_model_selector, après avoir posé les questions sur le Type et le Design.
@@ -658,7 +666,7 @@ SÉQUENCE OBLIGATOIRE :
 open_color_selector → [Utilisateur clique] → Message transition + open_fabric_selector → [Utilisateur clique] → PHASE 4
 
 PHASE 4 : RÉCAPITULATIF & OFFRE (La Conclusion)
-Affiche le récapitulatif complet (Dimensions, Orientation, Hauteur, Options LED, Type de store, Design, Couleurs, Pose).
+Affiche le récapitulatif complet (Dimensions, Orientation, Hauteur, Options LED, Type de store, Design, Couleurs, Auvent et Joues (si compatible), Pose).
 
 Demande une dernière validation : 'Est-ce que cette configuration correspond exactement à votre projet ?'
 1. LA VALIDATION FINALE :
@@ -677,7 +685,7 @@ Calcule et affiche UN SEUL devis correspondant EXACTEMENT aux choix du client :
   * LED Bras (si demandé)
   * LED Coffre (si demandé)
   * Lambrequin Enroulable (si demandé)
-  * Auvent (si demandé et compatible)
+  * Auvent et Joues (si demandé et compatible avec modèles ANTIBES, MADRID, GENES, MENTON, LISBONNE, BRAS CROISÉS)
   * Sous-coffre (si demandé et compatible)
 - La pose (si client a choisi installation Storal)
 - Le prix TTC avec la TVA applicable (10% ou 20%)
@@ -701,7 +709,7 @@ Agent: "Excellent ! Voici l'offre détaillée et chiffrée pour votre projet."
 
 💡 SI LE CLIENT VEUT MODIFIER SON DEVIS :
 Si après avoir vu le devis, le client dit "c'est trop cher" ou "je veux enlever X" :
-- Propose de retirer des options (LED, Lambrequin) pour optimiser le budget
+- Propose de retirer des options (LED, Lambrequin, Auvent) pour optimiser le budget
 - Recalcule avec les nouvelles options
 - Affiche le nouveau devis avec display_single_offer
 
@@ -937,11 +945,11 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
               
               includes_awning: {
                 type: 'boolean',
-                description: "Client a demandé Auvent ? (défaut: false)"
+                description: "Client a demandé Auvent et Joues ? (défaut: false). Disponible uniquement pour: ANTIBES, MADRID, GENES, MENTON, LISBONNE, BRAS CROISÉS"
               },
               awning_price_ht: {
                 type: 'number',
-                description: "Prix HT de l'Auvent si inclus (sinon 0)"
+                description: "Prix HT de l'Auvent et Joues si inclus (sinon 0). Calculé selon la largeur du store"
               },
               
               includes_sous_coffre: {
