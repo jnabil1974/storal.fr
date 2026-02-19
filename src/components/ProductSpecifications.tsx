@@ -13,8 +13,8 @@ export default function ProductSpecifications() {
       icon: <Wind className="w-6 h-6" />,
       title: "Résistance au Vent",
       value: "Classe 2",
-      description: "Norme NF EN 13561",
-      detail: "Certification européenne garantissant la résistance aux rafales jusqu'à 50 km/h",
+      description: "Norme NF EN 13561 - 15-08 (août 2015)",
+      detail: "Résistance maximale autorisée, la classe 2 remplace l'ancienne classe 3 de la norme NF EN 13561 - 08-11 de novembre 2008",
       color: "blue"
     },
     {
@@ -32,14 +32,6 @@ export default function ProductSpecifications() {
       description: "Anti-corrosion",
       detail: "Acier inoxydable A2 (AISI 304) résistant à la corrosion marine et atmosphérique, idéal zones côtières",
       color: "slate"
-    },
-    {
-      icon: <Droplet className="w-6 h-6" />,
-      title: "Inclinaison",
-      value: "Réglable",
-      description: "De 0° à 45°",
-      detail: "Angle d'inclinaison ajustable pour optimiser l'ombre selon l'heure et la saison",
-      color: "indigo"
     },
     {
       icon: <Sun className="w-6 h-6" />,
