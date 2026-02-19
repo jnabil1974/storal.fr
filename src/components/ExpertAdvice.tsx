@@ -34,6 +34,26 @@ const ExpertAdvice = () => {
       - **Capteur de vent (Anémomètre) :** C'est l'accessoire indispensable. Il replie automatiquement votre store si le vent se lève, même en votre absence.
       - **Motorisation Somfy® / Storal :** Nos moteurs intègrent des fins de course automatiques qui garantissent une fermeture parfaite du coffre à chaque cycle.
       - **Pilotage Smartphone :** En option, pilotez votre store à distance et créez des scénarios selon l'ensoleillement pour protéger la fraîcheur de votre intérieur.`
+    },
+    {
+      title: "🛠️ Comment se déroule l'installation de mon store par vos experts ?",
+      content: `Chez STORAL, nous avons à cœur de vous offrir un service "zéro tracas". Si vous souhaitez confier l'installation de votre store à nos professionnels, voici comment cela fonctionne étape par étape :
+
+**1. Vérification et avantage fiscal (TVA 10 %)**
+Lors de votre configuration ou de votre demande de devis, nous validons avec vous que votre code postal est bien couvert par notre réseau d'installateurs agréés. Le grand avantage ? Si nous posons votre store et que votre habitation a plus de 2 ans, vous bénéficiez de la TVA réduite à 10 % sur le matériel ET la main-d'œuvre !
+
+**2. Prise de rendez-vous**
+Dès que votre store banne sur-mesure sort de notre atelier de fabrication française, notre équipe logistique vous contacte directement pour planifier une date d'intervention qui s'adapte à votre emploi du temps.
+
+**3. L'installation clé en main**
+Le jour J, nos techniciens se déplacent chez vous avec votre store. Ils s'occupent de tout :
+- Fixation sécurisée de l'armature (au mur ou au plafond)
+- Raccordement électrique et paramétrage de la télécommande
+- Réglage minutieux de l'inclinaison et de la tension de la toile
+- Nettoyage du chantier après intervention
+
+**4. Et si vous n'êtes pas dans un département couvert par nos équipes ?**
+Ne vous inquiétez pas ! Nous livrons votre store "Prêt à poser" (moteur et fins de course déjà réglés en usine) directement chez vous. Si vous ne souhaitez pas l'installer vous-même, appelez-nous au 01 85 09 34 46. Nos conseillers chercheront avec vous la meilleure solution pour faire intervenir un artisan partenaire près de chez vous.`
     }
   ];
 
