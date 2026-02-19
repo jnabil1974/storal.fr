@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Ruler, Shield, Truck, AlertCircle } from 'lucide-react';
 import ImageCarousel from '@/components/ImageCarousel';
-import TechnicalSchemaImage from '@/components/TechnicalSchemaImage';
 import InlineConfigurator from '@/components/InlineConfigurator';
 import ExpertAdvice from '@/components/ExpertAdvice';
 import ProductSchema from '@/components/ProductSchema';
@@ -412,75 +411,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <section id="configurateur" className="bg-gradient-to-br from-blue-50 to-indigo-50 py-12 border-y border-blue-100 scroll-mt-4">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <InlineConfigurator model={model} />
-        </div>
-      </section>
-
-      {/* ========================================
-          BLOC 6 : SCHÉMAS TECHNIQUES
-      ======================================== */}
-      <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight mb-3">
-              Plans d'Installation et Schémas de Montage
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Plans techniques détaillés pour comprendre l'encombrement, les fixations murales et l'inclinaison
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Schéma 1 : Encombrement coffre */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 shadow-lg">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-2xl">📐</span>
-                Dimensions du Coffre et Encombrement Mural
-              </h3>
-              <TechnicalSchemaImage
-                src={`/images/produits/${model.id}/tech/encombrement.svg`}
-                alt={`Schéma technique encombrement coffre store banne ${model.name} - Dimensions et fixation murale`}
-              />
-              <p className="text-sm text-gray-600 mt-4 leading-relaxed">
-                Dimensions précises du coffre {model.shape === 'carre' ? 'carré' : 'galbé'} et 
-                espace nécessaire pour l'installation murale ou plafond.
-              </p>
-            </div>
-
-            {/* Schéma 2 : Inclinaison */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 shadow-lg">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-2xl">📏</span>
-                Angle d'Inclinaison et Projection Maximale
-              </h3>
-              <TechnicalSchemaImage
-                src={`/images/produits/${model.id}/tech/inclinaison.svg`}
-                alt={`Schéma technique inclinaison et projection store ${model.name} - Angle réglable et avancée maximale`}
-              />
-              <p className="text-sm text-gray-600 mt-4 leading-relaxed">
-                Angle d'inclinaison réglable et projection maximale de {(dimensions.maxProjection / 1000).toFixed(1)}m 
-                pour une protection optimale.
-              </p>
-            </div>
-          </div>
-
-          {/* Informations supplémentaires */}
-          <div className="mt-12 bg-blue-50 border-l-4 border-blue-500 rounded-r-2xl p-8">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 bg-blue-500 text-white p-3 rounded-xl">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="text-lg font-bold text-blue-900 mb-2">Besoin d'aide ?</h4>
-                <p className="text-blue-800 leading-relaxed">
-                  Nos experts sont disponibles pour vous conseiller sur les dimensions idéales 
-                  et les options adaptées à votre projet. N'hésitez pas à nous contacter ou 
-                  utilisez notre configurateur intelligent pour un devis instantané.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
