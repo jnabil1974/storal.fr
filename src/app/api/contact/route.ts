@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
     // Vérification reCAPTCHA
     const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
     if (!recaptchaSecret || !recaptchaToken) {
+      console.log('❌ reCAPTCHA config manquante:', { hasSecret: !!recaptchaSecret, hasToken: !!recaptchaToken });
       return NextResponse.json({ error: 'Token reCAPTCHA requis' }, { status: 400 });
     }
 
@@ -46,10 +47,15 @@ export async function POST(request: NextRequest) {
         body: new URLSearchParams({ secret: recaptchaSecret, response: recaptchaToken }),
       });
       const verifyJson = await verifyRes.json();
+      console.log('🔐 reCAPTCHA verification:', { success: verifyJson.success, score: verifyJson.score, action: verifyJson.action });
+      
       if (!verifyJson?.success || Number(verifyJson?.score ?? 0) < 0.5) {
-        return NextResponse.json({ error: 'Vérification reCAPTCHA échouée' }, { status: 403 });
+        console.log('❌ reCAPTCHA échoué:', verifyJson);
+        return NextResponse.json({ error: 'Vérification reCAPTCHA échouée', score: verifyJson.score }, { status: 403 });
       }
-    } catch {
+      console.log('✅ reCAPTCHA validé avec score:', verifyJson.score);
+    } catch (err) {
+      console.error('❌ Erreur reCAPTCHA:', err);
       return NextResponse.json({ error: 'Erreur vérification reCAPTCHA' }, { status: 500 });
     }
 
