@@ -472,7 +472,7 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
        Cette mesure est cruciale pour valider que le coffre du store pourra être fixé correctement."
     
     2. **Vérifie la compatibilité** :
-       - Récupère `dimensions_techniques.encombrement.hauteur_totale_utile_cm` du modèle
+       - Récupère 'dimensions_techniques.encombrement.hauteur_totale_utile_cm' du modèle
        - Compare avec la hauteur disponible donnée par le client (converti en cm)
        
     3. **SI hauteur disponible ≥ hauteur_totale_utile_cm** :
@@ -520,8 +520,8 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
        - angle = atan((2.80 - 2.00) / 3.00) = atan(0.267) = 14.9° ≈ 15°
     
     3. **Vérifie les limites du modèle** :
-       - angle_min = dimensions_techniques.inclinaison.angle_min_degres
-       - angle_max = dimensions_techniques.inclinaison.angle_max_degres
+       - angle_min = 'dimensions_techniques.inclinaison.angle_min_degres'
+       - angle_max = 'dimensions_techniques.inclinaison.angle_max_degres'
        
        **SI angle_min ≤ angle_calculé ≤ angle_max** :
        → **Message de confirmation** (EXACT) :
