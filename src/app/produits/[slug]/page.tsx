@@ -172,15 +172,33 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 ))}
               </div>
 
-              {/* CONFIGURATEUR INTÉGRÉ */}
-              <InlineConfigurator model={model} />
+              {/* Prix minimum en évidence */}
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-6 shadow-lg">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-sm font-semibold uppercase tracking-wide">À partir de</span>
+                  <span className="text-4xl font-black">{minPrice}€</span>
+                  <span className="text-sm font-medium opacity-90">TTC</span>
+                </div>
+                <p className="text-blue-100 text-sm mt-2">
+                  Prix pour les dimensions minimales • Configurez ci-dessous pour votre projet
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ========================================
-          BLOC 1.5 : FICHE TECHNIQUE & QUALITÉ
+          BLOC 1.5 : CONFIGURATEUR EXPRESS
+      ======================================== */}
+      <section className="bg-gradient-to-br from-blue-50 to-indigo-50 py-12 border-y border-blue-100">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <InlineConfigurator model={model} />
+        </div>
+      </section>
+
+      {/* ========================================
+          BLOC 1.6 : FICHE TECHNIQUE & QUALITÉ
       ======================================== */}
       <section className="bg-white py-12 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
