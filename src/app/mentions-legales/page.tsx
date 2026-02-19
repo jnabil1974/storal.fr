@@ -91,6 +91,41 @@ export default function MentionsLegalesPage() {
 
           <section className="mb-10">
             <h2 className="text-3xl font-black text-[#2c3e50] mb-6 uppercase tracking-wide">
+              TVA et Tarifs
+            </h2>
+            <div className="space-y-4 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-200">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-blue-500 text-white rounded-xl flex items-center justify-center text-2xl font-black">
+                  %
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-black text-gray-900 text-lg mb-3">
+                    TVA à taux réduit (10 %)
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed font-medium mb-4">
+                    Ce taux préférentiel s&apos;applique exclusivement dans le cadre d&apos;une{' '}
+                    <span className="font-black text-blue-900">prestation de fourniture et de pose réalisée par l&apos;un de nos installateurs agréés</span>, 
+                    et sous réserve que votre habitation (maison ou appartement) soit{' '}
+                    <span className="font-black text-blue-900">achevée depuis plus de 2 ans</span>.
+                  </p>
+                  <p className="text-gray-700 leading-relaxed font-medium mb-4">
+                    En cas de <strong>fourniture seule</strong> (sans pose par nos équipes) ou pour une{' '}
+                    <strong>construction neuve de moins de 2 ans</strong>, le taux de TVA normal de{' '}
+                    <span className="font-black text-red-700">20 %</span> sera appliqué conformément 
+                    à la législation fiscale en vigueur.
+                  </p>
+                  <div className="p-4 bg-white border-l-4 border-blue-500 rounded-lg">
+                    <p className="text-sm text-gray-600 font-medium italic">
+                      📄 Une attestation simplifiée vous sera demandée lors de la facturation de la pose.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="mb-10">
+            <h2 className="text-3xl font-black text-[#2c3e50] mb-6 uppercase tracking-wide">
               Propriété intellectuelle
             </h2>
             <div className="bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl border border-gray-100">
