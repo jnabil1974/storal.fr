@@ -582,6 +582,214 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* === GUIDE DE PRISE DE MESURES === */}
+      <section className="bg-gradient-to-br from-gray-50 to-gray-100 py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="space-y-12">
+            {/* En-tête */}
+            <div className="text-center space-y-4">
+              <span className="inline-block px-4 py-1.5 bg-blue-600/10 text-blue-600 rounded-full text-xs font-black uppercase tracking-widest border border-blue-600/20">
+                📏 Guide Expert
+              </span>
+              <h2 className="text-4xl md:text-5xl font-black text-[#2c3e50] uppercase tracking-tight">
+                Préparez votre projet :<br/>Prenez vos mesures en 3 étapes
+              </h2>
+              <p className="text-gray-600 text-lg max-w-3xl mx-auto">
+                Munissez-vous d&apos;un mètre ruban et suivez ces 3 étapes cruciales pour commander votre store banne sur mesure.
+              </p>
+            </div>
+
+            {/* 3 Colonnes - Étapes */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              
+              {/* Étape 1 : Largeur */}
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border-2 border-gray-200 hover:border-blue-500">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  {/* Icône */}
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 8h16M4 16h16" />
+                    </svg>
+                  </div>
+                  
+                  {/* Titre */}
+                  <div>
+                    <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-black mb-2">
+                      ÉTAPE 1
+                    </span>
+                    <h3 className="text-2xl font-black text-[#2c3e50]">La Largeur</h3>
+                    <p className="text-sm text-blue-600 font-bold mt-1">Quelle envergure choisir ?</p>
+                  </div>
+
+                  {/* Contenu détaillé */}
+                  <div className="text-left space-y-4 text-sm text-gray-700">
+                    <p className="font-medium text-gray-600 leading-relaxed">
+                      Pour une ombre optimale et un rendu esthétique, votre store doit être plus large que votre baie vitrée.
+                    </p>
+
+                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                      <p className="font-bold text-blue-900 mb-2">✓ Le minimum technique :</p>
+                      <p className="text-blue-800">
+                        Mesurez la largeur de votre fenêtre/baie vitrée et ajoutez au strict minimum <strong>20 à 30 cm de chaque côté</strong> (soit 40 à 60 cm de plus au total).
+                      </p>
+                    </div>
+
+                    <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg">
+                      <p className="font-bold text-amber-900 mb-2">💡 Le conseil de l&apos;Expert :</p>
+                      <p className="text-amber-800">
+                        N&apos;oubliez pas que le soleil tourne ! Selon l&apos;exposition de votre terrasse, l&apos;ombre va se décaler sur les côtés au fil de la journée. 
+                        <strong className="block mt-2">⭐ Choisissez la plus grande largeur possible</strong> que votre façade (et votre budget) vous permet d&apos;installer.
+                      </p>
+                    </div>
+
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                      <p className="font-bold text-red-900 mb-2">⚠️ Attention :</p>
+                      <p className="text-red-800">
+                        Vérifiez qu&apos;aucun obstacle (gouttière, luminaire, mur perpendiculaire) ne gêne le déploiement sur cette largeur.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Étape 2 : Avancée */}
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border-2 border-gray-200 hover:border-blue-500">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  {/* Icône */}
+                  <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  </div>
+                  
+                  {/* Titre */}
+                  <div>
+                    <span className="inline-block px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-black mb-2">
+                      ÉTAPE 2
+                    </span>
+                    <h3 className="text-2xl font-black text-[#2c3e50]">L&apos;Avancée</h3>
+                    <p className="text-sm text-amber-600 font-bold mt-1">Quelle surface d&apos;ombre ?</p>
+                  </div>
+
+                  {/* Contenu détaillé */}
+                  <div className="text-left space-y-4 text-sm text-gray-700">
+                    <p className="font-medium text-gray-600 leading-relaxed">
+                      L&apos;avancée correspond à la longueur des bras dépliés. N&apos;oubliez pas l&apos;inclinaison : l&apos;ombre projetée ne sera jamais exactement sous le store !
+                    </p>
+
+                    <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+                      <p className="font-bold text-green-900 mb-2">💡 Le conseil de l&apos;expert :</p>
+                      <p className="text-green-800">
+                        Pour pouvoir <strong>déjeuner confortablement à l&apos;ombre</strong> autour d&apos;une table (4 à 6 personnes), une avancée de <strong>3 mètres minimum</strong> est fortement recommandée (idéalement 3,50m).
+                      </p>
+                    </div>
+
+                    <div className="bg-gray-50 border-l-4 border-gray-400 p-4 rounded-r-lg">
+                      <p className="font-bold text-gray-900 mb-2">ℹ️ À savoir :</p>
+                      <p className="text-gray-700">
+                        Une avancée de <strong>2m ou 2,50m</strong> est plutôt réservée aux petits balcons ou pour ombrager l&apos;intérieur de la maison.
+                      </p>
+                    </div>
+
+                    <div className="mt-6 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+                      <p className="text-xs text-amber-900 font-bold uppercase tracking-wider mb-2">Astuce Pro</p>
+                      <p className="text-amber-800 text-sm">
+                        Plus l&apos;avancée est grande, plus vous profiterez d&apos;ombre en milieu de journée quand le soleil est haut ! ☀️
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Étape 3 : Hauteur */}
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border-2 border-gray-200 hover:border-blue-500">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  {/* Icône */}
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                    </svg>
+                  </div>
+                  
+                  {/* Titre */}
+                  <div>
+                    <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-black mb-2">
+                      ÉTAPE 3
+                    </span>
+                    <h3 className="text-2xl font-black text-[#2c3e50]">La Hauteur de Pose</h3>
+                    <p className="text-sm text-purple-600 font-bold mt-1">L&apos;encombrement</p>
+                  </div>
+
+                  {/* Contenu détaillé */}
+                  <div className="text-left space-y-4 text-sm text-gray-700">
+                    <p className="font-medium text-red-700 leading-relaxed bg-red-50 p-3 rounded-lg border border-red-200">
+                      ⚠️ <strong>C&apos;est l&apos;erreur la plus fréquente :</strong> oublier de vérifier la place au-dessus de la fenêtre !
+                    </p>
+
+                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                      <p className="font-bold text-blue-900 mb-2">📐 L&apos;espace requis :</p>
+                      <p className="text-blue-800">
+                        Mesurez la distance disponible entre <strong>le haut de votre menuiserie</strong> (ou le caisson de votre volet roulant) et le toit (ou le balcon supérieur). C&apos;est votre <strong>&quot;hauteur totale utile&quot;</strong>.
+                      </p>
+                    </div>
+
+                    <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+                      <p className="font-bold text-green-900 mb-2">✓ Ce qu&apos;il vous faut :</p>
+                      <p className="text-green-800">
+                        Il vous faut au minimum <strong>25 à 30 cm de hauteur libre</strong> pour pouvoir fixer le coffre du store confortablement.
+                      </p>
+                    </div>
+
+                    <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+                      <p className="font-bold text-indigo-900 mb-2">🎯 Hauteur de fixation idéale :</p>
+                      <p className="text-indigo-800">
+                        Pour une circulation fluide sous le store ouvert, prévoyez de fixer le coffre à environ <strong>2,50m à 3,00m du sol</strong> (n&apos;oubliez pas que le store a une légère inclinaison vers le bas !).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bannière CTA Assistant IA */}
+            <div className="mt-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 shadow-2xl">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white flex-shrink-0">
+                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="text-white text-left">
+                    <p className="text-xl md:text-2xl font-black leading-tight">
+                      💡 Un doute sur vos dimensions ?
+                    </p>
+                    <p className="text-blue-100 text-sm md:text-base font-medium mt-1">
+                      Demandez à notre <strong>Assistant IA en bas à droite</strong>, il calculera la configuration idéale pour vous !
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => router.push('/assistant')}
+                  className="px-8 py-4 bg-white text-blue-600 font-black rounded-xl uppercase tracking-wider
+                    hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl active:scale-95 whitespace-nowrap"
+                >
+                  🤖 Lancer l&apos;assistant
+                </button>
+              </div>
+            </div>
+
+            {/* Note finale */}
+            <div className="text-center mt-8">
+              <p className="text-gray-500 text-sm max-w-2xl mx-auto">
+                <strong className="text-gray-700">Exemple de demande :</strong> <em>&quot;Ma baie vitrée fait 4 mètres de large et je veux manger à 6 personnes&quot;</em> 
+                → Notre IA calculera immédiatement la configuration idéale pour votre projet !
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* === FOOTER CTA === */}
       <section className="max-w-7xl mx-auto px-6 py-12">
         <div className="bg-blue-600 rounded-3xl p-10 text-center shadow-xl shadow-blue-600/20">
