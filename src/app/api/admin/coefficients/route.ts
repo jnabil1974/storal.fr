@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseClientWithAuth } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
+
+// Fonction pour vérifier si l'email est admin
+function isAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  const adminEmailsEnv = process.env.ADMIN_EMAILS || process.env.NEXT_PUBLIC_ADMIN_EMAILS || '';
+  const allow = adminEmailsEnv.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  return allow.includes(email.toLowerCase());
+}
 
 // Fonction pour vérifier si l'utilisateur est admin
 async function isAdmin(req: NextRequest): Promise<boolean> {
@@ -12,19 +20,13 @@ async function isAdmin(req: NextRequest): Promise<boolean> {
     }
 
     const token = authHeader.substring(7);
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseClientWithAuth(token);
     if (!supabase) return false;
 
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data: { user }, error } = await supabase.auth.getUser();
     if (error || !user) return false;
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .single();
-
-    return profile?.is_admin === true;
+    return isAdminEmail(user.email);
   } catch (error) {
     console.error('Erreur vérification admin:', error);
     return false;
