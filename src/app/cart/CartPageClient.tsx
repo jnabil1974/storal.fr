@@ -214,7 +214,9 @@ export default function CartPageClient() {
                             </p>
                             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                               {Object.entries(item.configuration).map(([key, value]) => {
-                                if (!value || key === 'id') return null;
+                                // Filtrer les champs de prix (affichés dans "Détail du prix")
+                                const priceFields = ['storeHT', 'ledArmsPrice', 'ledBoxPrice', 'lambrequinPrice', 'awningPrice', 'posePlafondPrice', 'poseHT', 'tvaAmount'];
+                                if (!value || key === 'id' || priceFields.includes(key)) return null;
                                 return (
                                   <div key={key} className="flex justify-between items-center">
                                     <span className="text-gray-700">{formatConfigKey(key)}:</span>
@@ -383,6 +385,104 @@ export default function CartPageClient() {
                           </div>
                         )}
 
+                        {/* Détail du prix */}
+                        {('storeHT' in item.configuration || 'poseHT' in item.configuration || 'tvaAmount' in item.configuration) && (
+                          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-300 p-4 rounded-lg mb-4">
+                            <p className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                              💰 Détail du prix
+                            </p>
+                            <div className="space-y-2 text-sm">
+                              {/* Prix du store de base */}
+                              {'storeHT' in item.configuration && item.configuration.storeHT != null && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">Store de base (HT):</span>
+                                  <span className="font-semibold text-gray-900">
+                                    {Number((item.configuration as any).storeHT).toFixed(2)}€
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {/* Options LED bras */}
+                              {'ledArmsPrice' in item.configuration && item.configuration.ledArmsPrice != null && Number(item.configuration.ledArmsPrice) > 0 && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">💡 LED bras (HT):</span>
+                                  <span className="font-semibold text-gray-900">
+                                    +{Number((item.configuration as any).ledArmsPrice).toFixed(2)}€
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {/* Options LED coffre */}
+                              {'ledBoxPrice' in item.configuration && item.configuration.ledBoxPrice != null && Number(item.configuration.ledBoxPrice) > 0 && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">💡 LED coffre (HT):</span>
+                                  <span className="font-semibold text-gray-900">
+                                    +{Number((item.configuration as any).ledBoxPrice).toFixed(2)}€
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {/* Lambrequin */}
+                              {'lambrequinPrice' in item.configuration && item.configuration.lambrequinPrice != null && Number(item.configuration.lambrequinPrice) > 0 && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">🎭 Lambrequin (HT):</span>
+                                  <span className="font-semibold text-gray-900">
+                                    +{Number((item.configuration as any).lambrequinPrice).toFixed(2)}€
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {/* Auvent et joues */}
+                              {'awningPrice' in item.configuration && item.configuration.awningPrice != null && Number(item.configuration.awningPrice) > 0 && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">🏠 Auvent et joues (HT):</span>
+                                  <span className="font-semibold text-gray-900">
+                                    +{Number((item.configuration as any).awningPrice).toFixed(2)}€
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {/* Fixation plafond */}
+                              {'posePlafondPrice' in item.configuration && item.configuration.posePlafondPrice != null && Number(item.configuration.posePlafondPrice) > 0 && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">🔩 Fixation plafond (HT):</span>
+                                  <span className="font-semibold text-gray-900">
+                                    +{Number((item.configuration as any).posePlafondPrice).toFixed(2)}€
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {/* Montant de la pose */}
+                              {'poseHT' in item.configuration && item.configuration.poseHT != null && Number(item.configuration.poseHT) > 0 && (
+                                <div className="flex justify-between items-center pt-2 border-t border-blue-200">
+                                  <span className="text-gray-700 font-semibold">🔧 Installation professionnelle (HT):</span>
+                                  <span className="font-bold text-blue-700">
+                                    +{Number((item.configuration as any).poseHT).toFixed(2)}€
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {/* TVA */}
+                              {'tvaAmount' in item.configuration && item.configuration.tvaAmount != null && (
+                                <div className="flex justify-between items-center pt-2 border-t border-blue-200">
+                                  <span className="text-gray-700 font-semibold">TVA:</span>
+                                  <span className="font-bold text-gray-900">
+                                    {Number((item.configuration as any).tvaAmount).toFixed(2)}€
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {/* Total TTC */}
+                              <div className="flex justify-between items-center pt-2 border-t-2 border-blue-300 mt-2">
+                                <span className="text-gray-900 font-bold text-base">Total TTC:</span>
+                                <span className="font-bold text-blue-600 text-lg">
+                                  {Number(item.pricePerUnit).toFixed(2)}€
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {/* Garanties */}
                         <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 p-4 rounded-lg mb-4">
                           <p className="font-bold text-gray-800 mb-3 flex items-center gap-2">
@@ -484,7 +584,7 @@ export default function CartPageClient() {
                   
                   {!cart.promoCode ? (
                     <div className="space-y-2">
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="text"
                           value={promoInput}
@@ -499,7 +599,7 @@ export default function CartPageClient() {
                         <button
                           onClick={handleApplyPromo}
                           disabled={!promoInput.trim()}
-                          className="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white font-bold rounded-lg transition-colors"
+                          className="px-6 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white font-bold rounded-lg transition-colors sm:px-4 sm:py-2 whitespace-nowrap"
                         >
                           Appliquer
                         </button>

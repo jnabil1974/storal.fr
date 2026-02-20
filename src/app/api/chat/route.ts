@@ -1,4 +1,4 @@
-import { google } from '@ai-sdk/google';
+import { google, createGoogleGenerativeAI } from '@ai-sdk/google';
 import { jsonSchema, streamText, tool } from 'ai';
 import { STORE_MODELS, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
 import { getSafeModelsToDisplay, filterCompatibleModels, generateDynamicCatalog } from '@/lib/model-safety-check';
@@ -11,6 +11,11 @@ const GOOGLE_API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 if (!GOOGLE_API_KEY) {
   console.error('❌ ERREUR: GOOGLE_GENERATIVE_AI_API_KEY não configurée');
 }
+
+// Créer le provider Google avec l'API key
+const googleAI = createGoogleGenerativeAI({
+  apiKey: GOOGLE_API_KEY,
+});
 
 export async function POST(req: Request) {
   try {
@@ -176,6 +181,48 @@ Une fois que le client a répondu aux 2 questions (support + obstacles), tu pour
 
 ${dynamicCatalog}
 ${contextualIntro}
+
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+🚨 RÈGLE PRIORITAIRE ABSOLUE - GÉNÉRATION DE DEVIS
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+⚡ DÉTECTION AUTOMATIQUE : SI L'USER DIT L'UNE DE CES PHRASES (OU VARIANTES) :
+- "oui"
+- "oui parfait"
+- "c'est bon"
+- "ça me va"
+- "Pourrais-je avoir le prix"
+- "J'attends le prix"
+- "quel est le montant"
+- "où est mon devis"
+- "combien ça coûte"
+
+ET QUE LA CONFIGURATION EST COMPLÈTE (modèle + dimensions + couleurs + options validées)
+
+→ TU DOIS IMMÉDIATEMENT APPELER display_single_offer (un seul outil - calcule ET affiche)
+
+⚠️ PAS DE TEXTE AVANT L'APPEL D'OUTIL
+⚠️ PAS DE "Je prépare", PAS DE "Je calcule", PAS DE "Voici"
+⚠️ ACTION DIRECTE : tool call display_single_offer → le devis s'affiche automatiquement
+
+📋 PARAMÈTRES OBLIGATOIRES pour display_single_offer :
+- selected_model, model_name, store_type
+- width (en CM!), depth (en CM!)
+- frame_color, frame_color_name, fabric_color, fabric_name
+- includes_led_arms, includes_led_box, includes_lambrequin (true/false selon choix)
+- avec_pose (true/false), montant_pose_ht (en € - formule: ≤6m → 600€, >6m → 600 + ((largeur_m-6)*100))
+- code_postal
+- orientation, exposure, environment, obstacles (contexte)
+
+🎯 EXEMPLE CORRECT :
+User: "oui"
+[Appel IMMÉDIAT display_single_offer avec TOUS les paramètres ci-dessus]
+[Le devis s'affiche automatiquement - pas de texte supplémentaire]
+
+❌ EXEMPLE INCORRECT :
+User: "oui"
+Agent: "Parfait ! Je prépare votre devis..." ← ERREUR : PAS DE TEXTE
+
 ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 🎯 FLUX GUIDÉ - 4 PHASES PRODUCTIVES
 ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -440,8 +487,12 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     Demande l'orientation: "Vers quelle direction: Nord, Sud, Est ou Ouest?"
     
     ⚠️ DIAGNOSTIC D'ORIENTATION (Reponds selon la réponse):
-    - Si "Ouest" ou "Est" → Réponds EXACTEMENT:
+    - Si "Ouest" ou "Est" ET largeur ≤ 6m → Réponds EXACTEMENT:
       "Pour votre terrasse exposée plein [OUEST/EST], le soleil sera très bas en fin de journée. Un store classique ne pourra pas stopper les rayons passant sous la toile. Je vous recommande vivement l'option Lambrequin Enroulable : une toile verticale qui descend de votre barre de charge pour créer un véritable mur d'ombre protecteur.
+      Passons aux détails de votre environnement. Êtes-vous en **bord de mer** ? (Oui/Non)"
+    
+    - Si "Ouest" ou "Est" ET largeur > 6m → Réponds EXACTEMENT:
+      "Pour votre terrasse exposée plein [OUEST/EST], le soleil sera très bas en fin de journée. ⚠️ Malheureusement, pour une largeur de [X]m, le Lambrequin Enroulable n'est pas disponible (limité à 6m maximum pour des raisons techniques). Je vous conseille d'orienter votre store différemment ou d'envisager des solutions d'ombrage complémentaires.
       Passons aux détails de votre environnement. Êtes-vous en **bord de mer** ? (Oui/Non)"
     
     - Si "Nord" → "Avec cette exposition Nord, vous êtes bien protégé du soleil direct. Êtes-vous en **bord de mer** ? (Oui/Non)"
@@ -453,7 +504,20 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     - Si "Oui" au vent fort → Mentionne: "Nos stores respectent les normes **Qualicoat** pour la résistance aux intempéries et au vent."
     - Si "Oui" aux deux → Mentionne les deux certifications ensemble.
     
-    📏 ÉTAPE 1D - HAUTEUR & ÉLECTRICITÉ:
+    � RÈGLE TECHNIQUE ABSOLUE - LAMBREQUIN ENROULABLE :
+    ⚠️ Le Lambrequin Enroulable n'est disponible que pour les stores de **6 mètres maximum** de largeur.
+    
+    **Si largeur > 6m** :
+    - NE JAMAIS proposer le Lambrequin Enroulable
+    - NE JAMAIS l'accepter même si le client le demande explicitement
+    - Si demandé, répondre : "Le Lambrequin Enroulable est limité à 6m de largeur pour des raisons techniques. Avec vos [X]m, cette option n'est malheureusement pas disponible."
+    - Toujours mettre includes_lambrequin = false dans display_single_offer
+    
+    **Si largeur ≤ 6m** :
+    - Le Lambrequin Enroulable peut être proposé selon l'orientation (Ouest/Est recommandé)
+    - Peut être accepté sur demande du client
+    
+    �📏 ÉTAPE 1D - HAUTEUR & ÉLECTRICITÉ:
     Demande la hauteur de pose (H) et le côté de sortie de câble (Gauche/Droite en regardant le mur).
     
     � ÉTAPE 1D-BIS - VÉRIFICATION DE L'ENCOMBREMENT (SERVICE "PRÊT À POSER") :
@@ -563,7 +627,24 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     💡 ÉTAPE 1E - ÉCLAIRAGE:
     Demande s'il souhaite utiliser le store le soir (LED dans les bras ou le coffre).
     
-    ☂️ ÉTAPE 1E-BIS - AUVENT ET JOUES (SI COMPATIBLE):
+    🔩 ÉTAPE 1E-BIS - FIXATION PLAFOND (OPTION POUR TOUS LES MODÈLES):
+    Propose cette option systématiquement après avoir discuté de l'éclairage.
+    → Tous les modèles peuvent être fixés au plafond (sous avancée de toit/débord de toiture)
+    → Prix: 28€ à 84€ HT selon la largeur du store (supplément modéré)
+    
+    💡 **Contextes où cette option est PARTICULIÈREMENT recommandée** :
+    • Client mentionne une "avancée de toit", "débord de toiture" ou "chemin de câbles au plafond"
+    • Hauteur sous plafond limitée (optimise l'espace)
+    • Présence d'obstacles sur le mur (gouttières, descentes, fenêtres)
+    • Installation sous pergola/préau/avancée existante
+    
+    → Question type : "Pour la fixation, avez-vous une préférence ? **Fixation murale classique** (standard) ou **fixation au plafond** (sous avancée de toit) ? 
+    
+    La fixation plafond est idéale si vous avez un débord de toiture ou souhaitez optimiser l'espace."
+    
+    ⚠️ **Si le client choisit la fixation plafond** : Enregistre 'is_ceiling_mount = true' pour display_single_offer
+    
+    ☂️ ÉTAPE 1E-TER - AUVENT ET JOUES (SI COMPATIBLE):
     Si le modèle choisi dispose de l'option Auvent et Joues (modèles: ANTIBES, MADRID, GENES, MENTON, LISBONNE, BRAS CROISÉS):
     → Propose cette option en expliquant les bénéfices :
        • Protection latérale contre le soleil rasant (matin/soir)
@@ -575,11 +656,24 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     Demande s'il a les compétences pour l'installer ou s'il préfère nos experts.
     Argument: Si maison > 2 ans et pose par nos soins, la TVA passe de 20% à 10% sur tout le projet.
 
-    📍 ÉTAPE 1G - CODE POSTAL ET ZONE D'INTERVENTION:
+    📍 ÉTAPE 1G - CODE POSTAL:
     
-    ⚠️ **RÈGLE CRITIQUE** : Le code postal est OBLIGATOIRE pour calculer les frais de déplacement et vérifier que nous pouvons intervenir dans la zone.
+    ⚠️ **RÈGLE CRITIQUE** : Le code postal est OBLIGATOIRE pour l'enregistrer dans le devis.
     
-    💡 **Pose cette question exactement ainsi** :
+    💡 **Pose cette question selon le choix de pose** :
+    
+    📦 **SI POSE DIY (avec_pose = false)** :
+    "Dernière information : **quel est votre code postal** ?
+    
+    Cela nous permet d'enregistrer votre adresse de livraison. 
+    
+    🚚 **Bon à savoir** : La livraison est **gratuite dans toute la France métropolitaine** !"
+    
+    → **PAS de validation de zone** : TOUS les codes postaux sont acceptés (livraison gratuite partout)
+    → Enregistre simplement le code postal pour display_single_offer
+    → Continue normalement à la PHASE 2
+    
+    🛠️ **SI POSE PROFESSIONNELLE (avec_pose = true)** :
     "Dernière information importante : **quel est votre code postal** ?
     
     Cela nous permet de :
@@ -587,7 +681,7 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     • Calculer précisément les frais de déplacement pour l'installation
     • Vous donner un devis exact et transparent"
     
-    📊 **VALIDATION DE LA ZONE** :
+    📊 **VALIDATION DE LA ZONE** (UNIQUEMENT SI POSE PRO) :
     Dès que le client donne son code postal (5 chiffres), tu DOIS vérifier la zone d'intervention.
     
     **ZONES COUVERTES** (19 départements) :
@@ -617,35 +711,46 @@ PHASE 1 : ENVIRONNEMENT (Le Diagnostic Technique)
     
     **SI ZONE NON COUVERTE** :
     → Réponds avec ce message exact :
-    "❌ Je suis désolé, mais nous n'intervenons pas encore dans le département [CODE_DEPARTEMENT] ([NOM_DEPARTEMENT]).
+    "❌ Je suis désolé, mais nous n'intervenons pas encore dans le département [CODE_DEPARTEMENT] ([NOM_DEPARTEMENT]) pour la pose professionnelle.
     
-    🗺️ **Nos zones d'intervention actuelles** couvrent :
+    🗺️ **Nos zones d'intervention pour la pose** couvrent :
     • L'Île-de-France complète (75, 77, 78, 91, 92, 93, 94, 95)
     • Le Centre-Val de Loire (18, 28, 36, 37, 41, 45)
     • Les départements limitrophes (10, 58, 72, 89)
     • L'Allier (03)
     
     💡 **Solutions alternatives** :
-    1. **Commande sans pose** : Nous pouvons vous livrer le store et vous l'installez vous-même (ou avec un artisan local de votre choix)
+    1. **Commande sans pose** : Nous pouvons vous livrer le store dans toute la France et vous l'installez vous-même (ou avec un artisan local de votre choix). La livraison est gratuite.
     2. **Nous contacter** : Notre service commercial peut étudier une extension de zone au cas par cas pour les projets importants
        → Appelez-nous au **01 85 09 34 46**
        → Ou consultez notre page zones d'intervention : **storal.fr/zones-intervention**
     
     Que préférez-vous ?"
     
-    → Si le client choisit "sans pose" : Continue avec avec_pose = false, pas de frais de déplacement
-    → Si le client veut être contacté : **APPELLE redirect_to_contact** avec raison "Zone non couverte - [CODE_POSTAL]"
+    → Si le client choisit "sans pose" : Continue avec avec_pose = false, pas de frais de déplacement, PAS de validation de zone
+    → Si le client veut être contacté : **APPELLE redirect_to_contact** avec raison "Zone non couverte pour pose - [CODE_POSTAL]"
     
     ⚠️ **IMPORTANT** : Enregistre le code postal pour l'utiliser dans display_single_offer à la Phase 5.
 
 PHASE 2 : VALIDATION DU PROJET (Le Verrouillage)
-Fais un résumé technique de l'environnement (dimensions, orientation, obstacles, hauteur, éclairage, auvent si compatible, pose, code postal et zone).
+Fais un résumé technique de l'environnement (dimensions, orientation, obstacles, hauteur, éclairage, fixation plafond si choisie, auvent si compatible, pose, code postal).
 ⚠️ AJOUT CRITIQUE : SI un angle d'inclinaison a été calculé (ÉTAPE 1D-TER), MENTIONNE-LE dans le récapitulatif :
 "- **Réglage usine** : Inclinaison de [X]° pour garantir 2.00m de passage (service 'Prêt à Poser')"
-⚠️ AJOUT OBLIGATOIRE : INCLUS TOUJOURS ces informations dans le récapitulatif :
+⚠️ SI FIXATION PLAFOND choisie (is_ceiling_mount = true), MENTIONNE-LE :
+"- **Type de fixation** : Fixation au plafond (sous avancée de toit)"
+⚠️ AJOUT OBLIGATOIRE SELON LE TYPE DE POSE :
+
+📦 **SI POSE DIY (avec_pose = false)** :
+"- **Code postal** : [CODE_POSTAL] ([NOM_DEPARTEMENT])
+- **Livraison** : Gratuite dans toute la France métropolitaine
+- **Installation** : Par vos soins"
+
+🛠️ **SI POSE PROFESSIONNELLE (avec_pose = true)** :
 "- **Code postal** : [CODE_POSTAL] ([NOM_DEPARTEMENT])
 - **Zone d'intervention** : [NOM_ZONE] - Délai : [DELAI]
-- **Frais de déplacement** : [FRAIS]€ [ou "Gratuit" si 0€]"
+- **Frais de déplacement** : [FRAIS]€ [ou "Gratuit" si 0€]
+- **Installation** : Par nos soins (TVA 10%)"
+
 ⚠️ INTERDICTION ABSOLUE : NE MENTIONNE AUCUN MODÈLE SPÉCIFIQUE dans ce résumé (pas de "Modèle Pressenti", pas de "Belharra", "Dynasta", etc.). Le choix du modèle se fera UNIQUEMENT en PHASE 3 via l'outil visuel open_model_selector, après avoir posé les questions sur le Type et le Design.
 Écris simplement : "Récapitulatif technique" sans aucune mention de modèle.
 Question cruciale : 'Ce diagnostic technique vous semble-t-il complet pour passer à la personnalisation de votre store ?'
@@ -733,58 +838,94 @@ SÉQUENCE OBLIGATOIRE :
 open_color_selector → [Utilisateur clique] → Message transition + open_fabric_selector → [Utilisateur clique] → PHASE 4
 
 PHASE 4 : RÉCAPITULATIF & OFFRE (La Conclusion)
-Affiche le récapitulatif complet (Dimensions, Orientation, Hauteur, Options LED, Type de store, Design, Couleurs, Auvent et Joues (si compatible), Pose).
 
-Demande une dernière validation : 'Est-ce que cette configuration correspond exactement à votre projet ?'
 1. LA VALIDATION FINALE :
-Affiche le récapitulatif technique complet.
+Affiche le récapitulatif technique complet (une seule fois).
 Pose la question : 'Est-ce que cette configuration correspond exactement à votre projet ?'
 
-2. SI OUI (Génération du Devis Personnalisé) :
+2. SI OUI OU SI L'USER DEMANDE LE PRIX (Génération du Devis Personnalisé) :
 
-🚨 ACTION OBLIGATOIRE : Dès que l'utilisateur confirme "oui" à la question de validation, tu DOIS APPELER display_single_offer IMMÉDIATEMENT.
+🚨🚨🚨 RÈGLE ABSOLUE 🚨🚨🚨
+DÈS QUE L'USER DIT :
+- "oui" 
+- "oui parfait"
+- "c'est bon"
+- "Pourrais-je avoir le prix"
+- "J'attends le prix"
+- "quel est le montant"
+OU TOUTE VARIATION SIGNIFIANT QU'IL VEUT LE DEVIS
 
-Calcule et affiche UN SEUL devis correspondant EXACTEMENT aux choix du client :
-- Le modèle de store choisi
-- Les dimensions validées (largeur × avancée)
-- Les couleurs sélectionnées (armature + toile)
-- Les options demandées par le client :
-  * LED Bras (si demandé)
-  * LED Coffre (si demandé)
-  * Lambrequin Enroulable (si demandé)
-  * Auvent et Joues (si demandé et compatible avec modèles ANTIBES, MADRID, GENES, MENTON, LISBONNE, BRAS CROISÉS)
-  * Sous-coffre (si demandé et compatible)
-- La pose (si client a choisi installation Storal)
-- Le prix TTC avec la TVA applicable (10% ou 20%)
+→ TU DOIS IMMÉDIATEMENT APPELER display_single_offer
+→ AUCUN TEXTE AVANT L'APPEL D'OUTIL
+→ PAS DE "Je prépare", PAS DE "Je calcule", PAS DE "Voici", RIEN
+→ ACTION DIRECTE : APPELLE display_single_offer
 
-⚠️ NE PROPOSE PLUS 3 OFFRES (Eco/Standard/Premium).
-⚠️ AFFICHE UNIQUEMENT ce que le client a demandé.
+⚡ WORKFLOW SIMPLIFIÉ - UN SEUL OUTIL :
 
-APPELLE L'OUTIL display_single_offer (au lieu de display_triple_offer).
+APPEL UNIQUE - display_single_offer :
+Cet outil calcule automatiquement les prix avec le système serveur ET génère le devis visuel.
 
-⚠️ **PARAMÈTRES OBLIGATOIRES de display_single_offer** :
-- selected_model, model_name, store_type, width, depth, base_price_ht
-- frame_color, frame_color_name, fabric_color, fabric_name
-- taux_tva, avec_pose, montant_pose_ht
-- **code_postal** (CRITIQUE : utilise le code postal collecté en ÉTAPE 1G)
-- includes_led_arms, led_arms_price_ht (selon choix client)
-- includes_led_box, led_box_price_ht (selon choix client)
-- includes_lambrequin, lambrequin_price_ht (selon choix client)
-- includes_awning, awning_price_ht (selon choix client si modèle compatible)
-- includes_sous_coffre, sous_coffre_price_ht (selon choix client si compatible)
-- obstacles, orientation, exposure, environment (infos contextuelles)
+PARAMÈTRES OBLIGATOIRES :
+- selected_model : ID technique (ex: 'excellence_plus', 'nice', 'dynasta')
+- model_name : Nom commercial (ex: 'EXCELLENCE+', 'KUBE+', 'ARMOR')
+- store_type : Type (ex: 'Semi-coffre', 'Coffre Intégral')
+- width : largeur en CM (ex: 600 pour 6m)
+- depth : avancée en CM (ex: 400 pour 4m)
+- frame_color : code couleur (ex: 'white', 'beige', 'anthracite')
+- frame_color_name : nom couleur (ex: 'Blanc', 'Beige RAL 1015')
+- fabric_color : code toile (ex: 'orchestra_0020')
+- fabric_name : nom toile (ex: 'Orchestra 0020')
+- includes_led_arms : true/false
+- includes_led_box : true/false
+- includes_lambrequin : true/false
+- lambrequin_motorized : true/false (si lambrequin présent)
+- includes_awning : true/false (auvent et joues, disponible pour ANTIBES, MADRID, GENES, MENTON, LISBONNE, BRAS CROISÉS)
+- is_ceiling_mount : true/false (fixation plafond, disponible pour TOUS les modèles, prix 28-84€ HT selon largeur)
+- is_custom_color : true si RAL spécifique
+- avec_pose : true (pose pro TVA 10%) ou false (DIY TVA 20%)
+- montant_pose_ht : montant pose HT (formule: ≤6m → 600€, >6m → 600 + ((largeur_m-6)*100))
+- code_postal : code postal client
+- orientation : orientation terrasse
+- exposure : exposition soleil
+- environment : environnement (bord de mer, urbain, etc.)
+- obstacles : contraintes/obstacles
 
-📌 EXEMPLE CORRECT :
+INTERDICTIONS ABSOLUES :
+- NE JAMAIS écrire de message avant l'appel de display_single_offer
+- NE JAMAIS calculer les prix manuellement
+- NE JAMAIS proposer 3 offres (Eco/Standard/Premium)
+- NE JAMAIS donner les prix en texte
+
+CE QUE TU DOIS FAIRE :
+User dit "oui" OU "J'attends le prix" OU "Pourrais-je avoir le prix" → IMMÉDIATEMENT appelle display_single_offer
+
+📌 EXEMPLE CORRECT 1 :
 User: "oui"
-Agent: "Excellent ! Voici l'offre détaillée et chiffrée pour votre projet."
-[APPELLE IMMÉDIATEMENT display_single_offer avec tous les paramètres incluant code_postal]
+[Appel IMMÉDIAT display_single_offer avec TOUS les paramètres : selected_model='excellence_plus', model_name='EXCELLENCE+', store_type='Semi-coffre', width=600, depth=400, frame_color='beige', frame_color_name='Beige RAL 1015', fabric_color='orchestra_0020', fabric_name='Orchestra 0020', includes_lambrequin=true, avec_pose=false, montant_pose_ht=0, code_postal='10000', orientation='south', exposure='high', environment='bord de mer', obstacles='']
+[Le devis s'affiche automatiquement - pas de texte supplémentaire]
 
-❌ EXEMPLE INCORRECT :
+📌 EXEMPLE CORRECT 2 :
+User: "Pourrais-je avoir le prix s'il vous plaît ?"
+[Appel IMMÉDIAT display_single_offer avec tous les paramètres de la configuration]
+[Le devis s'affiche automatiquement]
+
+
+❌ EXEMPLE INCORRECT 1 :
 User: "oui"
-Agent: "Excellent ! Voici l'offre détaillée et chiffrée pour votre projet."
-[SANS appeler l'outil] ← ERREUR CRITIQUE
+Agent: "Excellent ! Je prépare l'offre..." ← ERREUR : PAS DE TEXTE
+[Pas d'appel d'outil] ← ERREUR CRITIQUE
 
-⚠️ NE JAMAIS donner les prix en texte - TOUJOURS utiliser l'outil display_single_offer
+❌ EXEMPLE INCORRECT 2 :
+User: "J'attends le prix final"
+Agent: "Je comprends, laissez-moi calculer..." ← ERREUR : PAS DE TEXTE
+[Pas d'appel d'outil] ← ERREUR CRITIQUE
+
+❌ EXEMPLE INCORRECT 3 :
+User: "oui"
+Agent: [Rien, pas de réponse] ← ERREUR : DOIT APPELER display_single_offer
+
+- is_ceiling_mount (fixation plafond si demandée)
+- orientation, exposure, environment, obstacles (contexte)
 
 💡 SI LE CLIENT VEUT MODIFIER SON DEVIS :
 Si après avoir vu le devis, le client dit "c'est trop cher" ou "je veux enlever X" :
@@ -880,9 +1021,7 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
     }
 
     const result = await streamText({
-      model: google('gemini-2.5-pro', {
-        apiKey: GOOGLE_API_KEY,
-      }),
+      model: googleAI('gemini-2.5-pro'),
       system: SYSTEM_PROMPT,
       messages: normalizedMessages as any,
       toolChoice: 'auto',
@@ -946,8 +1085,9 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
             required: ['models_to_display', 'width', 'depth'],
           }),
         }),
+
         display_single_offer: tool({
-          description: "🚨 OUTIL CRITIQUE OBLIGATOIRE ÉTAPE 5 🚨 - Affiche le devis personnalisé unique avec la configuration complète et les options choisies par le client. DOIT ÊTRE APPELÉ IMMÉDIATEMENT dès que l'utilisateur valide son choix avec 'oui' ou 'oui ça me va'. NE JAMAIS dire 'voici votre devis' ou 'voici l'offre' SANS appeler cet outil dans la même réponse. NE JAMAIS donner les prix en texte - utilise TOUJOURS CET OUTIL. Si tu ne l'appelles pas, l'utilisateur ne verra jamais son devis.",
+          description: "🚨 OUTIL CRITIQUE OBLIGATOIRE ÉTAPE 5 🚨 - Affiche le devis personnalisé unique avec la configuration complète et les options choisies par le client. DOIT ÊTRE APPELÉ IMMÉDIATEMENT dès que l'utilisateur valide son choix avec 'oui' ou 'oui ça me va'. NE JAMAIS dire 'voici votre devis' ou 'voici l'offre' SANS appeler cet outil dans la même réponse. NE JAMAIS donner les prix en texte - utilise TOUJOURS CET OUTIL. Les prix sont calculés automatiquement côté client. Si tu ne l'appelles pas, l'utilisateur ne verra jamais son devis.",
           inputSchema: jsonSchema({
             type: 'object',
             properties: {
@@ -981,63 +1121,37 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
               },
               fabric_color: {
                 type: 'string',
-                description: "ID de la toile sélectionnée (ex: 'orch_8203'). ⚠️ LAISSER VIDE - sera récupéré automatiquement depuis la configuration"
+                description: "ID de la toile sélectionnée (ex: 'orch_8203')"
               },
               fabric_name: {
                 type: 'string',
                 description: "Nom complet de la toile (visible pour l'utilisateur)"
               },
               
-              // Prix de base
-              base_price_ht: {
-                type: 'number',
-                description: "Prix HT du store seul, sans aucune option"
-              },
-              
-              // Options choisies par le client (avec flags + prix)
+              // Options choisies par le client (flags seulement)
               includes_led_arms: {
                 type: 'boolean',
                 description: "Client a demandé LED Bras ? (défaut: false)"
-              },
-              led_arms_price_ht: {
-                type: 'number',
-                description: "Prix HT des LED Bras si incluses (sinon 0)"
               },
               
               includes_led_box: {
                 type: 'boolean',
                 description: "Client a demandé LED Coffre ? (défaut: false)"
               },
-              led_box_price_ht: {
-                type: 'number',
-                description: "Prix HT des LED Coffre si incluses (sinon 0)"
-              },
               
               includes_lambrequin: {
                 type: 'boolean',
-                description: "Client a demandé Lambrequin enroulable ? (défaut: false)"
-              },
-              lambrequin_price_ht: {
-                type: 'number',
-                description: "Prix HT du Lambrequin si inclus (sinon 0)"
+                description: "Client a demandé Lambrequin enroulable ? ⚠️ IMPORTANT: Disponible UNIQUEMENT si width ≤ 6000mm (6m). Si width > 6000mm, TOUJOURS mettre false même si demandé. (défaut: false)"
               },
               
               includes_awning: {
                 type: 'boolean',
                 description: "Client a demandé Auvent et Joues ? (défaut: false). Disponible uniquement pour: ANTIBES, MADRID, GENES, MENTON, LISBONNE, BRAS CROISÉS"
               },
-              awning_price_ht: {
-                type: 'number',
-                description: "Prix HT de l'Auvent et Joues si inclus (sinon 0). Calculé selon la largeur du store"
-              },
               
-              includes_sous_coffre: {
+              is_ceiling_mount: {
                 type: 'boolean',
-                description: "Client a demandé Sous-coffre ? (défaut: false)"
-              },
-              sous_coffre_price_ht: {
-                type: 'number',
-                description: "Prix HT du Sous-coffre si inclus (sinon 0)"
+                description: "Fixation plafond (pose au plafond) ? (défaut: false). Disponible pour tous les modèles. Prix varie de 28€ à 84€ HT selon la largeur du store."
               },
               
               // TVA et pose
@@ -1048,10 +1162,6 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
               avec_pose: {
                 type: 'boolean',
                 description: "Installation Storal incluse ?"
-              },
-              montant_pose_ht: {
-                type: 'number',
-                description: "Montant installation HT en euros (600€ si width≤6m, sinon 600+((width-6000)/100)*100)"
               },
               
               // Infos complémentaires
@@ -1097,7 +1207,7 @@ CONSIGNE DE TON : Sois un expert rassurant. Rappelle que 'nous vendons de l'ombr
                 description: "Code postal du client (5 chiffres). Obligatoire pour calculer les frais de déplacement selon la zone géographique. Liste des zones disponibles : Île-de-France (75,92,93,94,77,78,91,95), Centre-Val de Loire (18,28,36,37,41,45), Limitrophes (72,89,58,10), Allier (03). Si le code postal n'est pas dans ces zones, le store ne peut pas être installé."
               }
             },
-            required: ['selected_model', 'model_name', 'store_type', 'width', 'depth', 'base_price_ht', 'frame_color', 'taux_tva', 'avec_pose', 'montant_pose_ht', 'code_postal'],
+            required: ['selected_model', 'model_name', 'store_type', 'width', 'depth', 'frame_color', 'avec_pose', 'code_postal'],
           }),
         }),
         open_color_selector: tool({

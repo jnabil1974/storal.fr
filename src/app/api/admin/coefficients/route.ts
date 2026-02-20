@@ -72,7 +72,8 @@ function readCoefficients() {
   const modelNames: { [key: string]: string } = {};
   
   // Regex pour capturer id, name et salesCoefficient d'un modèle
-  const modelBlockRegex = /"([^"]+)":\s*\{[^}]*id:\s*"([^"]+)"[^}]*name:\s*"([^"]+)"[^}]*salesCoefficient:\s*([\d.]+)[^}]*\}/g;
+  // Utiliser [\s\S]*? pour traverser plusieurs lignes et objets imbriqués (non-greedy)
+  const modelBlockRegex = /"([^"]+)":\s*\{[\s\S]*?id:\s*"([^"]+)"[\s\S]*?name:\s*"([^"]+)"[\s\S]*?salesCoefficient:\s*([\d.]+)/g;
   let match;
   
   while ((match = modelBlockRegex.exec(content)) !== null) {
@@ -84,11 +85,87 @@ function readCoefficients() {
     modelNames[modelId] = modelName;
   }
 
+  // Extraire optionsCoefficients par modèle
+  const modelOptionsCoefficients: { [key: string]: any } = {};
+  
+  // Regex pour capturer le bloc optionsCoefficients de chaque modèle
+  // On cherche "model_id": { ... optionsCoefficients: { LED_ARMS: 2.0, ... } ... }
+  const allModelsRegex = /"([^"]+)":\s*\{[\s\S]*?\}/g;
+  const contentWithModels = content.match(/export const STORE_MODELS[\s\S]+?(?=\n\nexport|$)/);
+  
+  if (contentWithModels) {
+    const modelsContent = contentWithModels[0];
+    
+    // Pour chaque modèle dans STORE_MODELS
+    const modelEntryRegex = /"([^"]+)":\s*\{([\s\S]*?)(?=\n  "},?\n  "|"\w+": \{|$)/g;
+    let modelMatch;
+    
+    while ((modelMatch = modelEntryRegex.exec(modelsContent)) !== null) {
+      const modelId = modelMatch[1];
+      const modelContent = modelMatch[2];
+      
+      // Chercher optionsCoefficients dans ce modèle
+      const optionsBlockMatch = modelContent.match(/optionsCoefficients:\s*\{([^}]+)\}/);
+      
+      if (optionsBlockMatch) {
+        const optionsStr = optionsBlockMatch[1];
+        const optionsObj: any = {};
+        
+        // Parser chaque ligne d'option
+        const optionLines = optionsStr.split(',');
+        for (const line of optionLines) {
+          const optMatch = line.trim().match(/(\w+):\s*([\d.]+)/);
+          if (optMatch) {
+            optionsObj[optMatch[1]] = parseFloat(optMatch[2]);
+          }
+        }
+        
+        if (Object.keys(optionsObj).length > 0) {
+          modelOptionsCoefficients[modelId] = optionsObj;
+        }
+      }
+    }
+  }
+
+  // Filtrer modelCoefficients pour ne garder que ceux différents du COEFF_MARGE global
+  // Un produit n'est "personnalisé" que si son coefficient diffère du coefficient global
+  const filteredModelCoefficients: { [key: string]: number } = {};
+  const filteredModelNames: { [key: string]: string } = {};
+  
+  for (const [modelId, coeff] of Object.entries(modelCoefficients)) {
+    if (Math.abs(coeff - COEFF_MARGE) > 0.001) { // Éviter les problèmes de précision float
+      filteredModelCoefficients[modelId] = coeff;
+      filteredModelNames[modelId] = modelNames[modelId];
+    }
+  }
+
+  // Filtrer modelOptionsCoefficients pour ne garder que ceux qui ont au moins une option différente du global
+  const filteredModelOptionsCoefficients: { [key: string]: any } = {};
+  
+  for (const [modelId, options] of Object.entries(modelOptionsCoefficients)) {
+    let hasDifference = false;
+    
+    // Vérifier si au moins une option diffère du coefficient global
+    for (const [optionKey, optionValue] of Object.entries(options)) {
+      const globalValue = OPTIONS_COEFFICIENTS[optionKey as keyof typeof OPTIONS_COEFFICIENTS];
+      if (Math.abs(optionValue - globalValue) > 0.001) {
+        hasDifference = true;
+        break;
+      }
+    }
+    
+    // Ne garder que si au moins une option est différente
+    if (hasDifference) {
+      filteredModelOptionsCoefficients[modelId] = options;
+    }
+  }
+
   return {
     COEFF_MARGE,
     OPTIONS_COEFFICIENTS,
-    modelCoefficients,
-    modelNames,
+    modelCoefficients: filteredModelCoefficients,
+    modelNames: filteredModelNames,
+    modelOptionsCoefficients: filteredModelOptionsCoefficients,
   };
 }
 
@@ -119,7 +196,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { COEFF_MARGE, OPTIONS_COEFFICIENTS, modelCoefficients } = body;
+    const { COEFF_MARGE, OPTIONS_COEFFICIENTS, modelCoefficients, modelOptionsCoefficients } = body;
 
     // Validation
     if (typeof COEFF_MARGE !== 'number' || COEFF_MARGE <= 0) {
@@ -150,11 +227,38 @@ export async function PUT(req: NextRequest) {
     for (const [modelId, coeff] of Object.entries(modelCoefficients)) {
       if (typeof coeff === 'number' && coeff > 0) {
         // Rechercher le bloc du modèle et mettre à jour son salesCoefficient
+        // Utiliser [\s\S]*? pour capturer sur plusieurs lignes (non-greedy)
         const modelRegex = new RegExp(
-          `(id:\\s*['"]${modelId}['"][^}]*salesCoefficient:\\s*)([\\d.]+)`,
+          `(["']${modelId}["']:\\s*\\{[\\s\\S]*?salesCoefficient:\\s*)([\\d.]+)`,
           'g'
         );
         content = content.replace(modelRegex, `$1${coeff}`);
+      }
+    }
+
+    // Mettre à jour optionsCoefficients par modèle
+    if (modelOptionsCoefficients && typeof modelOptionsCoefficients === 'object') {
+      for (const [modelId, options] of Object.entries(modelOptionsCoefficients)) {
+        if (options && typeof options === 'object') {
+          // Construire le bloc optionsCoefficients formaté
+          const optionsEntries = Object.entries(options)
+            .filter(([_, value]) => typeof value === 'number' && value > 0)
+            .map(([key, value]) => `      ${key}: ${value}`)
+            .join(',\n');
+
+          if (optionsEntries) {
+            const optionsBlock = `optionsCoefficients: {\n${optionsEntries}\n    }`;
+
+            // Remplacer le bloc optionsCoefficients existant pour ce modèle
+            // On recherche le bloc du modèle et son optionsCoefficients
+            const modelBlockRegex = new RegExp(
+              `(["']${modelId}["']:\\s*\\{[\\s\\S]*?)optionsCoefficients:\\s*\\{[^}]*\\}`,
+              'g'
+            );
+
+            content = content.replace(modelBlockRegex, `$1${optionsBlock}`);
+          }
+        }
       }
     }
 

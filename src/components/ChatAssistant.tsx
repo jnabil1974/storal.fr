@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
-import { STORE_MODELS, type StoreModel, FRAME_COLORS, FABRICS } from '@/lib/catalog-data';
+import { STORE_MODELS, type StoreModel, FRAME_COLORS, FABRICS, calculateFinalPrice } from '@/lib/catalog-data';
 import { calculateInstallationCostWithZone } from '@/lib/intervention-zones';
 import VisualShowroom from './VisualShowroom';
 import { useShowroom } from '@/contexts/ShowroomContext';
@@ -334,6 +334,15 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
           ledArms: cart.ledArms,
           ledBox: cart.ledBox,
           codePostal: cart.codePostal,  // 📍 Code postal pour zone d'intervention et frais
+          // 💰 Détails des prix pour affichage dans le panier
+          storeHT: cart.storeHT,
+          ledArmsPrice: cart.ledArmsPrice,
+          ledBoxPrice: cart.ledBoxPrice,
+          lambrequinPrice: cart.lambrequinPrice,
+          awningPrice: cart.awningPrice,
+          posePlafondPrice: cart.posePlafondPrice,
+          poseHT: cart.poseHT,
+          tvaAmount: cart.tvaAmount,
         },
         quantity: 1,
         pricePerUnit: cart.selectedPrice || cart.priceStandard || cart.storeHT || 0,
@@ -488,18 +497,58 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       });
     }
     
-    // Support pour display_single_offer (nouvelle version avec 1 seule offre)
+    // Support pour display_single_offer (avec calcul côté client)
     if (activeTool?.toolName === 'display_single_offer') {
-      const input = activeTool.input as any;
+      console.log('🔷 display_single_offer détecté, activeTool:', activeTool);
+      
+      // Lire les données depuis input (pas de result, outil simple sans execute())
+      const data = activeTool.input as any;
+      
+      // ⚠️ NOUVEAU : Calculer les prix côté client avec le catalogue transformé (×1.8 déjà appliqué)
+      const priceResult = calculateFinalPrice({
+        modelId: data.selected_model,
+        width: data.width * 10,       // cm → mm
+        projection: data.depth * 10,  // cm → mm
+        options: {
+          ledArms: data.includes_led_arms || false,
+          ledBox: data.includes_led_box || false,
+          lambrequinEnroulable: data.includes_lambrequin || false,
+          awning: data.includes_awning || false,
+          isPosePro: data.avec_pose || false,
+          isCustomColor: data.frame_color === 'custom' || false,
+          isPosePlafond: data.is_ceiling_mount || false  // Fixation plafond
+        }
+      });
+      
+      // Si le calcul retourne null (dimension impossible), on skip
+      if (!priceResult) {
+        console.error('❌ Calcul prix impossible pour config:', { modelId: data.selected_model, width: data.width, depth: data.depth });
+        return;
+      }
+      
+      // Extraire les prix calculés depuis le catalogue
+      const base_price_ht = priceResult.details.base_price_ht;
+      const led_arms_price_ht = priceResult.details.led_arms_price_ht || 0;
+      const led_box_price_ht = priceResult.details.led_box_price_ht || 0;
+      const lambrequin_price_ht = priceResult.details.lambrequin_price_ht || 0;
+      const awning_price_ht = priceResult.details.awning_price_ht || 0;
+      const pose_plafond_price_ht = priceResult.details.pose_plafond_price_ht || 0;
+      
+      // Calculer le montant de la pose selon la zone et la largeur
+      let montant_pose_ht = 0;
+      if (data.avec_pose && data.code_postal) {
+        const installResult = calculateInstallationCostWithZone(data.width, data.code_postal);
+        montant_pose_ht = installResult.total;
+      }
+      
+      // Déstructuration des autres champs
       const {
-        base_price_ht,
-        includes_led_arms = false, led_arms_price_ht = 0,
-        includes_led_box = false, led_box_price_ht = 0,
-        includes_lambrequin = false, lambrequin_price_ht = 0,
-        includes_awning = false, awning_price_ht = 0,
-        includes_sous_coffre = false, sous_coffre_price_ht = 0,
+        includes_led_arms = false,
+        includes_led_box = false,
+        includes_lambrequin = false,
+        includes_awning = false,
         selected_model, model_name, width, depth, frame_color, frame_color_name, fabric_color, fabric_name, exposure, with_motor,
-        taux_tva = 20, montant_pose_ht = 0, avec_pose = false,
+        taux_tva = 20, avec_pose = false,
         // Informations terrasse et environnement
         terrace_length,
         terrace_width,
@@ -509,7 +558,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         cable_exit,
         obstacles,
         code_postal  // Code postal pour frais de déplacement
-      } = input;
+      } = data;
       
       // ✅ Fix: Utiliser cart.fabricId au lieu de fabric_color de l'IA
       const actualFabricId = cart.fabricId || fabric_color;
@@ -520,7 +569,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         (includes_led_box ? led_box_price_ht : 0) +
         (includes_lambrequin ? lambrequin_price_ht : 0) +
         (includes_awning ? awning_price_ht : 0) +
-        (includes_sous_coffre ? sous_coffre_price_ht : 0);
+        pose_plafond_price_ht;
       
       const storeHT = base_price_ht + totalOptionsHT;
       const poseHT = avec_pose ? montant_pose_ht : 0;
@@ -542,7 +591,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
           ledBox: includes_led_box ? led_box_price_ht : 0,
           lambrequin: includes_lambrequin ? lambrequin_price_ht : 0,
           awning: includes_awning ? awning_price_ht : 0,
-          sousCoffre: includes_sous_coffre ? sous_coffre_price_ht : 0
+          posePlafond: pose_plafond_price_ht
         }
       });
       
@@ -557,7 +606,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         ledBoxPrice: includes_led_box ? led_box_price_ht : 0,
         lambrequinPrice: includes_lambrequin ? lambrequin_price_ht : 0,
         awningPrice: includes_awning ? awning_price_ht : 0,
-        sousCoffrePrice: includes_sous_coffre ? sous_coffre_price_ht : 0,
+        posePlafondPrice: pose_plafond_price_ht,
         poseHT: poseHT,
         tvaAmount: tvaAmount,
         modelId: selected_model || cart?.modelId,
@@ -608,7 +657,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         includes_led_box = false, led_box_price_ht = 0,
         includes_lambrequin = false, lambrequin_price_ht = 0,
         includes_awning = false, awning_price_ht = 0,
-        includes_sous_coffre = false, sous_coffre_price_ht = 0,
+        pose_plafond_price_ht = 0,
         taux_tva = 20,
         montant_pose_ht = 0,
         avec_pose = false
@@ -619,7 +668,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
         (includes_led_box ? led_box_price_ht : 0) +
         (includes_lambrequin ? lambrequin_price_ht : 0) +
         (includes_awning ? awning_price_ht : 0) +
-        (includes_sous_coffre ? sous_coffre_price_ht : 0);
+        pose_plafond_price_ht;
       
       const storeHT = base_price_ht + totalOptionsHT;
       const poseHT = avec_pose ? montant_pose_ht : 0;
@@ -640,7 +689,7 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
           ledBox: includes_led_box ? led_box_price_ht : 0,
           lambrequin: includes_lambrequin ? lambrequin_price_ht : 0,
           awning: includes_awning ? awning_price_ht : 0,
-          sousCoffre: includes_sous_coffre ? sous_coffre_price_ht : 0
+          posePlafond: pose_plafond_price_ht
         }
       };
     };
@@ -657,8 +706,20 @@ Je souhaite être contacté par votre bureau d'études pour valider la faisabili
       ecoCalc: activeTool?.toolName === 'display_triple_offer' ? calculateEcoOffer(activeTool.input) : undefined,
       standardCalc: activeTool?.toolName === 'display_triple_offer' ? calculateStandardOffer(activeTool.input) : undefined,
       premiumCalc: activeTool?.toolName === 'display_triple_offer' ? calculatePremiumOffer(activeTool.input) : undefined,
-      singleOfferCalc: persistedSingleOfferCalc || (activeTool?.toolName === 'display_single_offer' ? calculateSingleOffer(activeTool.input) : undefined),
-      avec_pose: persistedAvecPose || ((activeTool?.toolName === 'display_triple_offer' || activeTool?.toolName === 'display_single_offer') ? (activeTool.input as any)?.avec_pose : false),
+      singleOfferCalc: persistedSingleOfferCalc || (() => {
+        if (activeTool?.toolName === 'display_single_offer' && activeTool.result) {
+          return calculateSingleOffer(activeTool.result);
+        }
+        return undefined;
+      })(),
+      avec_pose: persistedAvecPose || (() => {
+        if (activeTool?.toolName === 'display_triple_offer') {
+          return (activeTool.input as any)?.avec_pose || false;
+        } else if (activeTool?.toolName === 'display_single_offer' && activeTool.result) {
+          return (activeTool.result as any).avec_pose || false;
+        }
+        return false;
+      })(),
       // Callbacks
       onSelectColor: (colorId, colorName) => {
         setSelectedColorId(colorId);
