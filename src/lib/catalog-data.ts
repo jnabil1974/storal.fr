@@ -1644,7 +1644,8 @@ export const MARKETING_RANGES: Record<string, MarketingRange> = {
     color: "red",
     gradientFrom: "from-red-500",
     gradientTo: "to-red-600",
-    order: 2
+    order: 2,
+    badge: "PROMO"
   },
   GAMME_EXCELLENCE: {
     id: "GAMME_EXCELLENCE",
