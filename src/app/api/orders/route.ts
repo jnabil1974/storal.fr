@@ -5,8 +5,8 @@ import { sendOrderConfirmationEmail } from '@/lib/email';
 
 // Fonction de vérification reCAPTCHA
 async function verifyRecaptcha(token: string): Promise<boolean> {
-  // En développement local, ignorer reCAPTCHA
-  if (process.env.NODE_ENV === 'development' && !process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY?.startsWith('6')) {
+  // En développement local, toujours ignorer reCAPTCHA
+  if (process.env.NODE_ENV === 'development') {
     console.log('🧪 Mode DEV: reCAPTCHA ignoré');
     return true;
   }

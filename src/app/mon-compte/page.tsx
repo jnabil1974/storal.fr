@@ -24,7 +24,7 @@ interface Order {
 }
 
 export default function MonComptePage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,6 +100,11 @@ export default function MonComptePage() {
     return methods[method] || method;
   };
 
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/');
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
@@ -129,12 +134,23 @@ export default function MonComptePage() {
                 Bienvenue, <span className="font-semibold text-blue-600">{user.email}</span>
               </p>
             </div>
-            <Link
-              href="/"
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-all"
-            >
-              ← Retour à l'accueil
-            </Link>
+            <div className="flex gap-3">
+              <Link
+                href="/"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-all"
+              >
+                ← Retour à l'accueil
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg transition-all font-semibold flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Déconnexion
+              </button>
+            </div>
           </div>
         </div>
 
