@@ -196,6 +196,15 @@ export default function HomePage() {
              }}>
           <div className="absolute inset-0 bg-[#2c3e50]/30 mix-blend-multiply"></div>
           
+          {/* Bandeau diagonal en haut à gauche */}
+          <div className="absolute top-0 left-0 z-20 overflow-hidden w-80 h-80">
+            <div className="absolute top-16 -left-20 w-[400px] bg-red-600 text-white text-center py-4 px-4 transform -rotate-45 shadow-2xl">
+              <span className="text-lg font-bold uppercase tracking-wide">
+                Store banne réglé d'usine<br/>livré chez vous juste à poser
+              </span>
+            </div>
+          </div>
+          
           <div className="relative z-10 max-w-2xl text-center space-y-8">
             <div className="space-y-4">
               <span className="inline-block px-4 py-1.5 bg-blue-600/20 text-blue-300 rounded-full text-xs font-black uppercase tracking-widest border border-blue-400/30">
