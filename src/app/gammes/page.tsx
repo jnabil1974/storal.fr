@@ -126,7 +126,7 @@ const GAMMES = {
   GAMME_TRADITION: {
     name: 'Gamme TRADITION',
     subtitle: 'Store banne à l\'italienne',
-    description: 'Store traditionnel avec lambrequin droit, charme authentique.',
+    description: 'Store traditionnel avec lambrequin droit, charme authentique. 3 versions pour tous les projets (jusqu\'à 18m).',
     icon: Home,
     color: 'from-indigo-500 to-indigo-600',
     features: [
@@ -135,8 +135,9 @@ const GAMMES = {
       'Charme authentique',
       'Idéal façades classiques',
       'Mécanisme robuste',
+      '3 modèles : standard, renforcé et grande portée 18m',
     ],
-    models: ['genes'],
+    models: ['genes', 'menton', 'lisbonne'],
   },
 };
 
