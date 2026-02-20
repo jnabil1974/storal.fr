@@ -302,12 +302,21 @@ export default function CartPageClient() {
                           ('orientation' in item.configuration && item.configuration.orientation) || 
                           ('installHeight' in item.configuration && item.configuration.installHeight) || 
                           ('cableExit' in item.configuration && item.configuration.cableExit) || 
-                          ('obstacles' in item.configuration && item.configuration.obstacles)) && (
+                          ('obstacles' in item.configuration && item.configuration.obstacles) ||
+                          ('codePostal' in item.configuration && item.configuration.codePostal)) && (
                           <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 p-4 rounded-lg mb-4">
                             <p className="font-bold text-gray-800 mb-3 flex items-center gap-2">
                               📋 Informations de pose
                             </p>
                             <div className="space-y-2 text-sm">
+                              {'codePostal' in item.configuration && item.configuration.codePostal && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-gray-700">📍 Code postal:</span>
+                                  <span className="font-semibold text-gray-900">
+                                    {(item.configuration as any).codePostal}
+                                  </span>
+                                </div>
+                              )}
                               {'terraceLength' in item.configuration && item.configuration.terraceLength && (
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-700">Longueur terrasse:</span>

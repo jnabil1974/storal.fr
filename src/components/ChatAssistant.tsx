@@ -313,7 +313,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
         productName: cart.modelName || modelData.name,
         basePrice: cart.storeHT || 0,
         configuration: {
-          modelId: cart.modelId || '',  // 🔑 Sauvegarder l'ID original pour retrouver le modèle
+          modelKey: cart.modelId || '',  // 🔑 Sauvegarder l'ID original pour retrouver le modèle et l'image
           width: cart.width || 0,
           depth: cart.projection || 0,
           motorized: cart.withMotor || false,
@@ -333,6 +333,7 @@ export default function ChatAssistant({ modelToConfig, cart, setCart, initialMes
           obstacles: cart.obstacles,
           ledArms: cart.ledArms,
           ledBox: cart.ledBox,
+          codePostal: cart.codePostal,  // 📍 Code postal pour zone d'intervention et frais
         },
         quantity: 1,
         pricePerUnit: cart.selectedPrice || cart.priceStandard || cart.storeHT || 0,
