@@ -1,14 +1,111 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ============================================
+// MODÈLE PRODUIT (Store, Porte, Fermeture...)
+// ============================================
+model Product {
+  id                String   @id @default(uuid())
+  modelId           String   @unique // "kissimy_promo", "kitanguy", etc.
+  name              String
+  slug              String   @unique
+  productType       String   @default("store") // "store", "door", "shutter"
+  salesCoefficient  Float    @default(1.8) // Coefficient de marge global du produit
+  isActive          Boolean  @default(true)
+  isPromo           Boolean  @default(false)
+  
+  // Relations
+  prices            ProductPrice[]
+  optionCoefficients OptionCoefficient[]
+  
+  // Audit
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ============================================
+// GRILLE DES PRIX D'ACHAT HT
+// ============================================
+model ProductPrice {
+  id          String  @id @default(uuid())
+  productId   String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // Dimensions
+  projection  Int     // Avancée en mm (1500, 1750, 2000, etc.)
+  maxWidth    Int     // Largeur max en mm (2470, 3650, 4830, etc.)
+  
+  // Prix fournisseur
+  priceHT     Float   // Prix d'achat HT fournisseur (€)
+  
+  // Metadata
+  supplierRef String? // Référence fournisseur (optionnel)
+  notes       String? // Notes internes
+  
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([productId, projection, maxWidth])
+}
+
+// ============================================
+// COEFFICIENTS PAR OPTION
+// ============================================
+model OptionCoefficient {
+  id          String  @id @default(uuid())
+  productId   String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  optionType  String  // "LED_ARMS", "LED_CASSETTE", "LAMBREQUIN_FIXE", etc.
+  coefficient Float   @default(1.0) // Coefficient de marge pour cette option
+  
+  description String? // Description de l'option
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([productId, optionType])
+}
+
+// ============================================
+// COEFFICIENTS GLOBAUX
+// ============================================
+model GlobalCoefficient {
+  id          String   @id @default(uuid())
+  key         String   @unique // "DEFAULT_MARGIN", "PROMO_MARGIN", "PREMIUM_MARGIN"
+  value       Float    // Valeur du coefficient (ex: 1.8)
+  description String?  // Description du coefficient
+  category    String?  // "margin", "vat", "shipping", etc.
+  
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// HISTORIQUE DES GÉNÉRATIONS
+// ============================================
+model CatalogGeneration {
+  id           String   @id @default(uuid())
+  version      String   // Format: "YYYY-MM-DD-HHmmss" (ex: "2026-02-21-143022")
+  generatedAt  DateTime @default(now())
+  generatedBy  String?  // Email ou nom de l'admin
+  
+  // Statistiques
+  productsCount Int     // Nombre de produits traités
+  pricesCount   Int     // Nombre total de prix générés
+  fileSize      Int?    // Taille du fichier catalog-data.ts en bytes
+  
+  // Statut
+  status       String   // "success", "error", "partial"
+  errorLog     String?  // Logs d'erreur si échec
+  
+  // Metadata
+  gitCommit    String?  // Hash du commit git associé
+  notes        String?  // Notes supplémentaires
 }

@@ -9,7 +9,12 @@
     "lint": "eslint",
     "icons": "node scripts/generate-icons.js",
     "export-catalog": "tsx scripts/export-catalog-data.ts",
-    "generate:catalogs": "tsx scripts/generate-catalog-files.ts"
+    "generate:catalogs": "tsx scripts/generate-catalog-files.ts",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "pricing:import": "tsx scripts/pricing/import-prices.ts",
+    "pricing:generate": "tsx scripts/pricing/generate-catalog.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.24",

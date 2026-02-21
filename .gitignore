@@ -41,6 +41,12 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# SQLite database (local only)
+prisma/*.db
+prisma/*.db-journal
+prisma/*.db-wal
+
 # Sensitive files
 DEPLOIEMENT_VERCEL.md
 supabase-*.sql
