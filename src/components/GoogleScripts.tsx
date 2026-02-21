@@ -16,7 +16,7 @@ import { useConsent } from '@/hooks/useConsent';
 
 // ⚠️ IMPORTANT : Remplacez ces IDs par vos vrais identifiants Google
 const GOOGLE_ANALYTICS_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-XXXXXXXXXX';
-const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GADS_ID || 'AW-XXXXXXXXXX';
+const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GADS_ID || 'AW-17449014086';
 
 export default function GoogleScripts() {
   const { preferences, hasConsent } = useConsent();
