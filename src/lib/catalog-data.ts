@@ -75,7 +75,7 @@ export function checkDeliveryConditions(
   }
   
   if (largeur > model.deliveryWarningThreshold) {
-    return `⚠️ Attention : En raison d'une largeur supérieure à ${model.deliveryWarningThreshold / 1000}m, la livraison s'effectuera en deux parties via un transporteur spécialisé.`;
+    return `⚠️ Attention : En raison d'une largeur supérieure à ${model.deliveryWarningThreshold / 1000}m, la livraison s'effectuera en 2 ou 3 parties selon les dimensions via un transporteur spécialisé.`;
   }
   
   return null;
@@ -947,10 +947,10 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       { maxW: 5610, price: 318 }, { maxW: 6000, price: 377 }, { maxW: 7110, price: 493 },
       { maxW: 8280, price: 586 }, { maxW: 9450, price: 544 }, { maxW: 10790, price: 667 },
       { maxW: 11220, price: 704 }, { maxW: 12000, price: 729 }
-    ],    deliveryType: 'ready_to_install',
-    deliveryNote: "Store livré fini, toile réglée et prêt à poser. Surtaxe transport pour stores > 3.65m.",
+    ],    deliveryType: 'ready_up_to_6m',
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 ou 3 parties selon les dimensions.",
     colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
-    deliveryWarningThreshold: 3650  // Alerte et surtaxe transport si > 3.65m
+    deliveryWarningThreshold: 6000  // Alerte si > 6m
   },
 
   // --- 11. MADRID - STORAL CLASSIQUE + (Monobloc Standard) ---
@@ -1041,9 +1041,9 @@ export const STORE_MODELS: Record<string, StoreModel> = {
       { maxW: 11220, price: 704 }, { maxW: 12000, price: 729 }, { maxW: 14140, price: 876 },
       { maxW: 15310, price: 886 }, { maxW: 18000, price: 1003 }
     ],    deliveryType: 'ready_up_to_6m',
-    deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 parties. Surtaxe transport pour stores > 3.65m.",
+    deliveryNote: "Store livré fini, toile réglée et prêt à poser jusqu'à 6m. Au-delà, livré en 2 ou 3 parties selon les dimensions.",
     colorStrategy: 'STANDARD_ALL',  // Toutes couleurs incluses
-    deliveryWarningThreshold: 3650  // Alerte et surtaxe transport si > 3.65m
+    deliveryWarningThreshold: 6000  // Alerte si > 6m
   },
 
   // --- 12. GENES - STORAL TRADITION (Traditionnel Standard) ---
